@@ -1,0 +1,35 @@
+# --- Python / build (sende var, tamam) ---
+
+# Jupyter/Streamlit/pytest
+.ipynb_checkpoints/
+.pytest_cache/
+.streamlit/secrets.toml
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+# Caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Data (demo harici büyük dosyalar)
+data_demo/cache/
+data_private/
+*.parquet
+*.feather
+
+# Logs
+logs/
+*.log
+
+# Env
+.env
+.env.*
+!.env.example  # örnek şablon kalsın
+
+# OS / IDE (sende var, tamam)
+.DS_Store
