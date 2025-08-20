@@ -1,0 +1,22 @@
+{
+  "disease": "Breast carcinoma",
+  "disease_id": "EFO_0000305",
+  "positives": [
+    "ERBB2",
+    "ESR1",
+    "PGR",
+    "CDK4",
+    "CDK6",
+    "PIK3CA",
+    "AKT1"
+  ],
+  "negatives": [
+    "GAPDH",
+    "ACTB",
+    "TUBB",
+    "RPL13A"
+  ],
+  "description": "Established breast cancer targets vs control genes",
+  "source": "FDA-approved therapies and clinical guidelines",
+  "created": "2025-01-01"
+}

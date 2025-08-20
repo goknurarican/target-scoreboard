@@ -1,0 +1,24 @@
+{
+  "disease": "Non-small cell lung carcinoma",
+  "disease_id": "EFO_0000305",
+  "positives": [
+    "EGFR",
+    "ALK",
+    "MET",
+    "ERBB2",
+    "BRAF",
+    "KRAS",
+    "ROS1",
+    "RET"
+  ],
+  "negatives": [
+    "GAPDH",
+    "ACTB",
+    "TUBB",
+    "RPL13A",
+    "HPRT1"
+  ],
+  "description": "Known therapeutic targets (positives) vs housekeeping genes (negatives)",
+  "source": "Clinical trials and FDA approvals for NSCLC as of 2024",
+  "created": "2025-01-01"
+}

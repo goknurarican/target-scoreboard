@@ -23,6 +23,11 @@ from .scoring import score_targets, validate_score_request, target_scorer
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+"""
+Add this endpoint to app/main.py after the existing endpoints.
+"""
+
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -509,8 +514,423 @@ async def rate_limit_middleware(request, call_next):
 
     response = await call_next(request)
     return response
+@app.post("/simulate/weights")
+async def simulate_weight_sensitivity(request: ScoreRequest):
+    """
+    Simulate weight uncertainty and analyze ranking stability.
+
+    This endpoint performs Monte Carlo sampling of weight configurations
+    around the provided base weights using Dirichlet distribution,
+    then analyzes how ranking stability varies across perturbations.
+
+    Args:
+        request: ScoreRequest with disease, targets, and base weights
+
+    Returns:
+        Dict containing:
+        - stability: Per-target rank statistics and histograms
+        - kendall_tau_mean: Average rank correlation across samples
+        - weight_stats: Weight variation statistics
+        - processing metadata
+    """
+    start_time = time.time()
+
+    # Validate request
+    is_valid, error_msg = validate_score_request(request)
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=error_msg)
+
+    # Additional validation for simulation
+    if len(request.targets) > 20:
+        raise HTTPException(
+            status_code=400,
+            detail="Too many targets for simulation (max 20 for performance)"
+        )
+
+    try:
+        logger.info(f"Weight simulation request: disease={request.disease}, targets={len(request.targets)}")
+
+        # Get base scoring results
+        target_scores, scoring_metadata = await score_targets(request)
+
+        if not target_scores:
+            raise HTTPException(
+                status_code=422,
+                detail="No targets could be scored - simulation not possible"
+            )
+
+        # Import simulation function
+        from .scoring import simulate_weight_perturbations
+
+        # Run weight perturbation simulation
+        simulation_results = simulate_weight_perturbations(
+            target_scores=target_scores,
+            base_weights=request.weights,
+            n_samples=200,
+            dirichlet_alpha=80.0
+        )
+
+        # Check for simulation errors
+        if "error" in simulation_results:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Simulation failed: {simulation_results['error']}"
+            )
+
+        processing_time_ms = (time.time() - start_time) * 1000
+
+        # Build comprehensive response
+        response = {
+            "simulation_results": simulation_results,
+            "base_scoring": {
+                "targets": [
+                    {
+                        "target": ts.target,
+                        "total_score": ts.total_score,
+                        "rank": i + 1
+                    }
+                    for i, ts in enumerate(
+                        sorted(target_scores, key=lambda x: x.total_score, reverse=True)
+                    )
+                ],
+                "data_version": scoring_metadata.get("data_version", "Unknown")
+            },
+            "request_summary": {
+                "disease": request.disease,
+                "target_count": len(request.targets),
+                "base_weights": request.weights,
+                "simulation_params": {
+                    "samples": 200,
+                    "dirichlet_alpha": 80.0
+                }
+            },
+            "processing_time_ms": processing_time_ms,
+            "timestamp": time.time()
+        }
+
+        # Enhanced logging with stability metrics
+        stability_count = len(simulation_results.get("stability", {}))
+        kendall_tau = simulation_results.get("kendall_tau_mean", 0.0)
+
+        logger.info(
+            f"Weight simulation completed in {processing_time_ms:.1f}ms. "
+            f"Analyzed {stability_count} targets, Kendall τ = {kendall_tau:.3f}"
+        )
+
+        return response
+
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is
+        raise
+    except Exception as e:
+        logger.error(f"Error in weight simulation: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error during simulation: {str(e)}"
+        )
 
 
+@app.get("/simulate/weights/example")
+async def get_simulation_example():
+    """
+    Get example simulation response format.
+
+    Returns:
+        Example JSON structure showing expected simulation output
+    """
+    return {
+        "example_response": {
+            "simulation_results": {
+                "stability": {
+                    "EGFR": {
+                        "mode_rank": 1,
+                        "entropy": 0.1234,
+                        "histogram": {1: 180, 2: 15, 3: 5},
+                        "rank_range": [1, 3],
+                        "rank_std": 0.45
+                    },
+                    "ERBB2": {
+                        "mode_rank": 2,
+                        "entropy": 0.2456,
+                        "histogram": {1: 25, 2: 150, 3: 20, 4: 5},
+                        "rank_range": [1, 4],
+                        "rank_std": 0.68
+                    }
+                },
+                "kendall_tau_mean": 0.892,
+                "samples": 200,
+                "weight_stats": {
+                    "genetics": {
+                        "mean": 0.351,
+                        "std": 0.023,
+                        "min": 0.287,
+                        "max": 0.412,
+                        "base": 0.35
+                    }
+                }
+            },
+            "base_scoring": {
+                "targets": [
+                    {"target": "EGFR", "total_score": 0.845, "rank": 1},
+                    {"target": "ERBB2", "total_score": 0.732, "rank": 2}
+                ]
+            },
+            "request_summary": {
+                "disease": "EFO_0000305",
+                "target_count": 5,
+                "base_weights": {
+                    "genetics": 0.35,
+                    "ppi": 0.25,
+                    "pathway": 0.20,
+                    "safety": 0.10,
+                    "modality_fit": 0.10
+                }
+            }
+        },
+        "interpretation": {
+            "kendall_tau_mean": "Average rank correlation (0-1, higher = more stable)",
+            "entropy": "Rank uncertainty (0-1, lower = more stable)",
+            "mode_rank": "Most frequent rank across simulations",
+            "histogram": "Distribution of ranks across weight samples"
+        }
+    }
+
+
+"""
+Add this endpoint to app/main.py after the existing endpoints.
+"""
+
+
+@app.post("/ablation")
+async def analyze_channel_ablation(request: ScoreRequest):
+    """
+    Perform channel ablation analysis to identify critical scoring channels.
+
+    For each scoring channel, removes it (sets weight to 0) and proportionally
+    renormalizes remaining weights, then measures the impact on target scores
+    and rankings to identify which channels are most critical.
+
+    Args:
+        request: ScoreRequest with disease, targets, and weights
+
+    Returns:
+        Dict containing:
+        - ablation_results: Per-channel impact analysis with score drops
+        - baseline_scores: Original scores for comparison
+        - summary_stats: Overall ablation statistics
+    """
+    start_time = time.time()
+
+    # Validate request
+    is_valid, error_msg = validate_score_request(request)
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=error_msg)
+
+    # Additional validation for ablation
+    if len(request.targets) > 25:
+        raise HTTPException(
+            status_code=400,
+            detail="Too many targets for ablation analysis (max 25 for performance)"
+        )
+
+    try:
+        logger.info(f"Channel ablation request: disease={request.disease}, targets={len(request.targets)}")
+
+        # Get base scoring results
+        target_scores, scoring_metadata = await score_targets(request)
+
+        if not target_scores:
+            raise HTTPException(
+                status_code=422,
+                detail="No targets could be scored - ablation analysis not possible"
+            )
+
+        # Import ablation function
+        from .scoring import compute_channel_ablation
+
+        # Run channel ablation analysis
+        ablation_results = compute_channel_ablation(
+            target_scores=target_scores,
+            weights=request.weights
+        )
+
+        if not ablation_results:
+            raise HTTPException(
+                status_code=500,
+                detail="Ablation analysis failed - could not compute channel impacts"
+            )
+
+        processing_time_ms = (time.time() - start_time) * 1000
+
+        # Create baseline scores for comparison
+        baseline_scores = [
+            {
+                "target": ts.target,
+                "total_score": ts.total_score,
+                "rank": i + 1
+            }
+            for i, ts in enumerate(
+                sorted(target_scores, key=lambda x: x.total_score, reverse=True)
+            )
+        ]
+
+        # Calculate summary statistics
+        channel_criticality = {}
+        total_targets = len(target_scores)
+
+        for ablation in ablation_results:
+            channel = ablation["channel"]
+            avg_drop = ablation["avg_score_drop"]
+            max_drop = ablation["max_score_drop"]
+            affected_count = ablation["targets_affected"]
+
+            # Determine criticality level
+            if avg_drop >= 0.15:
+                criticality = "critical"
+            elif avg_drop >= 0.05:
+                criticality = "important"
+            else:
+                criticality = "minor"
+
+            channel_criticality[channel] = {
+                "level": criticality,
+                "avg_impact": avg_drop,
+                "max_impact": max_drop,
+                "affected_ratio": affected_count / total_targets
+            }
+
+        # Build comprehensive response
+        response = {
+            "ablation_results": ablation_results,
+            "baseline_scores": baseline_scores,
+            "channel_criticality": channel_criticality,
+            "summary_stats": {
+                "most_critical_channel": ablation_results[0]["channel"] if ablation_results else None,
+                "least_critical_channel": ablation_results[-1]["channel"] if ablation_results else None,
+                "avg_score_drop_range": [
+                    ablation_results[-1]["avg_score_drop"] if ablation_results else 0,
+                    ablation_results[0]["avg_score_drop"] if ablation_results else 0
+                ],
+                "total_channels_analyzed": len(ablation_results)
+            },
+            "request_summary": {
+                "disease": request.disease,
+                "target_count": len(request.targets),
+                "weights_used": request.weights
+            },
+            "processing_time_ms": processing_time_ms,
+            "data_version": scoring_metadata.get("data_version", "Unknown"),
+            "timestamp": time.time()
+        }
+
+        # Enhanced logging
+        most_critical = ablation_results[0]["channel"] if ablation_results else "unknown"
+        max_impact = ablation_results[0]["avg_score_drop"] if ablation_results else 0
+
+        logger.info(
+            f"Channel ablation completed in {processing_time_ms:.1f}ms. "
+            f"Most critical channel: {most_critical} (avg drop: {max_impact:.3f}). "
+            f"Analyzed {len(ablation_results)} channels across {len(target_scores)} targets."
+        )
+
+        return response
+
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is
+        raise
+    except Exception as e:
+        logger.error(f"Error in channel ablation analysis: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error during ablation analysis: {str(e)}"
+        )
+
+
+@app.get("/ablation/example")
+async def get_ablation_example():
+    """
+    Get example ablation analysis response format.
+
+    Returns:
+        Example JSON structure showing expected ablation output
+    """
+    return {
+        "example_response": {
+            "ablation_results": [
+                {
+                    "channel": "genetics",
+                    "avg_score_drop": 0.234,
+                    "max_score_drop": 0.456,
+                    "targets_affected": 4,
+                    "delta": [
+                        {
+                            "target": "EGFR",
+                            "score_drop": 0.456,
+                            "rank_delta": 2,
+                            "original_score": 0.845,
+                            "ablated_score": 0.389,
+                            "original_rank": 1,
+                            "ablated_rank": 3
+                        },
+                        {
+                            "target": "ERBB2",
+                            "score_drop": 0.123,
+                            "rank_delta": 0,
+                            "original_score": 0.732,
+                            "ablated_score": 0.609,
+                            "original_rank": 2,
+                            "ablated_rank": 2
+                        }
+                    ]
+                },
+                {
+                    "channel": "modality_fit",
+                    "avg_score_drop": 0.045,
+                    "max_score_drop": 0.089,
+                    "targets_affected": 2,
+                    "delta": [
+                        {
+                            "target": "MET",
+                            "score_drop": 0.089,
+                            "rank_delta": 1,
+                            "original_score": 0.567,
+                            "ablated_score": 0.478,
+                            "original_rank": 3,
+                            "ablated_rank": 4
+                        }
+                    ]
+                }
+            ],
+            "channel_criticality": {
+                "genetics": {
+                    "level": "critical",
+                    "avg_impact": 0.234,
+                    "max_impact": 0.456,
+                    "affected_ratio": 0.8
+                },
+                "modality_fit": {
+                    "level": "minor",
+                    "avg_impact": 0.045,
+                    "max_impact": 0.089,
+                    "affected_ratio": 0.4
+                }
+            },
+            "summary_stats": {
+                "most_critical_channel": "genetics",
+                "least_critical_channel": "modality_fit",
+                "avg_score_drop_range": [0.045, 0.234]
+            }
+        },
+        "interpretation": {
+            "score_drop": "Difference between original and ablated scores (higher = more critical)",
+            "rank_delta": "Change in ranking when channel removed (positive = rank got worse)",
+            "criticality_levels": {
+                "critical": "avg_drop >= 0.15 - Essential for accurate scoring",
+                "important": "avg_drop >= 0.05 - Significant contribution",
+                "minor": "avg_drop < 0.05 - Limited impact"
+            }
+        }
+    }
 if __name__ == "__main__":
     import uvicorn
 

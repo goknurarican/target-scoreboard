@@ -5,6 +5,10 @@ from typing import List, Dict, Tuple, Optional
 import asyncio
 from datetime import datetime
 import logging
+import numpy as np
+from typing import Dict, List
+from scipy.stats import dirichlet, kendalltau
+import logging
 
 from .schemas import TargetScore, TargetBreakdown, ScoreRequest, ModalityFitScores
 from .data_access.opentargets import fetch_ot_association
@@ -26,6 +30,335 @@ DEFAULT_WEIGHTS = {
 }
 
 
+def simulate_weight_perturbations(
+        target_scores: List[TargetScore],
+        base_weights: Dict[str, float],
+        n_samples: int = 200,
+        dirichlet_alpha: float = 80.0
+) -> Dict:
+    """
+    Simulate weight uncertainty and compute rank stability metrics.
+
+    Uses Dirichlet distribution to sample weight configurations around base weights,
+    then analyzes ranking stability across perturbations.
+
+    Args:
+        target_scores: List of scored targets with breakdown information
+        base_weights: Base weight configuration to perturb around
+        n_samples: Number of weight samples to generate
+        dirichlet_alpha: Concentration parameter for Dirichlet (higher = less variation)
+
+    Returns:
+        Dict containing:
+        - stability: Per-target rank statistics (mode_rank, entropy, histogram)
+        - kendall_tau_mean: Average rank correlation across samples
+        - samples: Number of samples processed
+        - weight_stats: Weight variation statistics
+    """
+    if not target_scores:
+        return {
+            "stability": {},
+            "kendall_tau_mean": 0.0,
+            "samples": 0,
+            "weight_stats": {}
+        }
+
+    try:
+        # Channel ordering for consistent indexing
+        channels = ["genetics", "ppi", "pathway", "safety", "modality_fit"]
+
+        # Extract base weights in channel order
+        base_weight_vector = np.array([base_weights.get(ch, 0.0) for ch in channels])
+
+        # Generate Dirichlet-sampled weight configurations
+        # Scale base weights by alpha for concentration parameter
+        alpha_vector = base_weight_vector * dirichlet_alpha
+        alpha_vector = np.maximum(alpha_vector, 0.1)  # Prevent zero alphas
+
+        sampled_weights = dirichlet.rvs(alpha_vector, size=n_samples)
+
+        # Extract channel scores for each target
+        target_channel_scores = []
+        target_names = []
+
+        for ts in target_scores:
+            target_names.append(ts.target)
+            breakdown = ts.breakdown
+
+            # Extract scores safely with fallbacks
+            scores = {
+                "genetics": float(breakdown.genetics or 0.0),
+                "ppi": float(breakdown.ppi_proximity or 0.0),
+                "pathway": float(breakdown.pathway_enrichment or 0.0),
+                "safety": float(breakdown.safety_off_tissue or 0.0),
+                "modality_fit": 0.0
+            }
+
+            # Handle modality_fit extraction
+            if breakdown.modality_fit:
+                if isinstance(breakdown.modality_fit, dict):
+                    scores["modality_fit"] = float(breakdown.modality_fit.get("overall_druggability", 0.0))
+                else:
+                    scores["modality_fit"] = float(getattr(breakdown.modality_fit, "overall_druggability", 0.0))
+
+            # Convert to ordered array
+            score_vector = np.array([scores[ch] for ch in channels])
+            target_channel_scores.append(score_vector)
+
+        target_channel_scores = np.array(target_channel_scores)  # Shape: (n_targets, n_channels)
+
+        # Simulate rankings across weight samples
+        all_rankings = []
+        rank_matrices = np.zeros((len(target_names), n_samples), dtype=int)
+
+        for sample_idx in range(n_samples):
+            weight_sample = sampled_weights[sample_idx]
+
+            # Compute scores for this weight configuration
+            sample_scores = []
+            for target_idx in range(len(target_names)):
+                target_scores_vec = target_channel_scores[target_idx]
+
+                # Apply safety inversion (safety is penalty)
+                adjusted_scores = target_scores_vec.copy()
+                safety_idx = channels.index("safety")
+                adjusted_scores[safety_idx] = 1.0 - adjusted_scores[safety_idx]
+
+                # Compute weighted score
+                weighted_score = np.dot(adjusted_scores, weight_sample)
+                sample_scores.append(weighted_score)
+
+            # Rank targets (1-indexed, highest score = rank 1)
+            sample_ranks = len(sample_scores) + 1 - np.argsort(np.argsort(sample_scores))
+            rank_matrices[:, sample_idx] = sample_ranks
+            all_rankings.append(sample_ranks)
+
+        # Compute per-target stability metrics
+        stability_results = {}
+        for target_idx, target_name in enumerate(target_names):
+            target_ranks = rank_matrices[target_idx, :]
+
+            # Rank histogram
+            unique_ranks, counts = np.unique(target_ranks, return_counts=True)
+            histogram = {int(rank): int(count) for rank, count in zip(unique_ranks, counts)}
+
+            # Mode rank (most frequent)
+            mode_rank = int(unique_ranks[np.argmax(counts)])
+
+            # Rank entropy (normalized)
+            probabilities = counts / n_samples
+            entropy = -np.sum(probabilities * np.log2(probabilities + 1e-12))
+            max_entropy = np.log2(len(target_names))  # Maximum possible entropy
+            normalized_entropy = entropy / max_entropy if max_entropy > 0 else 0.0
+
+            stability_results[target_name] = {
+                "mode_rank": mode_rank,
+                "entropy": float(normalized_entropy),
+                "histogram": histogram,
+                "rank_range": [int(np.min(target_ranks)), int(np.max(target_ranks))],
+                "rank_std": float(np.std(target_ranks))
+            }
+
+        # Compute overall ranking agreement (Kendall's tau)
+        kendall_taus = []
+        base_ranking = rank_matrices[:, 0]  # Use first sample as reference
+
+        for sample_idx in range(1, min(n_samples, 50)):  # Sample subset for efficiency
+            sample_ranking = rank_matrices[:, sample_idx]
+            try:
+                tau, _ = kendalltau(base_ranking, sample_ranking)
+                if not np.isnan(tau):
+                    kendall_taus.append(tau)
+            except Exception:
+                continue
+
+        kendall_tau_mean = float(np.mean(kendall_taus)) if kendall_taus else 0.0
+
+        # Weight variation statistics
+        weight_stats = {}
+        for ch_idx, channel in enumerate(channels):
+            channel_weights = sampled_weights[:, ch_idx]
+            weight_stats[channel] = {
+                "mean": float(np.mean(channel_weights)),
+                "std": float(np.std(channel_weights)),
+                "min": float(np.min(channel_weights)),
+                "max": float(np.max(channel_weights)),
+                "base": float(base_weight_vector[ch_idx])
+            }
+
+        return {
+            "stability": stability_results,
+            "kendall_tau_mean": kendall_tau_mean,
+            "samples": n_samples,
+            "weight_stats": weight_stats,
+            "meta": {
+                "dirichlet_alpha": dirichlet_alpha,
+                "channels": channels,
+                "successful_kendall_comparisons": len(kendall_taus)
+            }
+        }
+
+    except Exception as e:
+        logger.error(f"Weight perturbation simulation failed: {e}")
+        return {
+            "stability": {},
+            "kendall_tau_mean": 0.0,
+            "samples": 0,
+            "error": str(e)
+        }
+
+
+"""
+Channel ablation analysis function for app/scoring.py
+Add this after the RankingAnalyzer class.
+"""
+
+
+def compute_channel_ablation(target_scores: List[TargetScore], weights: Dict[str, float]) -> List[Dict]:
+    """
+    Compute channel ablation analysis by removing each channel and measuring impact.
+
+    For each channel, sets its weight to 0 and proportionally normalizes remaining
+    weights to maintain sum=1.0, then recomputes scores to measure drop.
+
+    Args:
+        target_scores: List of scored targets with breakdown information
+        weights: Current weight configuration
+
+    Returns:
+        List of ablation results per channel with score drops and rank changes
+    """
+    if not target_scores or not weights:
+        return []
+
+    try:
+        channels = ["genetics", "ppi", "pathway", "safety", "modality_fit"]
+
+        # Baseline rankings (current scores)
+        baseline_scores = {}
+        baseline_rankings = {}
+        sorted_targets = sorted(target_scores, key=lambda x: x.total_score, reverse=True)
+
+        for i, ts in enumerate(sorted_targets):
+            baseline_scores[ts.target] = ts.total_score
+            baseline_rankings[ts.target] = i + 1
+
+        ablation_results = []
+
+        for ablated_channel in channels:
+            # Create ablated weight configuration
+            ablated_weights = weights.copy()
+            ablated_weights[ablated_channel] = 0.0
+
+            # Normalize remaining weights to sum to 1.0
+            remaining_weight = sum(w for ch, w in ablated_weights.items() if w > 0)
+            if remaining_weight > 0:
+                for ch in ablated_weights:
+                    if ablated_weights[ch] > 0:
+                        ablated_weights[ch] = ablated_weights[ch] / remaining_weight
+            else:
+                # All weights were zero, skip this ablation
+                logger.warning(f"Cannot ablate {ablated_channel}: no remaining positive weights")
+                continue
+
+            # Recompute scores with ablated weights
+            ablated_target_scores = []
+            channel_deltas = []
+
+            for ts in target_scores:
+                breakdown = ts.breakdown
+
+                # Extract channel scores safely
+                channel_scores = {
+                    "genetics": float(breakdown.genetics or 0.0),
+                    "ppi": float(breakdown.ppi_proximity or 0.0),
+                    "pathway": float(breakdown.pathway_enrichment or 0.0),
+                    "safety": float(breakdown.safety_off_tissue or 0.0),
+                    "modality_fit": 0.0
+                }
+
+                # Handle modality_fit extraction
+                if breakdown.modality_fit:
+                    if isinstance(breakdown.modality_fit, dict):
+                        channel_scores["modality_fit"] = float(breakdown.modality_fit.get("overall_druggability", 0.0))
+                    else:
+                        channel_scores["modality_fit"] = float(
+                            getattr(breakdown.modality_fit, "overall_druggability", 0.0))
+
+                # Compute ablated score
+                ablated_score = 0.0
+                total_weight_used = 0.0
+
+                for channel, weight in ablated_weights.items():
+                    if weight > 0 and channel in channel_scores:
+                        score = channel_scores[channel]
+
+                        # Handle safety inversion
+                        if channel == "safety":
+                            score = 1.0 - score
+
+                        # Ensure bounds
+                        score = max(0.0, min(1.0, score))
+                        ablated_score += score * weight
+                        total_weight_used += weight
+
+                # Normalize if needed
+                if total_weight_used > 0:
+                    ablated_score = ablated_score / total_weight_used
+                else:
+                    ablated_score = 0.1  # Fallback
+
+                ablated_target_scores.append({
+                    "target": ts.target,
+                    "original_score": baseline_scores[ts.target],
+                    "ablated_score": ablated_score
+                })
+
+            # Compute new rankings with ablated scores
+            ablated_sorted = sorted(ablated_target_scores, key=lambda x: x["ablated_score"], reverse=True)
+            ablated_rankings = {item["target"]: i + 1 for i, item in enumerate(ablated_sorted)}
+
+            # Calculate deltas for each target
+            for item in ablated_target_scores:
+                target = item["target"]
+                original_score = item["original_score"]
+                ablated_score = item["ablated_score"]
+
+                score_drop = original_score - ablated_score
+                original_rank = baseline_rankings[target]
+                ablated_rank = ablated_rankings[target]
+                rank_delta = ablated_rank - original_rank  # Positive = rank got worse
+
+                channel_deltas.append({
+                    "target": target,
+                    "score_drop": float(score_drop),
+                    "rank_delta": int(rank_delta),
+                    "original_score": float(original_score),
+                    "ablated_score": float(ablated_score),
+                    "original_rank": int(original_rank),
+                    "ablated_rank": int(ablated_rank)
+                })
+
+            # Sort by score drop (highest impact first)
+            channel_deltas.sort(key=lambda x: x["score_drop"], reverse=True)
+
+            ablation_results.append({
+                "channel": ablated_channel,
+                "ablated_weights": ablated_weights,
+                "delta": channel_deltas,
+                "avg_score_drop": float(sum(d["score_drop"] for d in channel_deltas) / len(channel_deltas)),
+                "max_score_drop": float(max(d["score_drop"] for d in channel_deltas)) if channel_deltas else 0.0,
+                "targets_affected": int(sum(1 for d in channel_deltas if d["score_drop"] > 0.01))
+            })
+
+        # Sort ablation results by average impact
+        ablation_results.sort(key=lambda x: x["avg_score_drop"], reverse=True)
+
+        return ablation_results
+
+    except Exception as e:
+        logger.error(f"Channel ablation analysis failed: {e}")
+        return []
 class ExplanationBuilder:
     """Enhanced builder for target scoring explanations with comprehensive evidence formatting."""
 

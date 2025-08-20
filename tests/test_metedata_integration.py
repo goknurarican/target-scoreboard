@@ -182,7 +182,7 @@ def validate_sample_response():
     print("\nValidating sample response file...")
 
     try:
-        with open('examples/sample_response.json', 'r') as f:
+        with open('../examples/sample_response.json', 'r') as f:
             sample = json.load(f)
 
         # Check structure

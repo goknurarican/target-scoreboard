@@ -1,408 +1,506 @@
-# dashboard/components/explanation_panel.py
-# Separate component file for clean organization
+"""
+Evidence Matrix Component for dashboard/components/explanation_panel.py
+Create this new file or add to existing explanation panel module.
+"""
 
 import streamlit as st
-import pandas as pd
-from typing import Dict, List, Any
+from typing import Dict, List
+import re
 
 
-def render_actionable_explanation_panel(target_data: Dict, selected_target: str):
+def render_evidence_matrix(explanation: Dict):
     """
-    Render actionable explanation panel with clickable contributions and evidence.
-    This replaces the broken HTML rendering with proper Streamlit components.
+    Render evidence matrix grid showing evidence distribution across channels.
+
+    Analyzes evidence_refs by type/tag and displays in a 5-column grid
+    corresponding to scoring channels (Genetics, PPI, Pathway, Safety, Modality).
+
+    Args:
+        explanation: Explanation dictionary containing evidence_refs
     """
-    if not target_data:
-        st.info("No explanation data available for this target")
+    if not explanation or "evidence_refs" not in explanation:
+        st.info("No evidence references available for matrix analysis")
         return
 
-    # Extract explanation data - handle both new and legacy formats
-    explanation = target_data.get("explanation", {})
-    if not explanation:
-        # Fallback to basic breakdown if no explanation object
-        breakdown = target_data.get("breakdown", {})
-        explanation = _build_fallback_explanation(selected_target, breakdown, target_data.get("evidence_refs", []))
+    evidence_refs = explanation.get("evidence_refs", [])
+    if not evidence_refs:
+        st.info("No evidence references found")
+        return
 
-    with st.container():
-        st.markdown(f"### Why is {selected_target} ranked here?")
-        st.caption("Click evidence badges to access external sources (PMID/database references)")
-
-        # Channel contributions with progress bars
-        contributions = explanation.get("contributions", [])
-        if contributions:
-            st.markdown("#### Channel Contributions")
-
-            # Create contribution table
-            for contrib in contributions:
-                channel = contrib["channel"]
-                weight = contrib["weight"]
-                score = contrib.get("score")
-                contribution = contrib["contribution"]
-                available = contrib["available"]
-
-                # Channel display names with appropriate icons
-                channel_names = {
-                    "genetics": "🧬 Genetics",
-                    "ppi": "🕸️ PPI Network",
-                    "pathway": "🔬 Pathway",
-                    "safety": "⚠️ Safety",
-                    "modality_fit": "💊 Modality Fit"
-                }
-
-                display_name = channel_names.get(channel, channel.title())
-
-                # Create expandable section for each channel
-                if available and score is not None:
-                    with st.expander(f"{display_name}: {contribution:.3f} (Weight: {weight:.2f})", expanded=True):
-                        # Progress bar showing contribution
-                        max_contribution = max([c["contribution"] for c in contributions]) if contributions else 1.0
-                        progress = contribution / max_contribution if max_contribution > 0 else 0
-                        st.progress(progress)
-
-                        col1, col2 = st.columns([1, 1])
-                        with col1:
-                            st.metric("Raw Score", f"{score:.3f}")
-                        with col2:
-                            st.metric("Weighted", f"{contribution:.3f}")
-
-                        # Add channel-specific interpretation
-                        interpretation = _get_channel_interpretation(channel, score)
-                        if interpretation:
-                            st.info(interpretation)
-                else:
-                    # Unavailable channel - show as disabled
-                    with st.expander(f"⚪ {display_name}: Not Available", expanded=False):
-                        st.caption("Data not available or score is zero for this channel")
-
-        # Evidence references section
-        st.markdown("#### Supporting Evidence")
-        evidence_refs = explanation.get("evidence_refs", [])
-
-        if evidence_refs:
-            # Group evidence by type for better organization
-            evidence_by_type = {}
-            for ref in evidence_refs:
-                ref_type = ref.get("type", "other")
-                if ref_type not in evidence_by_type:
-                    evidence_by_type[ref_type] = []
-                evidence_by_type[ref_type].append(ref)
-
-            # Display evidence by type
-            for ref_type, refs in evidence_by_type.items():
-                type_labels = {
-                    "literature": "📚 Literature",
-                    "database": "🗄️ Databases",
-                    "proprietary": "🔬 VantAI Data"
-                }
-
-                st.markdown(f"**{type_labels.get(ref_type, ref_type.title())}**")
-
-                # Create clickable badges using columns
-                cols = st.columns(min(4, len(refs)))
-                for i, ref in enumerate(refs):
-                    with cols[i % 4]:
-                        label = ref["label"]
-                        url = ref["url"]
-
-                        if url and url != "#":
-                            # External clickable link - FIXED: Use st.link_button for proper functionality
-                            if st.button(label, key=f"evidence_{ref_type}_{i}", help=f"Open {url}"):
-                                st.markdown(f'<script>window.open("{url}", "_blank");</script>', unsafe_allow_html=True)
-                        else:
-                            # Internal/unavailable - use disabled button
-                            st.button(label, disabled=True, key=f"evidence_disabled_{i}_{ref_type}")
-        else:
-            st.info("No evidence references available")
-
-        # Summary metrics at bottom
-        total_score = explanation.get("total_weighted_score", 0)
-        available_channels = sum(1 for c in contributions if c["available"])
-        total_channels = len(contributions)
-
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.metric("Total Score", f"{total_score:.3f}")
-        with col2:
-            st.metric("Active Channels", f"{available_channels}/{total_channels}")
-        with col3:
-            confidence = "High" if available_channels >= 3 else "Medium" if available_channels >= 2 else "Low"
-            st.metric("Confidence", confidence)
-
-
-def _build_fallback_explanation(target: str, breakdown: Dict, evidence_refs: List[str]) -> Dict:
-    """Build explanation from basic breakdown when explanation object is missing."""
-    contributions = []
-
-    # Default weights for fallback
-    default_weights = {
-        "genetics": 0.35,
-        "ppi": 0.25,
-        "pathway": 0.20,
-        "safety": 0.10,
-        "modality_fit": 0.10
-    }
-
-    # Build contributions from breakdown
-    for channel, weight in default_weights.items():
-        if channel == "ppi":
-            score = breakdown.get("ppi_proximity")
-        elif channel == "pathway":
-            score = breakdown.get("pathway_enrichment")
-        elif channel == "safety":
-            score = breakdown.get("safety_off_tissue")
-        elif channel == "modality_fit":
-            modality_fit = breakdown.get("modality_fit", {})
-            score = modality_fit.get("overall_druggability") if modality_fit else None
-        else:
-            score = breakdown.get(channel)
-
-        available = score is not None and score > 0
-        contribution = weight * (score if available else 0)
-
-        contributions.append({
-            "channel": channel,
-            "weight": weight,
-            "score": score,
-            "contribution": contribution,
-            "available": available
-        })
-
-    # Sort by contribution
-    contributions.sort(key=lambda x: x["contribution"], reverse=True)
-
-    # Convert evidence refs to clickable format
-    clickable_evidence = []
-    for ref in evidence_refs:
-        if "PMID:" in ref:
-            pmid = ref.split("PMID:")[1].split()[0]
-            clickable_evidence.append({
-                "label": f"PMID:{pmid}",
-                "url": f"https://pubmed.ncbi.nlm.nih.gov/{pmid}",
-                "type": "literature"
-            })
-        elif "OpenTargets:" in ref or "OT-" in ref:
-            clickable_evidence.append({
-                "label": "Open Targets",
-                "url": "https://platform.opentargets.org/",
-                "type": "database"
-            })
-        elif "STRING:" in ref:
-            clickable_evidence.append({
-                "label": "STRING Database",
-                "url": "https://string-db.org/",
-                "type": "database"
-            })
-        elif "Reactome:" in ref:
-            clickable_evidence.append({
-                "label": "Reactome",
-                "url": "https://reactome.org/",
-                "type": "database"
-            })
-        elif "VantAI:" in ref:
-            clickable_evidence.append({
-                "label": "VantAI Data",
-                "url": "#",
-                "type": "proprietary"
-            })
-
-    return {
-        "target": target,
-        "contributions": contributions,
-        "evidence_refs": clickable_evidence,
-        "total_weighted_score": sum(c["contribution"] for c in contributions)
-    }
-
-
-def _get_channel_interpretation(channel: str, score: float) -> str:
-    """Get human-readable interpretation of channel scores."""
-    interpretations = {
+    # Define channel mapping
+    channel_mapping = {
         "genetics": {
-            (0.7, 1.0): "Strong genetic association with disease - high confidence target",
-            (0.4, 0.7): "Moderate genetic evidence supports target involvement",
-            (0.0, 0.4): "Limited genetic evidence - may require additional validation"
+            "name": "Genetics",
+            "icon": "🧬",
+            "keywords": ["opentargets", "ot-", "genetics", "gwas", "variant", "association"]
         },
         "ppi": {
-            (0.6, 1.0): "Central hub in disease network - high connectivity",
-            (0.3, 0.6): "Moderate network connectivity to disease genes",
-            (0.0, 0.3): "Peripheral network position - may have indirect effects"
+            "name": "PPI Network",
+            "icon": "🕸️",
+            "keywords": ["string", "ppi", "interaction", "network", "protein"]
         },
         "pathway": {
-            (0.6, 1.0): "Highly enriched in relevant disease pathways",
-            (0.3, 0.6): "Present in some disease-relevant pathways",
-            (0.0, 0.3): "Limited pathway overlap with disease mechanisms"
+            "name": "Pathway",
+            "icon": "🔬",
+            "keywords": ["reactome", "pathway", "kegg", "go:", "biological"]
         },
         "safety": {
-            (0.0, 0.3): "Good safety profile - low off-tissue expression",
-            (0.3, 0.7): "Moderate safety concerns - some off-tissue expression",
-            (0.7, 1.0): "Potential safety risks - high off-tissue expression"
+            "name": "Safety",
+            "icon": "⚠️",
+            "keywords": ["safety", "tissue", "expression", "toxicity", "side"]
         },
-        "modality_fit": {
-            (0.6, 1.0): "Excellent druggability - multiple modality options",
-            (0.3, 0.6): "Moderate druggability - some targeting challenges",
-            (0.0, 0.3): "Limited druggability - may require novel approaches"
+        "modality": {
+            "name": "Modality",
+            "icon": "💊",
+            "keywords": ["vantai", "modality", "druggability", "protac", "degrader", "e3"]
         }
     }
 
-    if channel not in interpretations:
-        return None
+    # Initialize evidence counters
+    channel_evidence = {}
+    for channel_id, channel_info in channel_mapping.items():
+        channel_evidence[channel_id] = {
+            "total_badges": 0,
+            "external_links": 0,
+            "latest_version": None,
+            "evidence_types": set(),
+            "raw_refs": []
+        }
 
-    for (low, high), interpretation in interpretations[channel].items():
-        if low <= score < high:
-            return interpretation
+    # Analyze evidence references
+    for ref in evidence_refs:
+        # Handle both string and dict evidence formats
+        if isinstance(ref, dict):
+            ref_text = ref.get("label", "").lower()
+            ref_url = ref.get("url", "")
+            ref_type = ref.get("type", "unknown")
+        else:
+            ref_text = str(ref).lower()
+            ref_url = ""
+            ref_type = "unknown"
 
-    return None
+        # Classify evidence by channel
+        classified = False
+
+        for channel_id, channel_info in channel_mapping.items():
+            keywords = channel_info["keywords"]
+
+            # Check if reference matches this channel
+            if any(keyword in ref_text for keyword in keywords):
+                channel_data = channel_evidence[channel_id]
+                channel_data["total_badges"] += 1
+                channel_data["raw_refs"].append(ref)
+
+                # Count external links
+                if ref_url and ref_url not in ["#", ""]:
+                    channel_data["external_links"] += 1
+
+                # Track evidence types
+                if isinstance(ref, dict):
+                    channel_data["evidence_types"].add(ref_type)
+
+                # Extract version information
+                version_match = re.search(r'(\d{4}[\.\-]\d{2}|\d{4}|v\d+[\.\d]*)', ref_text)
+                if version_match:
+                    version = version_match.group(1)
+                    if not channel_data["latest_version"] or version > channel_data["latest_version"]:
+                        channel_data["latest_version"] = version
+
+                classified = True
+                break
 
 
-def render_ranking_impact_analysis(rank_impact: List[Dict], current_weights: Dict[str, float]):
+"""
+Evidence Matrix Component for dashboard/components/explanation_panel.py
+Create this new file or add to existing explanation panel module.
+"""
+
+import streamlit as st
+from typing import Dict, List
+import re
+
+
+def render_evidence_badges_tabs(explanation: Dict):
     """
-    Render ranking impact analysis using native Streamlit components.
-    Fixes raw HTML issues by using proper Streamlit widgets.
+    Render evidence badges in Streamlit tabs grouped by type with search filters.
+
+    Args:
+        explanation: Explanation dictionary containing evidence_refs
     """
-    if not rank_impact:
+    if not explanation or "evidence_refs" not in explanation:
+        st.info("No evidence references available")
         return
 
-    # Check if weights differ from default
-    default_weights = {
-        "genetics": 0.35,
-        "ppi": 0.25,
-        "pathway": 0.20,
-        "safety": 0.10,
-        "modality_fit": 0.10
+    evidence_refs = explanation.get("evidence_refs", [])
+    if not evidence_refs:
+        st.info("No evidence references found")
+        return
+
+    # Group evidence by type
+    evidence_by_type = {
+        "literature": [],
+        "database": [],
+        "proprietary": [],
+        "other": []
     }
 
-    weights_changed = any(
-        abs(current_weights.get(k, 0) - default_weights[k]) > 0.01
-        for k in default_weights
+    for ref in evidence_refs:
+        if isinstance(ref, dict):
+            ref_type = ref.get("type", "other")
+            evidence_by_type.setdefault(ref_type, []).append(ref)
+        else:
+            # Convert string references to dict format
+            evidence_by_type["other"].append({
+                "label": str(ref),
+                "url": "#",
+                "type": "other"
+            })
+
+    # Create tabs with counts
+    tab_labels = [
+        f"📚 Literature ({len(evidence_by_type.get('literature', []))})",
+        f"🗄️ Databases ({len(evidence_by_type.get('database', []))})",
+        f"🧪 VantAI ({len(evidence_by_type.get('proprietary', []))})",
+        f"⚙️ Other ({len(evidence_by_type.get('other', []))})"
+    ]
+
+    tabs = st.tabs(tab_labels)
+
+    # Literature tab
+    with tabs[0]:
+        literature_refs = evidence_by_type.get("literature", [])
+        _render_evidence_tab(literature_refs, "literature")
+
+    # Databases tab
+    with tabs[1]:
+        database_refs = evidence_by_type.get("database", [])
+        _render_evidence_tab(database_refs, "database")
+
+    # VantAI tab
+    with tabs[2]:
+        proprietary_refs = evidence_by_type.get("proprietary", [])
+        _render_evidence_tab(proprietary_refs, "proprietary")
+
+    # Other tab
+    with tabs[3]:
+        other_refs = evidence_by_type.get("other", [])
+        _render_evidence_tab(other_refs, "other")
+
+
+def _render_evidence_tab(refs: List[Dict], tab_type: str):
+    """
+    Render evidence badges for a specific tab with search functionality.
+
+    Args:
+        refs: List of evidence reference dictionaries
+        tab_type: Type of tab for unique keys
+    """
+    if not refs:
+        st.info(f"No {tab_type} evidence available")
+        return
+
+    # Search filter
+    search_key = f"{tab_type}_search"
+    search_term = st.text_input(
+        f"Search {tab_type} evidence:",
+        key=search_key,
+        placeholder="Filter by label..."
     )
 
-    if not weights_changed:
-        st.info("Using default weights - no ranking changes to display")
+    # Filter references based on search
+    filtered_refs = refs
+    if search_term:
+        filtered_refs = [
+            ref for ref in refs
+            if search_term.lower() in ref.get("label", "").lower()
+        ]
+
+    if not filtered_refs:
+        st.warning(f"No {tab_type} evidence matches '{search_term}'")
         return
 
-    with st.container():
-        st.markdown("### Ranking Impact Analysis")
-        st.caption("How current weight configuration changes rankings vs. default weights")
+    # Display badge count after filtering
+    if search_term:
+        st.caption(f"Showing {len(filtered_refs)} of {len(refs)} references")
 
-        # Summary of weight changes
-        changes = []
-        for channel, default_val in default_weights.items():
-            current_val = current_weights.get(channel, default_val)
-            diff = current_val - default_val
-            if abs(diff) > 0.05:
-                direction = "increased" if diff > 0 else "decreased"
-                changes.append(f"{channel.replace('_', ' ').title()} {direction} by {abs(diff):.2f}")
+    # Render badges in columns for better layout
+    cols_per_row = 3
+    for i in range(0, len(filtered_refs), cols_per_row):
+        cols = st.columns(cols_per_row)
 
-        if changes:
-            st.info(f"**Weight changes:** {', '.join(changes[:3])}" +
-                    (f" (+{len(changes) - 3} more)" if len(changes) > 3 else ""))
+        for j, ref in enumerate(filtered_refs[i:i + cols_per_row]):
+            with cols[j]:
+                label = ref.get("label", "Unknown")
+                url = ref.get("url", "#")
 
-        # Show top ranking changes in a grid
-        significant_changes = [r for r in rank_impact if r["movement"] != "unchanged"][:9]
+                # Create badge styling based on availability
+                if url and url != "#":
+                    # External link - create link button
+                    st.markdown(f"""
+                    <a href="{url}" target="_blank" style="
+                        display: inline-block;
+                        background: linear-gradient(135deg, #1E293B 0%, #334155 100%);
+                        color: #22D3EE;
+                        padding: 0.5rem 0.75rem;
+                        border-radius: 6px;
+                        text-decoration: none;
+                        font-size: 0.85rem;
+                        font-weight: 500;
+                        margin: 0.25rem 0;
+                        border: 1px solid #22D3EE40;
+                        width: 100%;
+                        text-align: center;
+                        transition: all 0.2s ease;
+                    " onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(34, 211, 238, 0.3)';" 
+                       onmouseout="this.style.transform=''; this.style.boxShadow='';">
+                        {label}
+                    </a>
+                    """, unsafe_allow_html=True)
+                else:
+                    # Internal/unavailable - disabled style
+                    st.markdown(f"""
+                    <div style="
+                        display: inline-block;
+                        background: linear-gradient(145deg, #374151 0%, #4B5563 100%);
+                        color: #9CA3AF;
+                        padding: 0.5rem 0.75rem;
+                        border-radius: 6px;
+                        font-size: 0.85rem;
+                        font-weight: 500;
+                        margin: 0.25rem 0;
+                        border: 1px solid #6B728040;
+                        width: 100%;
+                        text-align: center;
+                        opacity: 0.7;
+                    ">
+                        {label}
+                    </div>
+                    """, unsafe_allow_html=True)
 
-        if significant_changes:
-            cols = st.columns(3)
 
-            for i, impact in enumerate(significant_changes):
-                with cols[i % 3]:
-                    target = impact["target"]
-                    rank_baseline = impact["rank_baseline"]
-                    rank_current = impact["rank_current"]
-                    delta = impact["delta"]
-                    movement = impact["movement"]
-
-                    # Movement styling
-                    if movement == "up":
-                        delta_text = f"+{delta}"
-                        color = "green"
-                    elif movement == "down":
-                        delta_text = f"-{abs(delta)}"
-                        color = "red"
-                    else:
-                        delta_text = "0"
-                        color = "gray"
-
-                    # Create metric card using native Streamlit
-                    with st.container():
-                        st.markdown(f"**{target}**")
-                        st.metric(
-                            "Rank Change",
-                            f"{rank_baseline} → {rank_current}",
-                            delta_text,
-                            delta_color=color
-                        )
-
-        else:
-            st.info("No significant ranking changes with current weight configuration")
-
-
-def render_enhanced_results_table(target_scores: List[Dict], rank_impact: List[Dict] = None):
+def render_evidence_matrix(explanation: Dict):
     """
-    Render enhanced results table with ranking change indicators.
-    Uses native Streamlit dataframe with proper column configuration.
+    Render evidence matrix grid showing evidence distribution across channels.
+
+    Analyzes evidence_refs by type/tag and displays in a 5-column grid
+    corresponding to scoring channels (Genetics, PPI, Pathway, Safety, Modality).
+
+    Args:
+        explanation: Explanation dictionary containing evidence_refs
     """
-    if not target_scores:
-        st.warning("No target scores to display")
+    if not explanation or "evidence_refs" not in explanation:
+        st.info("No evidence references available for matrix analysis")
         return
 
-    # Sort targets by total score
-    sorted_targets = sorted(target_scores, key=lambda x: x.get("total_score", 0), reverse=True)
+    evidence_refs = explanation.get("evidence_refs", [])
+    if not evidence_refs:
+        st.info("No evidence references found")
+        return
 
-    # Create ranking lookup
-    rank_lookup = {}
-    if rank_impact:
-        rank_lookup = {item["target"]: item for item in rank_impact}
-
-    # Build table data
-    table_data = []
-    for i, ts in enumerate(sorted_targets, 1):
-        target = ts.get('target', 'Unknown')
-        breakdown = ts.get("breakdown", {})
-        modality_fit = breakdown.get("modality_fit", {})
-
-        # Get ranking change info
-        rank_info = rank_lookup.get(target, {})
-        movement = rank_info.get("movement", "unchanged")
-        delta = rank_info.get("delta", 0)
-
-        # Movement indicator
-        if movement == "up":
-            rank_display = f"{i} (+{delta})"
-        elif movement == "down":
-            rank_display = f"{i} (-{abs(delta)})"
-        else:
-            rank_display = str(i)
-
-        table_data.append({
-            "Rank": rank_display,
-            "Target": target,
-            "Total Score": ts.get("total_score", 0),
-            "Genetics": breakdown.get("genetics", 0) or 0,
-            "PPI Network": breakdown.get("ppi_proximity", 0) or 0,
-            "Pathway": breakdown.get("pathway_enrichment", 0) or 0,
-            "Safety": breakdown.get("safety_off_tissue", 0) or 0,
-            "Modality": modality_fit.get("overall_druggability", 0) if modality_fit else 0
-        })
-
-    # Create DataFrame
-    df = pd.DataFrame(table_data)
-
-    # Column configuration
-    column_config = {
-        "Rank": st.column_config.TextColumn("Rank", width="small",
-                                            help="Current rank with movement vs default weights"),
-        "Target": st.column_config.TextColumn("Target", width="medium"),
-        "Total Score": st.column_config.NumberColumn("Total Score", format="%.3f", width="medium"),
-        "Genetics": st.column_config.NumberColumn("Genetics", format="%.3f", width="small"),
-        "PPI Network": st.column_config.NumberColumn("PPI Network", format="%.3f", width="small"),
-        "Pathway": st.column_config.NumberColumn("Pathway", format="%.3f", width="small"),
-        "Safety": st.column_config.NumberColumn("Safety", format="%.3f", width="small", help="Lower is better"),
-        "Modality": st.column_config.NumberColumn("Modality", format="%.3f", width="small")
+    # Define channel mapping
+    channel_mapping = {
+        "genetics": {
+            "name": "Genetics",
+            "icon": "🧬",
+            "keywords": ["opentargets", "ot-", "genetics", "gwas", "variant", "association"]
+        },
+        "ppi": {
+            "name": "PPI Network",
+            "icon": "🕸️",
+            "keywords": ["string", "ppi", "interaction", "network", "protein"]
+        },
+        "pathway": {
+            "name": "Pathway",
+            "icon": "🔬",
+            "keywords": ["reactome", "pathway", "kegg", "go:", "biological"]
+        },
+        "safety": {
+            "name": "Safety",
+            "icon": "⚠️",
+            "keywords": ["safety", "tissue", "expression", "toxicity", "side"]
+        },
+        "modality": {
+            "name": "Modality",
+            "icon": "💊",
+            "keywords": ["vantai", "modality", "druggability", "protac", "degrader", "e3"]
+        }
     }
 
-    # Display table
-    st.dataframe(
-        df,
-        column_config=column_config,
-        use_container_width=True,
-        hide_index=True,
-        height=min(500, (len(df) + 1) * 35 + 40)
-    )
+    # Initialize evidence counters
+    channel_evidence = {}
+    for channel_id, channel_info in channel_mapping.items():
+        channel_evidence[channel_id] = {
+            "total_badges": 0,
+            "external_links": 0,
+            "latest_version": None,
+            "evidence_types": set(),
+            "raw_refs": []
+        }
+
+    # Analyze evidence references
+    for ref in evidence_refs:
+        # Handle both string and dict evidence formats
+        if isinstance(ref, dict):
+            ref_text = ref.get("label", "").lower()
+            ref_url = ref.get("url", "")
+            ref_type = ref.get("type", "unknown")
+        else:
+            ref_text = str(ref).lower()
+            ref_url = ""
+            ref_type = "unknown"
+
+        # Classify evidence by channel
+        classified = False
+
+        for channel_id, channel_info in channel_mapping.items():
+            keywords = channel_info["keywords"]
+
+            # Check if reference matches this channel
+            if any(keyword in ref_text for keyword in keywords):
+                channel_data = channel_evidence[channel_id]
+                channel_data["total_badges"] += 1
+                channel_data["raw_refs"].append(ref)
+
+                # Count external links
+                if ref_url and ref_url not in ["#", ""]:
+                    channel_data["external_links"] += 1
+
+                # Track evidence types
+                if isinstance(ref, dict):
+                    channel_data["evidence_types"].add(ref_type)
+
+                # Extract version information
+                version_match = re.search(r'(\d{4}[\.\-]\d{2}|\d{4}|v\d+[\.\d]*)', ref_text)
+                if version_match:
+                    version = version_match.group(1)
+                    if not channel_data["latest_version"] or version > channel_data["latest_version"]:
+                        channel_data["latest_version"] = version
+
+                classified = True
+                break
+
+        # Handle unclassified evidence (assign to genetics as default)
+        if not classified:
+            channel_evidence["genetics"]["total_badges"] += 1
+            channel_evidence["genetics"]["raw_refs"].append(ref)
+
+    # Render evidence matrix
+    st.markdown("#### Evidence Distribution Matrix")
+
+    # Create 5-column layout
+    cols = st.columns(5)
+
+    for i, (channel_id, channel_info) in enumerate(channel_mapping.items()):
+        with cols[i]:
+            channel_data = channel_evidence[channel_id]
+            channel_name = channel_info["name"]
+            channel_icon = channel_info["icon"]
+
+            # Determine card styling based on evidence count
+            total_badges = channel_data["total_badges"]
+            external_links = channel_data["external_links"]
+
+            if total_badges >= 3:
+                border_color = "#34D399"  # Green - well supported
+                bg_gradient = "linear-gradient(145deg, #064e3b 0%, #065f46 100%)"
+            elif total_badges >= 1:
+                border_color = "#22D3EE"  # Cyan - some evidence
+                bg_gradient = "linear-gradient(145deg, #164e63 0%, #0e7490 100%)"
+            else:
+                border_color = "#6B7280"  # Gray - no evidence
+                bg_gradient = "linear-gradient(145deg, #374151 0%, #4B5563 100%)"
+
+            # Create evidence card
+            st.markdown(f"""
+            <div style="
+                background: {bg_gradient};
+                border: 2px solid {border_color};
+                border-radius: 8px;
+                padding: 1rem;
+                text-align: center;
+                margin-bottom: 1rem;
+                min-height: 120px;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+            ">
+                <div>
+                    <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">{channel_icon}</div>
+                    <div style="font-weight: 600; color: #E2E8F0; font-size: 0.9rem; margin-bottom: 0.5rem;">
+                        {channel_name}
+                    </div>
+                </div>
+                <div>
+                    <div style="color: #94A3B8; font-size: 0.8rem;">
+                        <div><strong>{total_badges}</strong> badges</div>
+                        <div><strong>{external_links}</strong> ext links</div>
+                        {f'<div>v{channel_data["latest_version"]}</div>' if channel_data["latest_version"] else '<div>no version</div>'}
+                    </div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            # Show evidence types if available
+            if channel_data["evidence_types"]:
+                types_text = ", ".join(sorted(channel_data["evidence_types"]))
+                st.caption(f"Types: {types_text}")
+
+    # Summary statistics
+    st.markdown("#### Evidence Summary")
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        total_evidence = sum(data["total_badges"] for data in channel_evidence.values())
+        st.metric("Total Evidence", total_evidence)
+
+    with col2:
+        total_external = sum(data["external_links"] for data in channel_evidence.values())
+        st.metric("External Links", total_external)
+
+    with col3:
+        channels_with_evidence = sum(1 for data in channel_evidence.values() if data["total_badges"] > 0)
+        st.metric("Channels Covered", f"{channels_with_evidence}/5")
+
+    # Render evidence badges in tabs
+    st.markdown("#### Evidence References")
+    render_evidence_badges_tabs(explanation)
+
+
+def classify_evidence_by_database(evidence_refs: List) -> Dict[str, List]:
+    """
+    Classify evidence references by database/source type.
+
+    Args:
+        evidence_refs: List of evidence references (strings or dicts)
+
+    Returns:
+        Dict mapping database names to lists of references
+    """
+    databases = {
+        "Open Targets": [],
+        "STRING": [],
+        "Reactome": [],
+        "PubMed": [],
+        "VantAI": [],
+        "Other": []
+    }
+
+    for ref in evidence_refs:
+        ref_text = ref.get("label", str(ref)) if isinstance(ref, dict) else str(ref)
+        ref_lower = ref_text.lower()
+
+        if "opentargets" in ref_lower or "ot-" in ref_lower:
+            databases["Open Targets"].append(ref)
+        elif "string" in ref_lower:
+            databases["STRING"].append(ref)
+        elif "reactome" in ref_lower:
+            databases["Reactome"].append(ref)
+        elif "pmid" in ref_lower:
+            databases["PubMed"].append(ref)
+        elif "vantai" in ref_lower:
+            databases["VantAI"].append(ref)
+        else:
+            databases["Other"].append(ref)
+
+    return databases
