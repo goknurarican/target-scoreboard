@@ -1,0 +1,14 @@
+target,evidence_level
+EGFR,reported
+ERBB2,weak
+KRAS,none
+MET,weak
+ALK,reported
+BRAF,weak
+PIK3CA,none
+TP53,none
+BRCA1,none
+BRCA2,none
+PTEN,none
+RB1,none
+VHL,reported

@@ -1,0 +1,87 @@
+{
+  "targets": [
+    {
+      "target": "EGFR",
+      "total_score": 0.845,
+      "breakdown": {
+        "genetics": 0.923,
+        "ppi_proximity": 0.756,
+        "pathway_enrichment": 0.689,
+        "safety_off_tissue": 0.234,
+        "modality_fit": {
+          "overall_druggability": 0.812,
+          "e3_coexpr": 0.789,
+          "ternary_proxy": 0.845,
+          "ppi_hotspot": 0.801
+        }
+      },
+      "evidence_refs": [
+        "OpenTargets:2025.06",
+        "Genetics_evidence_count:127",
+        "Genetics_strength:strong",
+        "OT_fetch:cached_23.4ms",
+        "STRING:v12.0",
+        "PPI_centrality:high",
+        "Reactome:2024",
+        "Pathway_overlap:RTK_signaling",
+        "VantAI:proprietary",
+        "E3_coexpression:CRBN_high",
+        "Safety_profile:0.23"
+      ],
+      "data_version": "OT-2025.06 | STRING-v12.0 | Reactome-2024"
+    },
+    {
+      "target": "KRAS",
+      "total_score": 0.567,
+      "breakdown": {
+        "genetics": 0.834,
+        "ppi_proximity": 0.612,
+        "pathway_enrichment": 0.734,
+        "safety_off_tissue": 0.789,
+        "modality_fit": {
+          "overall_druggability": 0.234,
+          "e3_coexpr": 0.156,
+          "ternary_proxy": 0.298,
+          "ppi_hotspot": 0.245
+        }
+      },
+      "evidence_refs": [
+        "OpenTargets:2025.06",
+        "Genetics_evidence_count:89",
+        "Genetics_strength:strong",
+        "OT_fetch:fresh_156.7ms",
+        "STRING:v12.0",
+        "PPI_centrality:medium",
+        "Reactome:2024",
+        "Pathway_overlap:RAS_signaling",
+        "VantAI:proprietary",
+        "E3_coexpression:low",
+        "Safety_profile:0.79"
+      ],
+      "data_version": "OT-2025.06 | STRING-v12.0 | Reactome-2024"
+    }
+  ],
+  "request_summary": {
+    "disease": "EFO_0000305",
+    "target_count": 2,
+    "weights_used": {
+      "genetics": 0.35,
+      "ppi": 0.25,
+      "pathway": 0.20,
+      "safety": 0.10,
+      "modality_fit": 0.10
+    },
+    "timestamp": 1724164711.234
+  },
+  "processing_time_ms": 287.5,
+  "data_version": "OT-2025.06 | STRING-v12.0 | Reactome-2024",
+  "meta": {
+    "cached": true,
+    "fetch_ms": 180.1,
+    "cache_hit_rate": 0.5,
+    "total_calls": 2,
+    "min_fetch_ms": 23.4,
+    "max_fetch_ms": 156.7,
+    "avg_fetch_ms": 90.05
+  }
+}

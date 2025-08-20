@@ -1,0 +1,10 @@
+{
+  "EGFR": ["RTK_signaling", "Cell_proliferation", "Apoptosis"],
+  "ERBB2": ["RTK_signaling", "Cell_proliferation"],
+  "MET": ["RTK_signaling", "Cell_migration"],
+  "ALK": ["RTK_signaling", "Cell_proliferation"],
+  "KRAS": ["RAS_signaling", "Cell_proliferation", "Apoptosis"],
+  "TP53": ["Apoptosis", "DNA_repair", "Cell_cycle"],
+  "BRAF": ["RAS_signaling", "MAPK_cascade"],
+  "PIK3CA": ["PI3K_signaling", "Cell_proliferation"]
+}

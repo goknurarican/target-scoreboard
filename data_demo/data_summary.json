@@ -1,0 +1,16 @@
+{
+  "generation_date": "2025-08-20T01:09:45.839436",
+  "targets_count": 5,
+  "data_types": [
+    "metadata",
+    "bioactivity",
+    "expression",
+    "clinical_trials",
+    "literature"
+  ],
+  "quality_metrics": {
+    "avg_compounds_per_target": 108.6,
+    "avg_trials_per_target": 17.4,
+    "high_quality_targets": 4
+  }
+}

@@ -1,0 +1,9 @@
+target,gene_symbol,protein_name
+EGFR,EGFR,Epidermal growth factor receptor
+ERBB2,ERBB2,Receptor tyrosine-protein kinase erbB-2
+MET,MET,Hepatocyte growth factor receptor
+ALK,ALK,ALK receptor tyrosine kinase
+KRAS,KRAS,GTPase KRas
+TP53,TP53,Cellular tumor antigen p53
+BRAF,BRAF,Serine/threonine-protein kinase B-raf
+PIK3CA,PIK3CA,Phosphatidylinositol 4,5-bisphosphate 3-kinase catalytic subunit alpha

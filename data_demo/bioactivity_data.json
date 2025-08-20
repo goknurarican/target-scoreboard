@@ -1,0 +1,4386 @@
+{
+  "EGFR": {
+    "total_compounds": 190,
+    "compounds": [
+      {
+        "compound_id": "CHEMBL842619",
+        "assay_type": "IC50",
+        "pic50_value": 7.66,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL737621",
+        "assay_type": "EC50",
+        "pic50_value": 6.57,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2019
+      },
+      {
+        "compound_id": "CHEMBL542523",
+        "assay_type": "Ki",
+        "pic50_value": 6.88,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2018
+      },
+      {
+        "compound_id": "CHEMBL699759",
+        "assay_type": "Ki",
+        "pic50_value": 5.92,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL539374",
+        "assay_type": "Ki",
+        "pic50_value": 10.3,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL726878",
+        "assay_type": "EC50",
+        "pic50_value": 8.34,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2023
+      },
+      {
+        "compound_id": "CHEMBL892100",
+        "assay_type": "Ki",
+        "pic50_value": 7.55,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL404447",
+        "assay_type": "IC50",
+        "pic50_value": 7.2,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2010
+      },
+      {
+        "compound_id": "CHEMBL165869",
+        "assay_type": "Kd",
+        "pic50_value": 6.5,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2018
+      },
+      {
+        "compound_id": "CHEMBL797315",
+        "assay_type": "Ki",
+        "pic50_value": 6.02,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL675346",
+        "assay_type": "IC50",
+        "pic50_value": 8.48,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL125804",
+        "assay_type": "EC50",
+        "pic50_value": 7.73,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL942395",
+        "assay_type": "Kd",
+        "pic50_value": 8.34,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL142188",
+        "assay_type": "Ki",
+        "pic50_value": 6.89,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL593183",
+        "assay_type": "Ki",
+        "pic50_value": 7.46,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL688917",
+        "assay_type": "IC50",
+        "pic50_value": 8.25,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2011
+      },
+      {
+        "compound_id": "CHEMBL324584",
+        "assay_type": "Ki",
+        "pic50_value": 8.31,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL169817",
+        "assay_type": "Ki",
+        "pic50_value": 7.55,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2023
+      },
+      {
+        "compound_id": "CHEMBL140891",
+        "assay_type": "Ki",
+        "pic50_value": 6.97,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2011
+      },
+      {
+        "compound_id": "CHEMBL138363",
+        "assay_type": "Kd",
+        "pic50_value": 6.97,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL309835",
+        "assay_type": "Ki",
+        "pic50_value": 7.69,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2011
+      },
+      {
+        "compound_id": "CHEMBL628993",
+        "assay_type": "IC50",
+        "pic50_value": 6.66,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL924024",
+        "assay_type": "Ki",
+        "pic50_value": 6.36,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL870600",
+        "assay_type": "Ki",
+        "pic50_value": 8.02,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL678690",
+        "assay_type": "EC50",
+        "pic50_value": 7.45,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL175466",
+        "assay_type": "EC50",
+        "pic50_value": 8.32,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL585227",
+        "assay_type": "EC50",
+        "pic50_value": 6.56,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL147112",
+        "assay_type": "IC50",
+        "pic50_value": 9.61,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL169831",
+        "assay_type": "Ki",
+        "pic50_value": 7.77,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2023
+      },
+      {
+        "compound_id": "CHEMBL678111",
+        "assay_type": "Kd",
+        "pic50_value": 8.01,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL454583",
+        "assay_type": "EC50",
+        "pic50_value": 9.38,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL129315",
+        "assay_type": "Kd",
+        "pic50_value": 8.19,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL377303",
+        "assay_type": "Ki",
+        "pic50_value": 8.37,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2018
+      },
+      {
+        "compound_id": "CHEMBL348867",
+        "assay_type": "Kd",
+        "pic50_value": 8.73,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL362168",
+        "assay_type": "EC50",
+        "pic50_value": 7.91,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2010
+      },
+      {
+        "compound_id": "CHEMBL869944",
+        "assay_type": "EC50",
+        "pic50_value": 7.52,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL915902",
+        "assay_type": "IC50",
+        "pic50_value": 7.99,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2023
+      },
+      {
+        "compound_id": "CHEMBL348117",
+        "assay_type": "EC50",
+        "pic50_value": 8.49,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL501935",
+        "assay_type": "IC50",
+        "pic50_value": 8.39,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL823367",
+        "assay_type": "EC50",
+        "pic50_value": 8.47,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2019
+      },
+      {
+        "compound_id": "CHEMBL347228",
+        "assay_type": "EC50",
+        "pic50_value": 7.78,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL189641",
+        "assay_type": "IC50",
+        "pic50_value": 8.08,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL909486",
+        "assay_type": "EC50",
+        "pic50_value": 6.92,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2023
+      },
+      {
+        "compound_id": "CHEMBL265716",
+        "assay_type": "Ki",
+        "pic50_value": 7.46,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL333441",
+        "assay_type": "Ki",
+        "pic50_value": 9.16,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL141264",
+        "assay_type": "Kd",
+        "pic50_value": 6.72,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL342415",
+        "assay_type": "Ki",
+        "pic50_value": 6.64,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL561445",
+        "assay_type": "EC50",
+        "pic50_value": 6.24,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2023
+      },
+      {
+        "compound_id": "CHEMBL523087",
+        "assay_type": "EC50",
+        "pic50_value": 7.15,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL813112",
+        "assay_type": "Kd",
+        "pic50_value": 7.08,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2011
+      },
+      {
+        "compound_id": "CHEMBL149415",
+        "assay_type": "EC50",
+        "pic50_value": 8.4,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2023
+      },
+      {
+        "compound_id": "CHEMBL376332",
+        "assay_type": "EC50",
+        "pic50_value": 5.6,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL275122",
+        "assay_type": "EC50",
+        "pic50_value": 7.53,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL621979",
+        "assay_type": "Kd",
+        "pic50_value": 6.62,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL282628",
+        "assay_type": "EC50",
+        "pic50_value": 6.06,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2011
+      },
+      {
+        "compound_id": "CHEMBL622560",
+        "assay_type": "IC50",
+        "pic50_value": 8.51,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL897731",
+        "assay_type": "Kd",
+        "pic50_value": 7.02,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2018
+      },
+      {
+        "compound_id": "CHEMBL180358",
+        "assay_type": "Kd",
+        "pic50_value": 6.46,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL203843",
+        "assay_type": "EC50",
+        "pic50_value": 8.75,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL592223",
+        "assay_type": "Kd",
+        "pic50_value": 7.11,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL627499",
+        "assay_type": "IC50",
+        "pic50_value": 6.94,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2010
+      },
+      {
+        "compound_id": "CHEMBL550766",
+        "assay_type": "EC50",
+        "pic50_value": 7.2,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2019
+      },
+      {
+        "compound_id": "CHEMBL213872",
+        "assay_type": "Ki",
+        "pic50_value": 9.39,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2011
+      },
+      {
+        "compound_id": "CHEMBL964310",
+        "assay_type": "Ki",
+        "pic50_value": 5.96,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL321249",
+        "assay_type": "EC50",
+        "pic50_value": 8.09,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL431299",
+        "assay_type": "EC50",
+        "pic50_value": 8.31,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL967874",
+        "assay_type": "IC50",
+        "pic50_value": 6.39,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL884639",
+        "assay_type": "Ki",
+        "pic50_value": 7.9,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL554749",
+        "assay_type": "Kd",
+        "pic50_value": 6.06,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL412237",
+        "assay_type": "IC50",
+        "pic50_value": 9.24,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL198466",
+        "assay_type": "Ki",
+        "pic50_value": 7.97,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2018
+      },
+      {
+        "compound_id": "CHEMBL935631",
+        "assay_type": "Kd",
+        "pic50_value": 8.61,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL522591",
+        "assay_type": "EC50",
+        "pic50_value": 9.0,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL261042",
+        "assay_type": "Kd",
+        "pic50_value": 8.64,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL232288",
+        "assay_type": "IC50",
+        "pic50_value": 8.02,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL369194",
+        "assay_type": "IC50",
+        "pic50_value": 9.79,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL616443",
+        "assay_type": "IC50",
+        "pic50_value": 8.22,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL744690",
+        "assay_type": "IC50",
+        "pic50_value": 7.91,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL485499",
+        "assay_type": "IC50",
+        "pic50_value": 6.9,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2019
+      },
+      {
+        "compound_id": "CHEMBL626497",
+        "assay_type": "Ki",
+        "pic50_value": 6.9,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2010
+      },
+      {
+        "compound_id": "CHEMBL782627",
+        "assay_type": "EC50",
+        "pic50_value": 5.71,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL986432",
+        "assay_type": "IC50",
+        "pic50_value": 8.15,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL402819",
+        "assay_type": "IC50",
+        "pic50_value": 8.14,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2019
+      },
+      {
+        "compound_id": "CHEMBL788576",
+        "assay_type": "IC50",
+        "pic50_value": 7.63,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL824514",
+        "assay_type": "IC50",
+        "pic50_value": 7.51,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL778643",
+        "assay_type": "Ki",
+        "pic50_value": 8.97,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL428639",
+        "assay_type": "Ki",
+        "pic50_value": 7.2,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL830343",
+        "assay_type": "EC50",
+        "pic50_value": 7.45,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL266248",
+        "assay_type": "Ki",
+        "pic50_value": 7.92,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2011
+      },
+      {
+        "compound_id": "CHEMBL993950",
+        "assay_type": "Ki",
+        "pic50_value": 7.5,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2023
+      },
+      {
+        "compound_id": "CHEMBL184201",
+        "assay_type": "IC50",
+        "pic50_value": 7.14,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2010
+      },
+      {
+        "compound_id": "CHEMBL153541",
+        "assay_type": "Ki",
+        "pic50_value": 7.08,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL511391",
+        "assay_type": "EC50",
+        "pic50_value": 6.43,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2010
+      },
+      {
+        "compound_id": "CHEMBL628524",
+        "assay_type": "Kd",
+        "pic50_value": 6.01,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL323603",
+        "assay_type": "Ki",
+        "pic50_value": 6.42,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL814769",
+        "assay_type": "IC50",
+        "pic50_value": 8.33,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL356158",
+        "assay_type": "IC50",
+        "pic50_value": 7.95,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2019
+      },
+      {
+        "compound_id": "CHEMBL243068",
+        "assay_type": "IC50",
+        "pic50_value": 7.69,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL676707",
+        "assay_type": "IC50",
+        "pic50_value": 7.44,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL230532",
+        "assay_type": "Ki",
+        "pic50_value": 7.54,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL422183",
+        "assay_type": "Kd",
+        "pic50_value": 7.07,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL901158",
+        "assay_type": "Ki",
+        "pic50_value": 6.29,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL950601",
+        "assay_type": "Ki",
+        "pic50_value": 6.75,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL651004",
+        "assay_type": "Ki",
+        "pic50_value": 8.26,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL397581",
+        "assay_type": "IC50",
+        "pic50_value": 8.13,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2018
+      },
+      {
+        "compound_id": "CHEMBL684223",
+        "assay_type": "Ki",
+        "pic50_value": 8.66,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL826150",
+        "assay_type": "EC50",
+        "pic50_value": 6.83,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL390902",
+        "assay_type": "EC50",
+        "pic50_value": 9.58,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL652563",
+        "assay_type": "IC50",
+        "pic50_value": 6.29,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL693734",
+        "assay_type": "Kd",
+        "pic50_value": 9.52,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL945903",
+        "assay_type": "IC50",
+        "pic50_value": 7.38,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL554228",
+        "assay_type": "IC50",
+        "pic50_value": 7.67,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL354298",
+        "assay_type": "EC50",
+        "pic50_value": 6.76,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2018
+      },
+      {
+        "compound_id": "CHEMBL965902",
+        "assay_type": "IC50",
+        "pic50_value": 5.44,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL872042",
+        "assay_type": "IC50",
+        "pic50_value": 6.87,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL285629",
+        "assay_type": "EC50",
+        "pic50_value": 6.38,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL995816",
+        "assay_type": "IC50",
+        "pic50_value": 8.39,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL583034",
+        "assay_type": "IC50",
+        "pic50_value": 5.41,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL281667",
+        "assay_type": "EC50",
+        "pic50_value": 7.51,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2023
+      },
+      {
+        "compound_id": "CHEMBL810305",
+        "assay_type": "EC50",
+        "pic50_value": 6.79,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL235921",
+        "assay_type": "Ki",
+        "pic50_value": 8.29,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL342714",
+        "assay_type": "EC50",
+        "pic50_value": 8.58,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL404806",
+        "assay_type": "IC50",
+        "pic50_value": 6.06,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL844924",
+        "assay_type": "Ki",
+        "pic50_value": 7.93,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2023
+      },
+      {
+        "compound_id": "CHEMBL534690",
+        "assay_type": "Ki",
+        "pic50_value": 5.56,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL760405",
+        "assay_type": "EC50",
+        "pic50_value": 7.25,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL532528",
+        "assay_type": "Ki",
+        "pic50_value": 6.19,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL231930",
+        "assay_type": "Ki",
+        "pic50_value": 6.51,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2018
+      },
+      {
+        "compound_id": "CHEMBL396501",
+        "assay_type": "Kd",
+        "pic50_value": 6.26,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2019
+      },
+      {
+        "compound_id": "CHEMBL409560",
+        "assay_type": "EC50",
+        "pic50_value": 9.01,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2023
+      },
+      {
+        "compound_id": "CHEMBL260425",
+        "assay_type": "Kd",
+        "pic50_value": 7.23,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL588196",
+        "assay_type": "Kd",
+        "pic50_value": 7.91,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL741661",
+        "assay_type": "Kd",
+        "pic50_value": 7.59,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL223665",
+        "assay_type": "EC50",
+        "pic50_value": 8.62,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2019
+      },
+      {
+        "compound_id": "CHEMBL356234",
+        "assay_type": "IC50",
+        "pic50_value": 8.32,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL561394",
+        "assay_type": "Ki",
+        "pic50_value": 8.27,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL313940",
+        "assay_type": "IC50",
+        "pic50_value": 7.06,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL451463",
+        "assay_type": "EC50",
+        "pic50_value": 7.23,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL240910",
+        "assay_type": "Kd",
+        "pic50_value": 8.0,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2019
+      },
+      {
+        "compound_id": "CHEMBL630680",
+        "assay_type": "EC50",
+        "pic50_value": 6.78,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2010
+      },
+      {
+        "compound_id": "CHEMBL746314",
+        "assay_type": "Kd",
+        "pic50_value": 7.86,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL222061",
+        "assay_type": "Ki",
+        "pic50_value": 7.0,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL354444",
+        "assay_type": "EC50",
+        "pic50_value": 6.59,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2011
+      },
+      {
+        "compound_id": "CHEMBL100854",
+        "assay_type": "EC50",
+        "pic50_value": 7.2,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL728690",
+        "assay_type": "EC50",
+        "pic50_value": 7.17,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2010
+      },
+      {
+        "compound_id": "CHEMBL263809",
+        "assay_type": "EC50",
+        "pic50_value": 7.44,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL159040",
+        "assay_type": "Kd",
+        "pic50_value": 9.28,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL583433",
+        "assay_type": "Kd",
+        "pic50_value": 7.67,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL737977",
+        "assay_type": "Kd",
+        "pic50_value": 8.1,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL133443",
+        "assay_type": "Ki",
+        "pic50_value": 8.2,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL525464",
+        "assay_type": "Kd",
+        "pic50_value": 6.2,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL229011",
+        "assay_type": "Ki",
+        "pic50_value": 7.53,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2023
+      },
+      {
+        "compound_id": "CHEMBL870235",
+        "assay_type": "IC50",
+        "pic50_value": 6.32,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2019
+      },
+      {
+        "compound_id": "CHEMBL677282",
+        "assay_type": "IC50",
+        "pic50_value": 7.44,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2011
+      },
+      {
+        "compound_id": "CHEMBL573621",
+        "assay_type": "IC50",
+        "pic50_value": 8.6,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL367910",
+        "assay_type": "Kd",
+        "pic50_value": 6.82,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2019
+      },
+      {
+        "compound_id": "CHEMBL755851",
+        "assay_type": "Kd",
+        "pic50_value": 6.44,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL431437",
+        "assay_type": "Kd",
+        "pic50_value": 8.44,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL271552",
+        "assay_type": "Ki",
+        "pic50_value": 7.4,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL984579",
+        "assay_type": "IC50",
+        "pic50_value": 5.85,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL523837",
+        "assay_type": "Kd",
+        "pic50_value": 6.54,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL310474",
+        "assay_type": "Kd",
+        "pic50_value": 7.58,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL562403",
+        "assay_type": "EC50",
+        "pic50_value": 8.29,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL812214",
+        "assay_type": "Ki",
+        "pic50_value": 6.11,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL461589",
+        "assay_type": "Kd",
+        "pic50_value": 8.56,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2018
+      },
+      {
+        "compound_id": "CHEMBL578918",
+        "assay_type": "Kd",
+        "pic50_value": 8.2,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL776398",
+        "assay_type": "Ki",
+        "pic50_value": 8.7,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL958535",
+        "assay_type": "Ki",
+        "pic50_value": 7.98,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL858760",
+        "assay_type": "EC50",
+        "pic50_value": 7.13,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL237910",
+        "assay_type": "Ki",
+        "pic50_value": 8.53,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL228860",
+        "assay_type": "Kd",
+        "pic50_value": 6.22,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2011
+      },
+      {
+        "compound_id": "CHEMBL675936",
+        "assay_type": "Ki",
+        "pic50_value": 6.79,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL156594",
+        "assay_type": "EC50",
+        "pic50_value": 8.09,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL397726",
+        "assay_type": "EC50",
+        "pic50_value": 5.78,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL595243",
+        "assay_type": "IC50",
+        "pic50_value": 8.24,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL125272",
+        "assay_type": "EC50",
+        "pic50_value": 7.23,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL825202",
+        "assay_type": "Ki",
+        "pic50_value": 9.29,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2010
+      },
+      {
+        "compound_id": "CHEMBL113823",
+        "assay_type": "Kd",
+        "pic50_value": 8.2,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2023
+      },
+      {
+        "compound_id": "CHEMBL732057",
+        "assay_type": "IC50",
+        "pic50_value": 8.0,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL333936",
+        "assay_type": "Kd",
+        "pic50_value": 6.76,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL491337",
+        "assay_type": "Kd",
+        "pic50_value": 8.11,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL207343",
+        "assay_type": "Kd",
+        "pic50_value": 8.04,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL414369",
+        "assay_type": "Kd",
+        "pic50_value": 6.22,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL707922",
+        "assay_type": "EC50",
+        "pic50_value": 7.76,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL431997",
+        "assay_type": "EC50",
+        "pic50_value": 7.15,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL826366",
+        "assay_type": "Ki",
+        "pic50_value": 8.06,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL672715",
+        "assay_type": "Ki",
+        "pic50_value": 7.34,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2018
+      },
+      {
+        "compound_id": "CHEMBL176619",
+        "assay_type": "Kd",
+        "pic50_value": 6.96,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL728479",
+        "assay_type": "Ki",
+        "pic50_value": 6.6,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL907343",
+        "assay_type": "EC50",
+        "pic50_value": 6.75,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2019
+      }
+    ],
+    "avg_pic50": 7.52,
+    "potent_compounds": 181,
+    "data_quality": "high"
+  },
+  "ERBB2": {
+    "total_compounds": 131,
+    "compounds": [
+      {
+        "compound_id": "CHEMBL517642",
+        "assay_type": "EC50",
+        "pic50_value": 8.94,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2011
+      },
+      {
+        "compound_id": "CHEMBL765841",
+        "assay_type": "IC50",
+        "pic50_value": 6.61,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL805303",
+        "assay_type": "Kd",
+        "pic50_value": 8.98,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL979412",
+        "assay_type": "IC50",
+        "pic50_value": 7.02,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL289058",
+        "assay_type": "IC50",
+        "pic50_value": 6.46,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL616372",
+        "assay_type": "Ki",
+        "pic50_value": 7.35,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL113488",
+        "assay_type": "Kd",
+        "pic50_value": 5.66,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL495129",
+        "assay_type": "IC50",
+        "pic50_value": 8.89,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL243732",
+        "assay_type": "EC50",
+        "pic50_value": 7.98,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2010
+      },
+      {
+        "compound_id": "CHEMBL681153",
+        "assay_type": "EC50",
+        "pic50_value": 6.22,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL719842",
+        "assay_type": "IC50",
+        "pic50_value": 6.88,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL652104",
+        "assay_type": "EC50",
+        "pic50_value": 7.9,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2018
+      },
+      {
+        "compound_id": "CHEMBL373968",
+        "assay_type": "IC50",
+        "pic50_value": 9.71,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2019
+      },
+      {
+        "compound_id": "CHEMBL595040",
+        "assay_type": "IC50",
+        "pic50_value": 8.67,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL294101",
+        "assay_type": "Kd",
+        "pic50_value": 7.74,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL755387",
+        "assay_type": "Kd",
+        "pic50_value": 6.5,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL819052",
+        "assay_type": "EC50",
+        "pic50_value": 6.01,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2018
+      },
+      {
+        "compound_id": "CHEMBL612571",
+        "assay_type": "IC50",
+        "pic50_value": 6.53,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL886285",
+        "assay_type": "Kd",
+        "pic50_value": 6.42,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL444963",
+        "assay_type": "EC50",
+        "pic50_value": 8.76,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2023
+      },
+      {
+        "compound_id": "CHEMBL469863",
+        "assay_type": "Ki",
+        "pic50_value": 7.3,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL868589",
+        "assay_type": "EC50",
+        "pic50_value": 6.99,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL421675",
+        "assay_type": "EC50",
+        "pic50_value": 9.03,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL873203",
+        "assay_type": "EC50",
+        "pic50_value": 8.17,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2023
+      },
+      {
+        "compound_id": "CHEMBL300361",
+        "assay_type": "Kd",
+        "pic50_value": 6.37,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL980025",
+        "assay_type": "Ki",
+        "pic50_value": 7.31,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL665957",
+        "assay_type": "IC50",
+        "pic50_value": 6.86,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2010
+      },
+      {
+        "compound_id": "CHEMBL733369",
+        "assay_type": "IC50",
+        "pic50_value": 9.32,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL203039",
+        "assay_type": "IC50",
+        "pic50_value": 6.23,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2018
+      },
+      {
+        "compound_id": "CHEMBL965708",
+        "assay_type": "Kd",
+        "pic50_value": 6.63,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2018
+      },
+      {
+        "compound_id": "CHEMBL133489",
+        "assay_type": "Kd",
+        "pic50_value": 5.91,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2023
+      },
+      {
+        "compound_id": "CHEMBL717105",
+        "assay_type": "EC50",
+        "pic50_value": 6.94,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL681739",
+        "assay_type": "EC50",
+        "pic50_value": 7.39,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL174494",
+        "assay_type": "EC50",
+        "pic50_value": 7.19,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL659194",
+        "assay_type": "EC50",
+        "pic50_value": 6.81,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL885358",
+        "assay_type": "Kd",
+        "pic50_value": 5.55,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2018
+      },
+      {
+        "compound_id": "CHEMBL103273",
+        "assay_type": "Ki",
+        "pic50_value": 8.41,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL868108",
+        "assay_type": "Ki",
+        "pic50_value": 7.92,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL456978",
+        "assay_type": "Kd",
+        "pic50_value": 8.38,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2023
+      },
+      {
+        "compound_id": "CHEMBL224501",
+        "assay_type": "IC50",
+        "pic50_value": 7.05,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2019
+      },
+      {
+        "compound_id": "CHEMBL783883",
+        "assay_type": "Ki",
+        "pic50_value": 6.27,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2018
+      },
+      {
+        "compound_id": "CHEMBL436646",
+        "assay_type": "Ki",
+        "pic50_value": 9.3,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL941245",
+        "assay_type": "Ki",
+        "pic50_value": 7.81,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2023
+      },
+      {
+        "compound_id": "CHEMBL911538",
+        "assay_type": "EC50",
+        "pic50_value": 7.74,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL273884",
+        "assay_type": "EC50",
+        "pic50_value": 6.68,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL283000",
+        "assay_type": "EC50",
+        "pic50_value": 7.87,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL166669",
+        "assay_type": "IC50",
+        "pic50_value": 7.37,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL423436",
+        "assay_type": "Ki",
+        "pic50_value": 6.34,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL659614",
+        "assay_type": "Ki",
+        "pic50_value": 7.37,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2010
+      },
+      {
+        "compound_id": "CHEMBL839976",
+        "assay_type": "Ki",
+        "pic50_value": 6.87,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2010
+      },
+      {
+        "compound_id": "CHEMBL978432",
+        "assay_type": "Ki",
+        "pic50_value": 6.91,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL891717",
+        "assay_type": "Kd",
+        "pic50_value": 6.14,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL524719",
+        "assay_type": "Ki",
+        "pic50_value": 8.05,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL900098",
+        "assay_type": "Kd",
+        "pic50_value": 9.32,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL787061",
+        "assay_type": "Ki",
+        "pic50_value": 8.74,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2011
+      },
+      {
+        "compound_id": "CHEMBL698328",
+        "assay_type": "Kd",
+        "pic50_value": 8.43,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL630832",
+        "assay_type": "EC50",
+        "pic50_value": 6.61,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL474631",
+        "assay_type": "Ki",
+        "pic50_value": 7.31,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL133711",
+        "assay_type": "EC50",
+        "pic50_value": 8.39,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL252297",
+        "assay_type": "Ki",
+        "pic50_value": 9.41,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL761419",
+        "assay_type": "IC50",
+        "pic50_value": 8.47,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL282937",
+        "assay_type": "IC50",
+        "pic50_value": 6.35,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2019
+      },
+      {
+        "compound_id": "CHEMBL721421",
+        "assay_type": "EC50",
+        "pic50_value": 8.55,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL763716",
+        "assay_type": "Kd",
+        "pic50_value": 6.27,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL711124",
+        "assay_type": "Ki",
+        "pic50_value": 8.2,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL143871",
+        "assay_type": "Kd",
+        "pic50_value": 8.44,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2011
+      },
+      {
+        "compound_id": "CHEMBL581609",
+        "assay_type": "Kd",
+        "pic50_value": 7.8,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL402491",
+        "assay_type": "EC50",
+        "pic50_value": 6.94,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL768949",
+        "assay_type": "Kd",
+        "pic50_value": 7.68,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL357391",
+        "assay_type": "Kd",
+        "pic50_value": 7.1,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL671202",
+        "assay_type": "Ki",
+        "pic50_value": 8.12,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2023
+      },
+      {
+        "compound_id": "CHEMBL254836",
+        "assay_type": "EC50",
+        "pic50_value": 7.83,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL762134",
+        "assay_type": "Kd",
+        "pic50_value": 8.41,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL171041",
+        "assay_type": "Kd",
+        "pic50_value": 8.95,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL140871",
+        "assay_type": "Kd",
+        "pic50_value": 6.4,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL376945",
+        "assay_type": "EC50",
+        "pic50_value": 7.97,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL998427",
+        "assay_type": "IC50",
+        "pic50_value": 6.7,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL215828",
+        "assay_type": "Ki",
+        "pic50_value": 8.08,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2010
+      },
+      {
+        "compound_id": "CHEMBL760147",
+        "assay_type": "Ki",
+        "pic50_value": 9.66,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL319129",
+        "assay_type": "Kd",
+        "pic50_value": 6.62,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL360880",
+        "assay_type": "Ki",
+        "pic50_value": 9.49,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL883251",
+        "assay_type": "Ki",
+        "pic50_value": 6.78,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL650847",
+        "assay_type": "Kd",
+        "pic50_value": 6.52,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL905440",
+        "assay_type": "Kd",
+        "pic50_value": 8.34,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL609549",
+        "assay_type": "EC50",
+        "pic50_value": 7.53,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2018
+      },
+      {
+        "compound_id": "CHEMBL450202",
+        "assay_type": "IC50",
+        "pic50_value": 6.36,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL593195",
+        "assay_type": "IC50",
+        "pic50_value": 6.96,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL780773",
+        "assay_type": "EC50",
+        "pic50_value": 8.15,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL162058",
+        "assay_type": "Ki",
+        "pic50_value": 6.72,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2023
+      },
+      {
+        "compound_id": "CHEMBL598879",
+        "assay_type": "EC50",
+        "pic50_value": 7.07,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL588978",
+        "assay_type": "Kd",
+        "pic50_value": 8.78,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL741751",
+        "assay_type": "EC50",
+        "pic50_value": 7.22,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL576654",
+        "assay_type": "IC50",
+        "pic50_value": 8.78,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2011
+      },
+      {
+        "compound_id": "CHEMBL326575",
+        "assay_type": "IC50",
+        "pic50_value": 6.33,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL817944",
+        "assay_type": "Kd",
+        "pic50_value": 7.82,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL791103",
+        "assay_type": "EC50",
+        "pic50_value": 8.48,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2023
+      },
+      {
+        "compound_id": "CHEMBL207566",
+        "assay_type": "Kd",
+        "pic50_value": 6.46,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL206018",
+        "assay_type": "Ki",
+        "pic50_value": 9.11,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL669659",
+        "assay_type": "Kd",
+        "pic50_value": 9.7,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL847555",
+        "assay_type": "EC50",
+        "pic50_value": 7.59,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2018
+      },
+      {
+        "compound_id": "CHEMBL254603",
+        "assay_type": "Kd",
+        "pic50_value": 6.16,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2010
+      },
+      {
+        "compound_id": "CHEMBL597250",
+        "assay_type": "IC50",
+        "pic50_value": 6.16,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2011
+      },
+      {
+        "compound_id": "CHEMBL351125",
+        "assay_type": "Kd",
+        "pic50_value": 8.78,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL742847",
+        "assay_type": "IC50",
+        "pic50_value": 7.19,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL390456",
+        "assay_type": "EC50",
+        "pic50_value": 6.64,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL526962",
+        "assay_type": "EC50",
+        "pic50_value": 7.64,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2011
+      },
+      {
+        "compound_id": "CHEMBL158232",
+        "assay_type": "Ki",
+        "pic50_value": 6.26,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL327223",
+        "assay_type": "EC50",
+        "pic50_value": 6.85,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL657577",
+        "assay_type": "EC50",
+        "pic50_value": 5.62,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL682990",
+        "assay_type": "Ki",
+        "pic50_value": 8.87,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL764144",
+        "assay_type": "Ki",
+        "pic50_value": 7.45,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL801560",
+        "assay_type": "IC50",
+        "pic50_value": 8.53,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL591067",
+        "assay_type": "Kd",
+        "pic50_value": 7.52,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL971106",
+        "assay_type": "Ki",
+        "pic50_value": 9.11,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL869121",
+        "assay_type": "EC50",
+        "pic50_value": 7.83,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL986749",
+        "assay_type": "IC50",
+        "pic50_value": 6.16,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL524611",
+        "assay_type": "Kd",
+        "pic50_value": 8.66,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2023
+      },
+      {
+        "compound_id": "CHEMBL953024",
+        "assay_type": "EC50",
+        "pic50_value": 7.39,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2011
+      },
+      {
+        "compound_id": "CHEMBL899577",
+        "assay_type": "Ki",
+        "pic50_value": 6.62,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL183956",
+        "assay_type": "Ki",
+        "pic50_value": 9.49,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL452570",
+        "assay_type": "Ki",
+        "pic50_value": 7.46,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL364678",
+        "assay_type": "EC50",
+        "pic50_value": 7.09,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL391541",
+        "assay_type": "EC50",
+        "pic50_value": 6.53,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL346991",
+        "assay_type": "Kd",
+        "pic50_value": 8.14,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL206285",
+        "assay_type": "EC50",
+        "pic50_value": 8.0,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2018
+      },
+      {
+        "compound_id": "CHEMBL596343",
+        "assay_type": "EC50",
+        "pic50_value": 6.68,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL921904",
+        "assay_type": "IC50",
+        "pic50_value": 6.06,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2011
+      },
+      {
+        "compound_id": "CHEMBL314214",
+        "assay_type": "Kd",
+        "pic50_value": 8.93,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL156961",
+        "assay_type": "IC50",
+        "pic50_value": 8.07,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL188356",
+        "assay_type": "EC50",
+        "pic50_value": 8.28,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2011
+      },
+      {
+        "compound_id": "CHEMBL439306",
+        "assay_type": "Kd",
+        "pic50_value": 7.1,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2022
+      }
+    ],
+    "avg_pic50": 7.54,
+    "potent_compounds": 127,
+    "data_quality": "high"
+  },
+  "KRAS": {
+    "total_compounds": 37,
+    "compounds": [
+      {
+        "compound_id": "CHEMBL624908",
+        "assay_type": "EC50",
+        "pic50_value": 7.35,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL271085",
+        "assay_type": "Ki",
+        "pic50_value": 6.91,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL162012",
+        "assay_type": "EC50",
+        "pic50_value": 5.27,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2023
+      },
+      {
+        "compound_id": "CHEMBL980217",
+        "assay_type": "EC50",
+        "pic50_value": 6.55,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL673039",
+        "assay_type": "EC50",
+        "pic50_value": 6.43,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL489740",
+        "assay_type": "IC50",
+        "pic50_value": 5.22,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL218408",
+        "assay_type": "Kd",
+        "pic50_value": 6.36,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL744478",
+        "assay_type": "Ki",
+        "pic50_value": 5.59,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2011
+      },
+      {
+        "compound_id": "CHEMBL333280",
+        "assay_type": "Kd",
+        "pic50_value": 5.94,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2010
+      },
+      {
+        "compound_id": "CHEMBL859027",
+        "assay_type": "Kd",
+        "pic50_value": 6.77,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2010
+      },
+      {
+        "compound_id": "CHEMBL608450",
+        "assay_type": "EC50",
+        "pic50_value": 4.54,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL220101",
+        "assay_type": "Kd",
+        "pic50_value": 6.34,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2019
+      },
+      {
+        "compound_id": "CHEMBL972664",
+        "assay_type": "Ki",
+        "pic50_value": 5.29,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL102653",
+        "assay_type": "Ki",
+        "pic50_value": 7.38,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL290043",
+        "assay_type": "EC50",
+        "pic50_value": 4.99,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2011
+      },
+      {
+        "compound_id": "CHEMBL304869",
+        "assay_type": "Kd",
+        "pic50_value": 6.93,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL862607",
+        "assay_type": "Ki",
+        "pic50_value": 6.67,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL742023",
+        "assay_type": "EC50",
+        "pic50_value": 6.17,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL161494",
+        "assay_type": "EC50",
+        "pic50_value": 7.63,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2011
+      },
+      {
+        "compound_id": "CHEMBL203250",
+        "assay_type": "Ki",
+        "pic50_value": 4.71,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2011
+      },
+      {
+        "compound_id": "CHEMBL254577",
+        "assay_type": "IC50",
+        "pic50_value": 6.83,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL363154",
+        "assay_type": "Ki",
+        "pic50_value": 6.01,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2019
+      },
+      {
+        "compound_id": "CHEMBL431537",
+        "assay_type": "EC50",
+        "pic50_value": 6.19,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL330181",
+        "assay_type": "Kd",
+        "pic50_value": 7.05,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL825240",
+        "assay_type": "EC50",
+        "pic50_value": 7.38,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2011
+      },
+      {
+        "compound_id": "CHEMBL775432",
+        "assay_type": "IC50",
+        "pic50_value": 7.58,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL718246",
+        "assay_type": "Ki",
+        "pic50_value": 4.31,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2010
+      },
+      {
+        "compound_id": "CHEMBL727857",
+        "assay_type": "Ki",
+        "pic50_value": 5.57,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL980013",
+        "assay_type": "Kd",
+        "pic50_value": 5.14,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL463050",
+        "assay_type": "EC50",
+        "pic50_value": 6.54,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL371243",
+        "assay_type": "Kd",
+        "pic50_value": 4.59,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL821279",
+        "assay_type": "Ki",
+        "pic50_value": 5.95,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2019
+      },
+      {
+        "compound_id": "CHEMBL661866",
+        "assay_type": "IC50",
+        "pic50_value": 5.17,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL988300",
+        "assay_type": "Kd",
+        "pic50_value": 6.0,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL138244",
+        "assay_type": "IC50",
+        "pic50_value": 4.8,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL364798",
+        "assay_type": "Ki",
+        "pic50_value": 6.5,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL942869",
+        "assay_type": "Ki",
+        "pic50_value": 4.46,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2020
+      }
+    ],
+    "avg_pic50": 6.03,
+    "potent_compounds": 21,
+    "data_quality": "medium"
+  },
+  "TP53": {
+    "total_compounds": 115,
+    "compounds": [
+      {
+        "compound_id": "CHEMBL491328",
+        "assay_type": "Kd",
+        "pic50_value": 6.07,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL204473",
+        "assay_type": "EC50",
+        "pic50_value": 6.36,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2023
+      },
+      {
+        "compound_id": "CHEMBL889149",
+        "assay_type": "EC50",
+        "pic50_value": 4.24,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2023
+      },
+      {
+        "compound_id": "CHEMBL799922",
+        "assay_type": "Kd",
+        "pic50_value": 4.49,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL991066",
+        "assay_type": "Ki",
+        "pic50_value": 5.7,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2018
+      },
+      {
+        "compound_id": "CHEMBL883818",
+        "assay_type": "IC50",
+        "pic50_value": 6.65,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2023
+      },
+      {
+        "compound_id": "CHEMBL356202",
+        "assay_type": "Kd",
+        "pic50_value": 5.37,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL813669",
+        "assay_type": "Ki",
+        "pic50_value": 6.5,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL496675",
+        "assay_type": "Kd",
+        "pic50_value": 3.57,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL799514",
+        "assay_type": "IC50",
+        "pic50_value": 4.92,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2018
+      },
+      {
+        "compound_id": "CHEMBL842083",
+        "assay_type": "IC50",
+        "pic50_value": 4.44,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2023
+      },
+      {
+        "compound_id": "CHEMBL990438",
+        "assay_type": "Ki",
+        "pic50_value": 4.15,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL190083",
+        "assay_type": "Kd",
+        "pic50_value": 6.47,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL749023",
+        "assay_type": "IC50",
+        "pic50_value": 5.81,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL211534",
+        "assay_type": "EC50",
+        "pic50_value": 5.99,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2023
+      },
+      {
+        "compound_id": "CHEMBL872979",
+        "assay_type": "EC50",
+        "pic50_value": 5.79,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL695938",
+        "assay_type": "Kd",
+        "pic50_value": 4.33,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2011
+      },
+      {
+        "compound_id": "CHEMBL566702",
+        "assay_type": "IC50",
+        "pic50_value": 5.16,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL867602",
+        "assay_type": "IC50",
+        "pic50_value": 6.17,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL421242",
+        "assay_type": "Ki",
+        "pic50_value": 5.6,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL252160",
+        "assay_type": "EC50",
+        "pic50_value": 5.45,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL264393",
+        "assay_type": "EC50",
+        "pic50_value": 4.81,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL315770",
+        "assay_type": "Ki",
+        "pic50_value": 5.68,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL985705",
+        "assay_type": "EC50",
+        "pic50_value": 6.36,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL286932",
+        "assay_type": "IC50",
+        "pic50_value": 5.67,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL560032",
+        "assay_type": "Kd",
+        "pic50_value": 6.24,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL777584",
+        "assay_type": "Ki",
+        "pic50_value": 4.43,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL861087",
+        "assay_type": "Kd",
+        "pic50_value": 6.86,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2019
+      },
+      {
+        "compound_id": "CHEMBL518058",
+        "assay_type": "Ki",
+        "pic50_value": 5.58,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2010
+      },
+      {
+        "compound_id": "CHEMBL754809",
+        "assay_type": "IC50",
+        "pic50_value": 5.23,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL973226",
+        "assay_type": "Ki",
+        "pic50_value": 4.1,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL103933",
+        "assay_type": "Kd",
+        "pic50_value": 5.54,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL247482",
+        "assay_type": "Ki",
+        "pic50_value": 3.7,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL408087",
+        "assay_type": "Kd",
+        "pic50_value": 5.84,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL702460",
+        "assay_type": "EC50",
+        "pic50_value": 6.23,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL143655",
+        "assay_type": "EC50",
+        "pic50_value": 4.5,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL903899",
+        "assay_type": "EC50",
+        "pic50_value": 5.93,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2011
+      },
+      {
+        "compound_id": "CHEMBL756500",
+        "assay_type": "EC50",
+        "pic50_value": 4.41,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2018
+      },
+      {
+        "compound_id": "CHEMBL111070",
+        "assay_type": "Kd",
+        "pic50_value": 5.76,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL443505",
+        "assay_type": "IC50",
+        "pic50_value": 6.22,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL706692",
+        "assay_type": "Ki",
+        "pic50_value": 6.61,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2011
+      },
+      {
+        "compound_id": "CHEMBL329102",
+        "assay_type": "EC50",
+        "pic50_value": 5.66,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL573217",
+        "assay_type": "EC50",
+        "pic50_value": 6.18,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL239394",
+        "assay_type": "Kd",
+        "pic50_value": 6.06,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL798187",
+        "assay_type": "Ki",
+        "pic50_value": 4.9,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL629986",
+        "assay_type": "IC50",
+        "pic50_value": 5.94,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL513790",
+        "assay_type": "EC50",
+        "pic50_value": 4.91,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL719705",
+        "assay_type": "Ki",
+        "pic50_value": 6.46,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL914209",
+        "assay_type": "Ki",
+        "pic50_value": 5.49,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL601801",
+        "assay_type": "Kd",
+        "pic50_value": 5.4,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL199420",
+        "assay_type": "Kd",
+        "pic50_value": 6.02,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2011
+      },
+      {
+        "compound_id": "CHEMBL275770",
+        "assay_type": "EC50",
+        "pic50_value": 5.55,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2010
+      },
+      {
+        "compound_id": "CHEMBL633620",
+        "assay_type": "EC50",
+        "pic50_value": 4.8,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL456986",
+        "assay_type": "Kd",
+        "pic50_value": 3.78,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL922046",
+        "assay_type": "Ki",
+        "pic50_value": 4.97,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2023
+      },
+      {
+        "compound_id": "CHEMBL360727",
+        "assay_type": "EC50",
+        "pic50_value": 6.09,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL357533",
+        "assay_type": "Ki",
+        "pic50_value": 5.93,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL274202",
+        "assay_type": "EC50",
+        "pic50_value": 4.21,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL587383",
+        "assay_type": "Ki",
+        "pic50_value": 4.82,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2010
+      },
+      {
+        "compound_id": "CHEMBL333083",
+        "assay_type": "Ki",
+        "pic50_value": 5.12,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL501372",
+        "assay_type": "EC50",
+        "pic50_value": 6.52,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL886564",
+        "assay_type": "Ki",
+        "pic50_value": 4.91,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL443431",
+        "assay_type": "Kd",
+        "pic50_value": 4.64,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2018
+      },
+      {
+        "compound_id": "CHEMBL467525",
+        "assay_type": "IC50",
+        "pic50_value": 5.86,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL874524",
+        "assay_type": "IC50",
+        "pic50_value": 5.85,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL836576",
+        "assay_type": "IC50",
+        "pic50_value": 5.27,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2019
+      },
+      {
+        "compound_id": "CHEMBL883331",
+        "assay_type": "IC50",
+        "pic50_value": 5.27,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL789112",
+        "assay_type": "EC50",
+        "pic50_value": 5.1,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL371187",
+        "assay_type": "Kd",
+        "pic50_value": 3.89,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL106154",
+        "assay_type": "IC50",
+        "pic50_value": 5.74,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2010
+      },
+      {
+        "compound_id": "CHEMBL348854",
+        "assay_type": "Kd",
+        "pic50_value": 4.75,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL818141",
+        "assay_type": "EC50",
+        "pic50_value": 6.38,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2010
+      },
+      {
+        "compound_id": "CHEMBL291004",
+        "assay_type": "Ki",
+        "pic50_value": 6.02,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL703229",
+        "assay_type": "Ki",
+        "pic50_value": 6.06,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2019
+      },
+      {
+        "compound_id": "CHEMBL819957",
+        "assay_type": "IC50",
+        "pic50_value": 4.02,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2010
+      },
+      {
+        "compound_id": "CHEMBL833446",
+        "assay_type": "Ki",
+        "pic50_value": 6.26,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2011
+      },
+      {
+        "compound_id": "CHEMBL105495",
+        "assay_type": "Kd",
+        "pic50_value": 6.35,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL151380",
+        "assay_type": "Ki",
+        "pic50_value": 4.83,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL618734",
+        "assay_type": "IC50",
+        "pic50_value": 5.11,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2010
+      },
+      {
+        "compound_id": "CHEMBL547804",
+        "assay_type": "Ki",
+        "pic50_value": 6.33,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL366309",
+        "assay_type": "Ki",
+        "pic50_value": 5.91,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL588512",
+        "assay_type": "Ki",
+        "pic50_value": 5.58,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL389022",
+        "assay_type": "Ki",
+        "pic50_value": 4.55,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL955834",
+        "assay_type": "Kd",
+        "pic50_value": 5.81,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2019
+      },
+      {
+        "compound_id": "CHEMBL698411",
+        "assay_type": "IC50",
+        "pic50_value": 6.31,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL287661",
+        "assay_type": "IC50",
+        "pic50_value": 5.23,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2018
+      },
+      {
+        "compound_id": "CHEMBL618242",
+        "assay_type": "EC50",
+        "pic50_value": 6.71,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2018
+      },
+      {
+        "compound_id": "CHEMBL547442",
+        "assay_type": "EC50",
+        "pic50_value": 5.86,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL535835",
+        "assay_type": "Kd",
+        "pic50_value": 7.03,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2018
+      },
+      {
+        "compound_id": "CHEMBL384394",
+        "assay_type": "Kd",
+        "pic50_value": 5.17,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL834282",
+        "assay_type": "IC50",
+        "pic50_value": 6.08,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL266761",
+        "assay_type": "Ki",
+        "pic50_value": 3.59,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL920791",
+        "assay_type": "EC50",
+        "pic50_value": 4.13,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL561055",
+        "assay_type": "EC50",
+        "pic50_value": 4.83,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL974038",
+        "assay_type": "Kd",
+        "pic50_value": 5.24,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL430161",
+        "assay_type": "IC50",
+        "pic50_value": 5.67,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2011
+      },
+      {
+        "compound_id": "CHEMBL139569",
+        "assay_type": "Kd",
+        "pic50_value": 6.08,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2010
+      },
+      {
+        "compound_id": "CHEMBL328441",
+        "assay_type": "Ki",
+        "pic50_value": 4.24,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL208345",
+        "assay_type": "Kd",
+        "pic50_value": 5.6,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL473042",
+        "assay_type": "IC50",
+        "pic50_value": 6.13,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL579258",
+        "assay_type": "EC50",
+        "pic50_value": 4.74,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL322827",
+        "assay_type": "Ki",
+        "pic50_value": 3.83,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL661549",
+        "assay_type": "EC50",
+        "pic50_value": 4.6,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL894857",
+        "assay_type": "Ki",
+        "pic50_value": 4.21,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL790908",
+        "assay_type": "EC50",
+        "pic50_value": 6.99,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL457795",
+        "assay_type": "EC50",
+        "pic50_value": 5.46,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL370431",
+        "assay_type": "IC50",
+        "pic50_value": 6.53,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL656169",
+        "assay_type": "EC50",
+        "pic50_value": 6.05,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL184804",
+        "assay_type": "Kd",
+        "pic50_value": 4.99,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL391558",
+        "assay_type": "Kd",
+        "pic50_value": 4.35,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL995266",
+        "assay_type": "IC50",
+        "pic50_value": 5.5,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL691885",
+        "assay_type": "EC50",
+        "pic50_value": 5.19,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2023
+      },
+      {
+        "compound_id": "CHEMBL303330",
+        "assay_type": "EC50",
+        "pic50_value": 4.35,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL435272",
+        "assay_type": "IC50",
+        "pic50_value": 5.53,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL479939",
+        "assay_type": "Kd",
+        "pic50_value": 6.6,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2017
+      }
+    ],
+    "avg_pic50": 5.42,
+    "potent_compounds": 34,
+    "data_quality": "high"
+  },
+  "MET": {
+    "total_compounds": 70,
+    "compounds": [
+      {
+        "compound_id": "CHEMBL860103",
+        "assay_type": "Kd",
+        "pic50_value": 8.79,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL995952",
+        "assay_type": "EC50",
+        "pic50_value": 5.98,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2018
+      },
+      {
+        "compound_id": "CHEMBL508787",
+        "assay_type": "EC50",
+        "pic50_value": 7.47,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL572123",
+        "assay_type": "IC50",
+        "pic50_value": 6.75,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL850637",
+        "assay_type": "IC50",
+        "pic50_value": 7.5,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL487572",
+        "assay_type": "Ki",
+        "pic50_value": 6.83,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL661806",
+        "assay_type": "IC50",
+        "pic50_value": 6.65,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2018
+      },
+      {
+        "compound_id": "CHEMBL487154",
+        "assay_type": "IC50",
+        "pic50_value": 8.84,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL587867",
+        "assay_type": "EC50",
+        "pic50_value": 8.19,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2011
+      },
+      {
+        "compound_id": "CHEMBL311000",
+        "assay_type": "IC50",
+        "pic50_value": 6.93,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL777992",
+        "assay_type": "EC50",
+        "pic50_value": 8.28,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2010
+      },
+      {
+        "compound_id": "CHEMBL140296",
+        "assay_type": "Ki",
+        "pic50_value": 6.97,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL870719",
+        "assay_type": "Ki",
+        "pic50_value": 6.42,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL893422",
+        "assay_type": "EC50",
+        "pic50_value": 9.45,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2018
+      },
+      {
+        "compound_id": "CHEMBL701940",
+        "assay_type": "Kd",
+        "pic50_value": 7.23,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL931028",
+        "assay_type": "EC50",
+        "pic50_value": 6.83,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2023
+      },
+      {
+        "compound_id": "CHEMBL381647",
+        "assay_type": "Kd",
+        "pic50_value": 8.69,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2018
+      },
+      {
+        "compound_id": "CHEMBL223690",
+        "assay_type": "Ki",
+        "pic50_value": 8.33,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL780496",
+        "assay_type": "IC50",
+        "pic50_value": 7.4,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL753429",
+        "assay_type": "EC50",
+        "pic50_value": 7.89,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2023
+      },
+      {
+        "compound_id": "CHEMBL653980",
+        "assay_type": "IC50",
+        "pic50_value": 6.25,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL338095",
+        "assay_type": "IC50",
+        "pic50_value": 8.23,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL657092",
+        "assay_type": "Kd",
+        "pic50_value": 6.16,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL202419",
+        "assay_type": "Ki",
+        "pic50_value": 6.68,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2010
+      },
+      {
+        "compound_id": "CHEMBL196283",
+        "assay_type": "IC50",
+        "pic50_value": 6.55,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2010
+      },
+      {
+        "compound_id": "CHEMBL439445",
+        "assay_type": "Kd",
+        "pic50_value": 6.58,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL542768",
+        "assay_type": "IC50",
+        "pic50_value": 8.7,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL973117",
+        "assay_type": "Ki",
+        "pic50_value": 6.73,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL745961",
+        "assay_type": "Kd",
+        "pic50_value": 7.4,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL460633",
+        "assay_type": "EC50",
+        "pic50_value": 9.13,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL157502",
+        "assay_type": "Kd",
+        "pic50_value": 7.61,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL779595",
+        "assay_type": "Kd",
+        "pic50_value": 7.07,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL464901",
+        "assay_type": "EC50",
+        "pic50_value": 8.67,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL899634",
+        "assay_type": "Kd",
+        "pic50_value": 7.23,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2019
+      },
+      {
+        "compound_id": "CHEMBL836100",
+        "assay_type": "Kd",
+        "pic50_value": 6.7,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2019
+      },
+      {
+        "compound_id": "CHEMBL719527",
+        "assay_type": "Kd",
+        "pic50_value": 6.38,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL346762",
+        "assay_type": "EC50",
+        "pic50_value": 9.21,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL722634",
+        "assay_type": "Kd",
+        "pic50_value": 8.04,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL739305",
+        "assay_type": "Ki",
+        "pic50_value": 7.76,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2010
+      },
+      {
+        "compound_id": "CHEMBL662015",
+        "assay_type": "Ki",
+        "pic50_value": 7.85,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL132960",
+        "assay_type": "IC50",
+        "pic50_value": 9.13,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2016
+      },
+      {
+        "compound_id": "CHEMBL452699",
+        "assay_type": "Kd",
+        "pic50_value": 8.04,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2019
+      },
+      {
+        "compound_id": "CHEMBL238855",
+        "assay_type": "Kd",
+        "pic50_value": 7.77,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2015
+      },
+      {
+        "compound_id": "CHEMBL180502",
+        "assay_type": "Ki",
+        "pic50_value": 8.45,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2018
+      },
+      {
+        "compound_id": "CHEMBL742905",
+        "assay_type": "Ki",
+        "pic50_value": 7.75,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2018
+      },
+      {
+        "compound_id": "CHEMBL584447",
+        "assay_type": "Kd",
+        "pic50_value": 5.85,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL201711",
+        "assay_type": "EC50",
+        "pic50_value": 7.76,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2018
+      },
+      {
+        "compound_id": "CHEMBL385542",
+        "assay_type": "Kd",
+        "pic50_value": 7.37,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2019
+      },
+      {
+        "compound_id": "CHEMBL759134",
+        "assay_type": "Kd",
+        "pic50_value": 7.57,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2019
+      },
+      {
+        "compound_id": "CHEMBL878187",
+        "assay_type": "Kd",
+        "pic50_value": 8.12,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2019
+      },
+      {
+        "compound_id": "CHEMBL604908",
+        "assay_type": "Ki",
+        "pic50_value": 7.35,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2020
+      },
+      {
+        "compound_id": "CHEMBL894306",
+        "assay_type": "EC50",
+        "pic50_value": 8.44,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL103429",
+        "assay_type": "Kd",
+        "pic50_value": 9.48,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL209799",
+        "assay_type": "Kd",
+        "pic50_value": 8.67,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2022
+      },
+      {
+        "compound_id": "CHEMBL797772",
+        "assay_type": "Ki",
+        "pic50_value": 6.77,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2017
+      },
+      {
+        "compound_id": "CHEMBL218104",
+        "assay_type": "IC50",
+        "pic50_value": 7.24,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL402250",
+        "assay_type": "Ki",
+        "pic50_value": 7.32,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL112646",
+        "assay_type": "Kd",
+        "pic50_value": 9.49,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2013
+      },
+      {
+        "compound_id": "CHEMBL413434",
+        "assay_type": "Kd",
+        "pic50_value": 8.52,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL100042",
+        "assay_type": "Ki",
+        "pic50_value": 8.35,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2019
+      },
+      {
+        "compound_id": "CHEMBL258078",
+        "assay_type": "EC50",
+        "pic50_value": 7.01,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL897267",
+        "assay_type": "Kd",
+        "pic50_value": 7.05,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2012
+      },
+      {
+        "compound_id": "CHEMBL730236",
+        "assay_type": "Ki",
+        "pic50_value": 6.82,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2024
+      },
+      {
+        "compound_id": "CHEMBL232792",
+        "assay_type": "Kd",
+        "pic50_value": 6.49,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2014
+      },
+      {
+        "compound_id": "CHEMBL776911",
+        "assay_type": "Kd",
+        "pic50_value": 7.03,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 7,
+        "publication_year": 2023
+      },
+      {
+        "compound_id": "CHEMBL484162",
+        "assay_type": "Kd",
+        "pic50_value": 8.31,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL425770",
+        "assay_type": "Ki",
+        "pic50_value": 6.06,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2011
+      },
+      {
+        "compound_id": "CHEMBL511725",
+        "assay_type": "Ki",
+        "pic50_value": 6.97,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2010
+      },
+      {
+        "compound_id": "CHEMBL561174",
+        "assay_type": "EC50",
+        "pic50_value": 9.71,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 9,
+        "publication_year": 2021
+      },
+      {
+        "compound_id": "CHEMBL924704",
+        "assay_type": "Ki",
+        "pic50_value": 7.4,
+        "assay_organism": "Homo sapiens",
+        "confidence_score": 8,
+        "publication_year": 2011
+      }
+    ],
+    "avg_pic50": 7.61,
+    "potent_compounds": 68,
+    "data_quality": "high"
+  }
+}

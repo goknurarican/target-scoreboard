@@ -1,0 +1,40 @@
+# VantAI Target Scoreboard - Professional Edition Requirements
+# Optimized for stability and professional deployment
+
+# Core Python data stack (NumPy 1.x for compatibility)
+numpy>=1.24.0,<2.0.0
+pandas>=2.0.0,<2.2.0
+
+# FastAPI backend stack
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+httpx
+pydantic>=2.5.0
+diskcache
+
+# Network analysis
+networkx>=3.1,<4.0
+
+# Professional dashboard
+streamlit>=1.28.0,<1.30.0
+
+# HTTP client
+requests>=2.31.0
+
+# Configuration management
+python-dotenv>=1.0.0
+
+# File I/O optimization
+aiofiles>=23.0.0
+
+# JSON performance
+orjson>=3.9.0
+
+# Development tools (optional)
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+black>=23.0.0
+ruff>=0.1.0
+
+# Performance monitoring
+watchdog>=3.0.0

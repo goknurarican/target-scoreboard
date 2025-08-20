@@ -1,0 +1,912 @@
+{
+  "EGFR": {
+    "total_trials": 16,
+    "trials": [
+      {
+        "nct_id": "NCT73345397",
+        "title": "Study of Novel EGFR inhibitor",
+        "phase": "Phase III",
+        "indication": "NSCLC",
+        "sponsor": "BMS",
+        "start_date": "2021-12-15",
+        "enrollment": 266,
+        "status": "Completed"
+      },
+      {
+        "nct_id": "NCT37815375",
+        "title": "Study of Novel EGFR inhibitor",
+        "phase": "Approved",
+        "indication": "NSCLC",
+        "sponsor": "BMS",
+        "start_date": "2025-02-11",
+        "enrollment": 41,
+        "status": "Terminated"
+      },
+      {
+        "nct_id": "NCT94517425",
+        "title": "Study of Targeted EGFR inhibitor",
+        "phase": "Phase II",
+        "indication": "NSCLC",
+        "sponsor": "AbbVie",
+        "start_date": "2025-05-10",
+        "enrollment": 72,
+        "status": "Active"
+      },
+      {
+        "nct_id": "NCT60177260",
+        "title": "Study of Novel EGFR inhibitor",
+        "phase": "Phase I",
+        "indication": "Glioblastoma",
+        "sponsor": "Roche",
+        "start_date": "2024-07-31",
+        "enrollment": 246,
+        "status": "Terminated"
+      },
+      {
+        "nct_id": "NCT21979018",
+        "title": "Study of Investigational EGFR inhibitor",
+        "phase": "Phase II",
+        "indication": "Colorectal cancer",
+        "sponsor": "Roche",
+        "start_date": "2021-05-07",
+        "enrollment": 162,
+        "status": "Terminated"
+      },
+      {
+        "nct_id": "NCT60595716",
+        "title": "Study of Novel EGFR inhibitor",
+        "phase": "Approved",
+        "indication": "Colorectal cancer",
+        "sponsor": "Novartis",
+        "start_date": "2022-05-16",
+        "enrollment": 28,
+        "status": "Terminated"
+      },
+      {
+        "nct_id": "NCT73079556",
+        "title": "Study of Novel EGFR inhibitor",
+        "phase": "Phase III",
+        "indication": "Colorectal cancer",
+        "sponsor": "AbbVie",
+        "start_date": "2023-03-26",
+        "enrollment": 318,
+        "status": "Terminated"
+      },
+      {
+        "nct_id": "NCT34717266",
+        "title": "Study of Novel EGFR inhibitor",
+        "phase": "Phase I",
+        "indication": "NSCLC",
+        "sponsor": "Merck",
+        "start_date": "2023-08-30",
+        "enrollment": 89,
+        "status": "Terminated"
+      },
+      {
+        "nct_id": "NCT85231924",
+        "title": "Study of Novel EGFR inhibitor",
+        "phase": "Phase III",
+        "indication": "Colorectal cancer",
+        "sponsor": "Novartis",
+        "start_date": "2025-07-06",
+        "enrollment": 466,
+        "status": "Completed"
+      },
+      {
+        "nct_id": "NCT37853571",
+        "title": "Study of Targeted EGFR inhibitor",
+        "phase": "Phase III",
+        "indication": "NSCLC",
+        "sponsor": "Novartis",
+        "start_date": "2022-03-03",
+        "enrollment": 329,
+        "status": "Active"
+      },
+      {
+        "nct_id": "NCT78047867",
+        "title": "Study of Novel EGFR inhibitor",
+        "phase": "Phase I",
+        "indication": "Glioblastoma",
+        "sponsor": "Roche",
+        "start_date": "2024-01-29",
+        "enrollment": 256,
+        "status": "Recruiting"
+      },
+      {
+        "nct_id": "NCT91854790",
+        "title": "Study of Targeted EGFR inhibitor",
+        "phase": "Phase II",
+        "indication": "Colorectal cancer",
+        "sponsor": "Roche",
+        "start_date": "2020-03-16",
+        "enrollment": 81,
+        "status": "Terminated"
+      },
+      {
+        "nct_id": "NCT55206437",
+        "title": "Study of Targeted EGFR inhibitor",
+        "phase": "Phase II",
+        "indication": "Glioblastoma",
+        "sponsor": "Merck",
+        "start_date": "2024-01-05",
+        "enrollment": 475,
+        "status": "Completed"
+      },
+      {
+        "nct_id": "NCT66020966",
+        "title": "Study of Targeted EGFR inhibitor",
+        "phase": "Phase III",
+        "indication": "Colorectal cancer",
+        "sponsor": "Merck",
+        "start_date": "2022-01-14",
+        "enrollment": 54,
+        "status": "Completed"
+      },
+      {
+        "nct_id": "NCT83483016",
+        "title": "Study of Novel EGFR inhibitor",
+        "phase": "Approved",
+        "indication": "Glioblastoma",
+        "sponsor": "Merck",
+        "start_date": "2023-12-04",
+        "enrollment": 68,
+        "status": "Recruiting"
+      },
+      {
+        "nct_id": "NCT85736027",
+        "title": "Study of Targeted EGFR inhibitor",
+        "phase": "Phase I",
+        "indication": "Colorectal cancer",
+        "sponsor": "BMS",
+        "start_date": "2021-07-06",
+        "enrollment": 273,
+        "status": "Completed"
+      }
+    ],
+    "active_trials": 4,
+    "success_rate": 0.6,
+    "pipeline_strength": "Strong"
+  },
+  "ERBB2": {
+    "total_trials": 23,
+    "trials": [
+      {
+        "nct_id": "NCT23851667",
+        "title": "Study of Novel ERBB2 inhibitor",
+        "phase": "Phase III",
+        "indication": "Gastric cancer",
+        "sponsor": "BMS",
+        "start_date": "2021-07-07",
+        "enrollment": 215,
+        "status": "Recruiting"
+      },
+      {
+        "nct_id": "NCT23900927",
+        "title": "Study of Targeted ERBB2 inhibitor",
+        "phase": "Phase III",
+        "indication": "Breast cancer",
+        "sponsor": "Roche",
+        "start_date": "2022-09-19",
+        "enrollment": 380,
+        "status": "Terminated"
+      },
+      {
+        "nct_id": "NCT22315714",
+        "title": "Study of Investigational ERBB2 inhibitor",
+        "phase": "Approved",
+        "indication": "Gastric cancer",
+        "sponsor": "AbbVie",
+        "start_date": "2023-11-02",
+        "enrollment": 335,
+        "status": "Active"
+      },
+      {
+        "nct_id": "NCT12702058",
+        "title": "Study of Targeted ERBB2 inhibitor",
+        "phase": "Phase III",
+        "indication": "Breast cancer",
+        "sponsor": "AbbVie",
+        "start_date": "2023-02-17",
+        "enrollment": 323,
+        "status": "Terminated"
+      },
+      {
+        "nct_id": "NCT69470486",
+        "title": "Study of Investigational ERBB2 inhibitor",
+        "phase": "Phase II",
+        "indication": "Gastric cancer",
+        "sponsor": "AbbVie",
+        "start_date": "2021-11-17",
+        "enrollment": 264,
+        "status": "Active"
+      },
+      {
+        "nct_id": "NCT63860452",
+        "title": "Study of Investigational ERBB2 inhibitor",
+        "phase": "Approved",
+        "indication": "Breast cancer",
+        "sponsor": "Novartis",
+        "start_date": "2023-01-20",
+        "enrollment": 331,
+        "status": "Active"
+      },
+      {
+        "nct_id": "NCT69413284",
+        "title": "Study of Targeted ERBB2 inhibitor",
+        "phase": "Phase II",
+        "indication": "Gastric cancer",
+        "sponsor": "AbbVie",
+        "start_date": "2022-11-21",
+        "enrollment": 353,
+        "status": "Completed"
+      },
+      {
+        "nct_id": "NCT81566482",
+        "title": "Study of Investigational ERBB2 inhibitor",
+        "phase": "Phase I",
+        "indication": "Breast cancer",
+        "sponsor": "Merck",
+        "start_date": "2021-03-18",
+        "enrollment": 42,
+        "status": "Completed"
+      },
+      {
+        "nct_id": "NCT91585771",
+        "title": "Study of Investigational ERBB2 inhibitor",
+        "phase": "Phase III",
+        "indication": "Breast cancer",
+        "sponsor": "Roche",
+        "start_date": "2023-02-16",
+        "enrollment": 353,
+        "status": "Active"
+      },
+      {
+        "nct_id": "NCT26550278",
+        "title": "Study of Targeted ERBB2 inhibitor",
+        "phase": "Phase II",
+        "indication": "Gastric cancer",
+        "sponsor": "AbbVie",
+        "start_date": "2021-08-06",
+        "enrollment": 290,
+        "status": "Recruiting"
+      },
+      {
+        "nct_id": "NCT64027791",
+        "title": "Study of Novel ERBB2 inhibitor",
+        "phase": "Phase II",
+        "indication": "Gastric cancer",
+        "sponsor": "Pfizer",
+        "start_date": "2023-04-13",
+        "enrollment": 363,
+        "status": "Active"
+      },
+      {
+        "nct_id": "NCT44507849",
+        "title": "Study of Targeted ERBB2 inhibitor",
+        "phase": "Phase II",
+        "indication": "Breast cancer",
+        "sponsor": "Pfizer",
+        "start_date": "2021-11-04",
+        "enrollment": 54,
+        "status": "Terminated"
+      },
+      {
+        "nct_id": "NCT60286157",
+        "title": "Study of Novel ERBB2 inhibitor",
+        "phase": "Approved",
+        "indication": "Breast cancer",
+        "sponsor": "Novartis",
+        "start_date": "2020-04-20",
+        "enrollment": 87,
+        "status": "Completed"
+      },
+      {
+        "nct_id": "NCT49318538",
+        "title": "Study of Investigational ERBB2 inhibitor",
+        "phase": "Approved",
+        "indication": "Breast cancer",
+        "sponsor": "AbbVie",
+        "start_date": "2020-07-05",
+        "enrollment": 35,
+        "status": "Active"
+      },
+      {
+        "nct_id": "NCT98266600",
+        "title": "Study of Investigational ERBB2 inhibitor",
+        "phase": "Approved",
+        "indication": "Breast cancer",
+        "sponsor": "AbbVie",
+        "start_date": "2022-07-10",
+        "enrollment": 164,
+        "status": "Completed"
+      },
+      {
+        "nct_id": "NCT36814915",
+        "title": "Study of Investigational ERBB2 inhibitor",
+        "phase": "Phase II",
+        "indication": "Gastric cancer",
+        "sponsor": "Novartis",
+        "start_date": "2020-08-19",
+        "enrollment": 30,
+        "status": "Completed"
+      },
+      {
+        "nct_id": "NCT54337867",
+        "title": "Study of Investigational ERBB2 inhibitor",
+        "phase": "Phase II",
+        "indication": "Gastric cancer",
+        "sponsor": "AbbVie",
+        "start_date": "2024-06-21",
+        "enrollment": 466,
+        "status": "Terminated"
+      },
+      {
+        "nct_id": "NCT17156433",
+        "title": "Study of Novel ERBB2 inhibitor",
+        "phase": "Phase II",
+        "indication": "Breast cancer",
+        "sponsor": "BMS",
+        "start_date": "2025-02-20",
+        "enrollment": 464,
+        "status": "Recruiting"
+      },
+      {
+        "nct_id": "NCT16643376",
+        "title": "Study of Novel ERBB2 inhibitor",
+        "phase": "Phase II",
+        "indication": "Breast cancer",
+        "sponsor": "Pfizer",
+        "start_date": "2021-09-11",
+        "enrollment": 120,
+        "status": "Active"
+      },
+      {
+        "nct_id": "NCT36606355",
+        "title": "Study of Investigational ERBB2 inhibitor",
+        "phase": "Approved",
+        "indication": "Breast cancer",
+        "sponsor": "Novartis",
+        "start_date": "2023-01-25",
+        "enrollment": 236,
+        "status": "Active"
+      },
+      {
+        "nct_id": "NCT91455554",
+        "title": "Study of Targeted ERBB2 inhibitor",
+        "phase": "Phase I",
+        "indication": "Breast cancer",
+        "sponsor": "Pfizer",
+        "start_date": "2024-04-22",
+        "enrollment": 327,
+        "status": "Active"
+      },
+      {
+        "nct_id": "NCT36472097",
+        "title": "Study of Investigational ERBB2 inhibitor",
+        "phase": "Phase II",
+        "indication": "Breast cancer",
+        "sponsor": "Merck",
+        "start_date": "2023-04-14",
+        "enrollment": 316,
+        "status": "Active"
+      },
+      {
+        "nct_id": "NCT87627395",
+        "title": "Study of Novel ERBB2 inhibitor",
+        "phase": "Phase III",
+        "indication": "Gastric cancer",
+        "sponsor": "Novartis",
+        "start_date": "2022-04-15",
+        "enrollment": 72,
+        "status": "Completed"
+      }
+    ],
+    "active_trials": 13,
+    "success_rate": 0.5,
+    "pipeline_strength": "Strong"
+  },
+  "KRAS": {
+    "total_trials": 6,
+    "trials": [
+      {
+        "nct_id": "NCT23824127",
+        "title": "Study of Novel KRAS inhibitor",
+        "phase": "Approved",
+        "indication": "NSCLC",
+        "sponsor": "Roche",
+        "start_date": "2021-07-06",
+        "enrollment": 163,
+        "status": "Recruiting"
+      },
+      {
+        "nct_id": "NCT54980351",
+        "title": "Study of Targeted KRAS inhibitor",
+        "phase": "Phase III",
+        "indication": "Colorectal cancer",
+        "sponsor": "AbbVie",
+        "start_date": "2021-04-27",
+        "enrollment": 267,
+        "status": "Recruiting"
+      },
+      {
+        "nct_id": "NCT92541661",
+        "title": "Study of Targeted KRAS inhibitor",
+        "phase": "Phase III",
+        "indication": "NSCLC",
+        "sponsor": "Novartis",
+        "start_date": "2020-06-15",
+        "enrollment": 404,
+        "status": "Completed"
+      },
+      {
+        "nct_id": "NCT36507283",
+        "title": "Study of Targeted KRAS inhibitor",
+        "phase": "Phase III",
+        "indication": "Pancreatic cancer",
+        "sponsor": "Novartis",
+        "start_date": "2025-07-18",
+        "enrollment": 314,
+        "status": "Terminated"
+      },
+      {
+        "nct_id": "NCT27427492",
+        "title": "Study of Investigational KRAS inhibitor",
+        "phase": "Phase II",
+        "indication": "Pancreatic cancer",
+        "sponsor": "Pfizer",
+        "start_date": "2022-04-13",
+        "enrollment": 360,
+        "status": "Recruiting"
+      },
+      {
+        "nct_id": "NCT80199783",
+        "title": "Study of Investigational KRAS inhibitor",
+        "phase": "Phase III",
+        "indication": "Colorectal cancer",
+        "sponsor": "Novartis",
+        "start_date": "2022-06-16",
+        "enrollment": 266,
+        "status": "Terminated"
+      }
+    ],
+    "active_trials": 3,
+    "success_rate": 1.0,
+    "pipeline_strength": "Strong"
+  },
+  "TP53": {
+    "total_trials": 27,
+    "trials": [
+      {
+        "nct_id": "NCT52920761",
+        "title": "Study of Novel TP53 inhibitor",
+        "phase": "Approved",
+        "indication": "Pan-cancer",
+        "sponsor": "AbbVie",
+        "start_date": "2022-10-19",
+        "enrollment": 321,
+        "status": "Active"
+      },
+      {
+        "nct_id": "NCT68170264",
+        "title": "Study of Investigational TP53 inhibitor",
+        "phase": "Phase III",
+        "indication": "Pan-cancer",
+        "sponsor": "Novartis",
+        "start_date": "2021-03-08",
+        "enrollment": 464,
+        "status": "Completed"
+      },
+      {
+        "nct_id": "NCT80823660",
+        "title": "Study of Investigational TP53 inhibitor",
+        "phase": "Phase I",
+        "indication": "Li-Fraumeni syndrome",
+        "sponsor": "Roche",
+        "start_date": "2020-08-08",
+        "enrollment": 170,
+        "status": "Completed"
+      },
+      {
+        "nct_id": "NCT99492856",
+        "title": "Study of Investigational TP53 inhibitor",
+        "phase": "Phase I",
+        "indication": "Li-Fraumeni syndrome",
+        "sponsor": "AbbVie",
+        "start_date": "2023-05-02",
+        "enrollment": 355,
+        "status": "Completed"
+      },
+      {
+        "nct_id": "NCT89364901",
+        "title": "Study of Novel TP53 inhibitor",
+        "phase": "Approved",
+        "indication": "Pan-cancer",
+        "sponsor": "BMS",
+        "start_date": "2025-01-17",
+        "enrollment": 478,
+        "status": "Terminated"
+      },
+      {
+        "nct_id": "NCT74704078",
+        "title": "Study of Novel TP53 inhibitor",
+        "phase": "Phase III",
+        "indication": "Li-Fraumeni syndrome",
+        "sponsor": "Novartis",
+        "start_date": "2022-05-17",
+        "enrollment": 190,
+        "status": "Recruiting"
+      },
+      {
+        "nct_id": "NCT37093722",
+        "title": "Study of Investigational TP53 inhibitor",
+        "phase": "Approved",
+        "indication": "Li-Fraumeni syndrome",
+        "sponsor": "AbbVie",
+        "start_date": "2021-12-16",
+        "enrollment": 341,
+        "status": "Completed"
+      },
+      {
+        "nct_id": "NCT81018421",
+        "title": "Study of Investigational TP53 inhibitor",
+        "phase": "Phase II",
+        "indication": "Pan-cancer",
+        "sponsor": "BMS",
+        "start_date": "2023-02-07",
+        "enrollment": 222,
+        "status": "Completed"
+      },
+      {
+        "nct_id": "NCT11382098",
+        "title": "Study of Targeted TP53 inhibitor",
+        "phase": "Phase III",
+        "indication": "Li-Fraumeni syndrome",
+        "sponsor": "Novartis",
+        "start_date": "2024-12-13",
+        "enrollment": 54,
+        "status": "Recruiting"
+      },
+      {
+        "nct_id": "NCT13310361",
+        "title": "Study of Novel TP53 inhibitor",
+        "phase": "Phase I",
+        "indication": "Pan-cancer",
+        "sponsor": "Merck",
+        "start_date": "2020-08-05",
+        "enrollment": 289,
+        "status": "Terminated"
+      },
+      {
+        "nct_id": "NCT43651318",
+        "title": "Study of Investigational TP53 inhibitor",
+        "phase": "Phase II",
+        "indication": "Li-Fraumeni syndrome",
+        "sponsor": "Novartis",
+        "start_date": "2020-08-22",
+        "enrollment": 58,
+        "status": "Terminated"
+      },
+      {
+        "nct_id": "NCT81212812",
+        "title": "Study of Investigational TP53 inhibitor",
+        "phase": "Approved",
+        "indication": "Li-Fraumeni syndrome",
+        "sponsor": "Pfizer",
+        "start_date": "2021-08-14",
+        "enrollment": 345,
+        "status": "Active"
+      },
+      {
+        "nct_id": "NCT53072009",
+        "title": "Study of Targeted TP53 inhibitor",
+        "phase": "Phase I",
+        "indication": "Pan-cancer",
+        "sponsor": "Novartis",
+        "start_date": "2020-04-18",
+        "enrollment": 130,
+        "status": "Recruiting"
+      },
+      {
+        "nct_id": "NCT57645882",
+        "title": "Study of Investigational TP53 inhibitor",
+        "phase": "Phase I",
+        "indication": "Li-Fraumeni syndrome",
+        "sponsor": "Roche",
+        "start_date": "2024-08-30",
+        "enrollment": 438,
+        "status": "Recruiting"
+      },
+      {
+        "nct_id": "NCT51501735",
+        "title": "Study of Targeted TP53 inhibitor",
+        "phase": "Approved",
+        "indication": "Li-Fraumeni syndrome",
+        "sponsor": "Merck",
+        "start_date": "2021-07-02",
+        "enrollment": 423,
+        "status": "Completed"
+      },
+      {
+        "nct_id": "NCT89896506",
+        "title": "Study of Targeted TP53 inhibitor",
+        "phase": "Phase II",
+        "indication": "Pan-cancer",
+        "sponsor": "BMS",
+        "start_date": "2023-10-14",
+        "enrollment": 152,
+        "status": "Recruiting"
+      },
+      {
+        "nct_id": "NCT36267364",
+        "title": "Study of Investigational TP53 inhibitor",
+        "phase": "Phase III",
+        "indication": "Pan-cancer",
+        "sponsor": "Roche",
+        "start_date": "2025-05-27",
+        "enrollment": 108,
+        "status": "Completed"
+      },
+      {
+        "nct_id": "NCT63994168",
+        "title": "Study of Investigational TP53 inhibitor",
+        "phase": "Phase II",
+        "indication": "Pan-cancer",
+        "sponsor": "Pfizer",
+        "start_date": "2025-03-05",
+        "enrollment": 300,
+        "status": "Completed"
+      },
+      {
+        "nct_id": "NCT68536714",
+        "title": "Study of Novel TP53 inhibitor",
+        "phase": "Approved",
+        "indication": "Pan-cancer",
+        "sponsor": "Merck",
+        "start_date": "2020-11-15",
+        "enrollment": 54,
+        "status": "Terminated"
+      },
+      {
+        "nct_id": "NCT22893728",
+        "title": "Study of Investigational TP53 inhibitor",
+        "phase": "Phase III",
+        "indication": "Li-Fraumeni syndrome",
+        "sponsor": "Pfizer",
+        "start_date": "2020-08-21",
+        "enrollment": 233,
+        "status": "Active"
+      },
+      {
+        "nct_id": "NCT16373027",
+        "title": "Study of Novel TP53 inhibitor",
+        "phase": "Phase II",
+        "indication": "Pan-cancer",
+        "sponsor": "Novartis",
+        "start_date": "2023-09-22",
+        "enrollment": 358,
+        "status": "Active"
+      },
+      {
+        "nct_id": "NCT57623606",
+        "title": "Study of Novel TP53 inhibitor",
+        "phase": "Phase II",
+        "indication": "Li-Fraumeni syndrome",
+        "sponsor": "AbbVie",
+        "start_date": "2020-03-16",
+        "enrollment": 394,
+        "status": "Terminated"
+      },
+      {
+        "nct_id": "NCT80091471",
+        "title": "Study of Novel TP53 inhibitor",
+        "phase": "Phase II",
+        "indication": "Li-Fraumeni syndrome",
+        "sponsor": "Pfizer",
+        "start_date": "2024-03-25",
+        "enrollment": 399,
+        "status": "Terminated"
+      },
+      {
+        "nct_id": "NCT67380534",
+        "title": "Study of Investigational TP53 inhibitor",
+        "phase": "Phase III",
+        "indication": "Pan-cancer",
+        "sponsor": "AbbVie",
+        "start_date": "2024-03-06",
+        "enrollment": 289,
+        "status": "Recruiting"
+      },
+      {
+        "nct_id": "NCT20756058",
+        "title": "Study of Investigational TP53 inhibitor",
+        "phase": "Phase I",
+        "indication": "Li-Fraumeni syndrome",
+        "sponsor": "Pfizer",
+        "start_date": "2020-07-14",
+        "enrollment": 427,
+        "status": "Active"
+      },
+      {
+        "nct_id": "NCT31262904",
+        "title": "Study of Targeted TP53 inhibitor",
+        "phase": "Phase I",
+        "indication": "Li-Fraumeni syndrome",
+        "sponsor": "Novartis",
+        "start_date": "2024-03-15",
+        "enrollment": 343,
+        "status": "Active"
+      },
+      {
+        "nct_id": "NCT75474512",
+        "title": "Study of Targeted TP53 inhibitor",
+        "phase": "Phase III",
+        "indication": "Pan-cancer",
+        "sponsor": "Pfizer",
+        "start_date": "2023-09-16",
+        "enrollment": 182,
+        "status": "Terminated"
+      }
+    ],
+    "active_trials": 12,
+    "success_rate": 0.5,
+    "pipeline_strength": "Strong"
+  },
+  "MET": {
+    "total_trials": 15,
+    "trials": [
+      {
+        "nct_id": "NCT21602668",
+        "title": "Study of Targeted MET inhibitor",
+        "phase": "Phase II",
+        "indication": "Renal cell carcinoma",
+        "sponsor": "BMS",
+        "start_date": "2025-02-05",
+        "enrollment": 126,
+        "status": "Recruiting"
+      },
+      {
+        "nct_id": "NCT60554196",
+        "title": "Study of Targeted MET inhibitor",
+        "phase": "Phase III",
+        "indication": "NSCLC",
+        "sponsor": "AbbVie",
+        "start_date": "2020-09-10",
+        "enrollment": 144,
+        "status": "Completed"
+      },
+      {
+        "nct_id": "NCT83936524",
+        "title": "Study of Novel MET inhibitor",
+        "phase": "Phase III",
+        "indication": "NSCLC",
+        "sponsor": "BMS",
+        "start_date": "2022-11-10",
+        "enrollment": 402,
+        "status": "Active"
+      },
+      {
+        "nct_id": "NCT84272714",
+        "title": "Study of Novel MET inhibitor",
+        "phase": "Approved",
+        "indication": "NSCLC",
+        "sponsor": "Roche",
+        "start_date": "2024-12-30",
+        "enrollment": 450,
+        "status": "Terminated"
+      },
+      {
+        "nct_id": "NCT15181993",
+        "title": "Study of Targeted MET inhibitor",
+        "phase": "Phase II",
+        "indication": "Glioblastoma",
+        "sponsor": "BMS",
+        "start_date": "2023-07-22",
+        "enrollment": 33,
+        "status": "Completed"
+      },
+      {
+        "nct_id": "NCT75388907",
+        "title": "Study of Targeted MET inhibitor",
+        "phase": "Approved",
+        "indication": "Renal cell carcinoma",
+        "sponsor": "AbbVie",
+        "start_date": "2021-12-15",
+        "enrollment": 120,
+        "status": "Terminated"
+      },
+      {
+        "nct_id": "NCT20610269",
+        "title": "Study of Investigational MET inhibitor",
+        "phase": "Phase I",
+        "indication": "NSCLC",
+        "sponsor": "Pfizer",
+        "start_date": "2025-01-29",
+        "enrollment": 217,
+        "status": "Active"
+      },
+      {
+        "nct_id": "NCT84187507",
+        "title": "Study of Targeted MET inhibitor",
+        "phase": "Phase I",
+        "indication": "Glioblastoma",
+        "sponsor": "AbbVie",
+        "start_date": "2021-02-22",
+        "enrollment": 229,
+        "status": "Active"
+      },
+      {
+        "nct_id": "NCT19206545",
+        "title": "Study of Novel MET inhibitor",
+        "phase": "Approved",
+        "indication": "Glioblastoma",
+        "sponsor": "Novartis",
+        "start_date": "2022-01-01",
+        "enrollment": 482,
+        "status": "Active"
+      },
+      {
+        "nct_id": "NCT82756654",
+        "title": "Study of Targeted MET inhibitor",
+        "phase": "Phase III",
+        "indication": "NSCLC",
+        "sponsor": "Merck",
+        "start_date": "2022-05-02",
+        "enrollment": 65,
+        "status": "Terminated"
+      },
+      {
+        "nct_id": "NCT49903771",
+        "title": "Study of Novel MET inhibitor",
+        "phase": "Phase I",
+        "indication": "Renal cell carcinoma",
+        "sponsor": "Roche",
+        "start_date": "2022-07-10",
+        "enrollment": 28,
+        "status": "Terminated"
+      },
+      {
+        "nct_id": "NCT91789398",
+        "title": "Study of Novel MET inhibitor",
+        "phase": "Phase III",
+        "indication": "NSCLC",
+        "sponsor": "AbbVie",
+        "start_date": "2021-09-04",
+        "enrollment": 41,
+        "status": "Active"
+      },
+      {
+        "nct_id": "NCT97892837",
+        "title": "Study of Investigational MET inhibitor",
+        "phase": "Phase II",
+        "indication": "Glioblastoma",
+        "sponsor": "AbbVie",
+        "start_date": "2022-09-02",
+        "enrollment": 373,
+        "status": "Active"
+      },
+      {
+        "nct_id": "NCT56316867",
+        "title": "Study of Novel MET inhibitor",
+        "phase": "Phase I",
+        "indication": "Renal cell carcinoma",
+        "sponsor": "Pfizer",
+        "start_date": "2022-03-03",
+        "enrollment": 178,
+        "status": "Completed"
+      },
+      {
+        "nct_id": "NCT11630154",
+        "title": "Study of Targeted MET inhibitor",
+        "phase": "Approved",
+        "indication": "NSCLC",
+        "sponsor": "Roche",
+        "start_date": "2023-04-09",
+        "enrollment": 296,
+        "status": "Active"
+      }
+    ],
+    "active_trials": 8,
+    "success_rate": 0.33,
+    "pipeline_strength": "Strong"
+  }
+}

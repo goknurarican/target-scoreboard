@@ -1,0 +1,8 @@
+protein_a	protein_b	score
+EGFR	ERBB2	0.9
+EGFR	MET	0.7
+ERBB2	MET	0.6
+KRAS	BRAF	0.8
+KRAS	PIK3CA	0.7
+TP53	EGFR	0.5
+MET	ALK	0.6

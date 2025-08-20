@@ -1,0 +1,11 @@
+{
+  "disease": "EFO_0000305",
+  "targets": ["EGFR", "ERBB2", "MET", "ALK", "KRAS"],
+  "weights": {
+    "genetics": 0.35,
+    "ppi": 0.25,
+    "pathway": 0.20,
+    "safety": 0.10,
+    "modality_fit": 0.10
+  }
+}

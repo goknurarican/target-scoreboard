@@ -1,0 +1,9 @@
+target,ternary_feasible,confidence
+EGFR,1,0.8
+ERBB2,1,0.7
+MET,0,0.6
+ALK,1,0.9
+KRAS,0,0.3
+TP53,0,0.2
+BRAF,1,0.6
+PIK3CA,1,0.5

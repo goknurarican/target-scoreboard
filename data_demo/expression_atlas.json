@@ -1,0 +1,362 @@
+{
+  "EGFR": {
+    "Brain": {
+      "median_tpm": 9.68,
+      "q75_tpm": 14.52,
+      "sample_count": 289
+    },
+    "Heart": {
+      "median_tpm": 7.47,
+      "q75_tpm": 11.2,
+      "sample_count": 164
+    },
+    "Liver": {
+      "median_tpm": 2.39,
+      "q75_tpm": 3.58,
+      "sample_count": 102
+    },
+    "Lung": {
+      "median_tpm": 3.8,
+      "q75_tpm": 5.69,
+      "sample_count": 161
+    },
+    "Kidney": {
+      "median_tpm": 1.57,
+      "q75_tpm": 2.35,
+      "sample_count": 60
+    },
+    "Muscle": {
+      "median_tpm": 7.52,
+      "q75_tpm": 11.27,
+      "sample_count": 198
+    },
+    "Skin": {
+      "median_tpm": 5.86,
+      "q75_tpm": 8.78,
+      "sample_count": 221
+    },
+    "Breast": {
+      "median_tpm": 7.12,
+      "q75_tpm": 10.68,
+      "sample_count": 117
+    },
+    "Colon": {
+      "median_tpm": 5.61,
+      "q75_tpm": 8.41,
+      "sample_count": 279
+    },
+    "Stomach": {
+      "median_tpm": 6.1,
+      "q75_tpm": 9.15,
+      "sample_count": 236
+    },
+    "Pancreas": {
+      "median_tpm": 9.25,
+      "q75_tpm": 13.88,
+      "sample_count": 151
+    },
+    "Prostate": {
+      "median_tpm": 6.22,
+      "q75_tpm": 9.33,
+      "sample_count": 206
+    },
+    "Ovary": {
+      "median_tpm": 7.91,
+      "q75_tpm": 11.87,
+      "sample_count": 95
+    },
+    "Testis": {
+      "median_tpm": 7.6,
+      "q75_tpm": 11.39,
+      "sample_count": 50
+    }
+  },
+  "ERBB2": {
+    "Brain": {
+      "median_tpm": 0.76,
+      "q75_tpm": 1.14,
+      "sample_count": 291
+    },
+    "Heart": {
+      "median_tpm": 40.84,
+      "q75_tpm": 61.26,
+      "sample_count": 72
+    },
+    "Liver": {
+      "median_tpm": 8.8,
+      "q75_tpm": 13.21,
+      "sample_count": 92
+    },
+    "Lung": {
+      "median_tpm": 6.04,
+      "q75_tpm": 9.06,
+      "sample_count": 174
+    },
+    "Kidney": {
+      "median_tpm": 5.38,
+      "q75_tpm": 8.07,
+      "sample_count": 206
+    },
+    "Muscle": {
+      "median_tpm": 8.01,
+      "q75_tpm": 12.02,
+      "sample_count": 157
+    },
+    "Skin": {
+      "median_tpm": 4.05,
+      "q75_tpm": 6.07,
+      "sample_count": 287
+    },
+    "Breast": {
+      "median_tpm": 25.07,
+      "q75_tpm": 37.61,
+      "sample_count": 249
+    },
+    "Colon": {
+      "median_tpm": 0.63,
+      "q75_tpm": 0.95,
+      "sample_count": 181
+    },
+    "Stomach": {
+      "median_tpm": 7.39,
+      "q75_tpm": 11.08,
+      "sample_count": 275
+    },
+    "Pancreas": {
+      "median_tpm": 2.33,
+      "q75_tpm": 3.5,
+      "sample_count": 83
+    },
+    "Prostate": {
+      "median_tpm": 4.32,
+      "q75_tpm": 6.47,
+      "sample_count": 64
+    },
+    "Ovary": {
+      "median_tpm": 7.77,
+      "q75_tpm": 11.65,
+      "sample_count": 61
+    },
+    "Testis": {
+      "median_tpm": 5.83,
+      "q75_tpm": 8.75,
+      "sample_count": 156
+    }
+  },
+  "KRAS": {
+    "Brain": {
+      "median_tpm": 7.44,
+      "q75_tpm": 11.16,
+      "sample_count": 194
+    },
+    "Heart": {
+      "median_tpm": 2.06,
+      "q75_tpm": 3.09,
+      "sample_count": 267
+    },
+    "Liver": {
+      "median_tpm": 0.81,
+      "q75_tpm": 1.21,
+      "sample_count": 265
+    },
+    "Lung": {
+      "median_tpm": 5.6,
+      "q75_tpm": 8.4,
+      "sample_count": 237
+    },
+    "Kidney": {
+      "median_tpm": 3.43,
+      "q75_tpm": 5.15,
+      "sample_count": 203
+    },
+    "Muscle": {
+      "median_tpm": 3.62,
+      "q75_tpm": 5.43,
+      "sample_count": 236
+    },
+    "Skin": {
+      "median_tpm": 7.39,
+      "q75_tpm": 11.08,
+      "sample_count": 141
+    },
+    "Breast": {
+      "median_tpm": 6.46,
+      "q75_tpm": 9.68,
+      "sample_count": 120
+    },
+    "Colon": {
+      "median_tpm": 4.8,
+      "q75_tpm": 7.2,
+      "sample_count": 91
+    },
+    "Stomach": {
+      "median_tpm": 4.13,
+      "q75_tpm": 6.2,
+      "sample_count": 86
+    },
+    "Pancreas": {
+      "median_tpm": 4.09,
+      "q75_tpm": 6.14,
+      "sample_count": 275
+    },
+    "Prostate": {
+      "median_tpm": 3.71,
+      "q75_tpm": 5.57,
+      "sample_count": 87
+    },
+    "Ovary": {
+      "median_tpm": 6.66,
+      "q75_tpm": 9.99,
+      "sample_count": 174
+    },
+    "Testis": {
+      "median_tpm": 4.6,
+      "q75_tpm": 6.9,
+      "sample_count": 114
+    }
+  },
+  "TP53": {
+    "Brain": {
+      "median_tpm": 8.49,
+      "q75_tpm": 12.73,
+      "sample_count": 273
+    },
+    "Heart": {
+      "median_tpm": 8.3,
+      "q75_tpm": 12.45,
+      "sample_count": 145
+    },
+    "Liver": {
+      "median_tpm": 4.42,
+      "q75_tpm": 6.63,
+      "sample_count": 88
+    },
+    "Lung": {
+      "median_tpm": 7.45,
+      "q75_tpm": 11.17,
+      "sample_count": 244
+    },
+    "Kidney": {
+      "median_tpm": 4.18,
+      "q75_tpm": 6.27,
+      "sample_count": 97
+    },
+    "Muscle": {
+      "median_tpm": 3.36,
+      "q75_tpm": 5.05,
+      "sample_count": 83
+    },
+    "Skin": {
+      "median_tpm": 7.03,
+      "q75_tpm": 10.54,
+      "sample_count": 261
+    },
+    "Breast": {
+      "median_tpm": 2.42,
+      "q75_tpm": 3.63,
+      "sample_count": 62
+    },
+    "Colon": {
+      "median_tpm": 3.37,
+      "q75_tpm": 5.06,
+      "sample_count": 275
+    },
+    "Stomach": {
+      "median_tpm": 8.76,
+      "q75_tpm": 13.14,
+      "sample_count": 268
+    },
+    "Pancreas": {
+      "median_tpm": 6.58,
+      "q75_tpm": 9.87,
+      "sample_count": 261
+    },
+    "Prostate": {
+      "median_tpm": 3.34,
+      "q75_tpm": 5.0,
+      "sample_count": 161
+    },
+    "Ovary": {
+      "median_tpm": 5.72,
+      "q75_tpm": 8.59,
+      "sample_count": 227
+    },
+    "Testis": {
+      "median_tpm": 6.33,
+      "q75_tpm": 9.5,
+      "sample_count": 61
+    }
+  },
+  "MET": {
+    "Brain": {
+      "median_tpm": 6.33,
+      "q75_tpm": 9.5,
+      "sample_count": 230
+    },
+    "Heart": {
+      "median_tpm": 2.38,
+      "q75_tpm": 3.57,
+      "sample_count": 163
+    },
+    "Liver": {
+      "median_tpm": 8.92,
+      "q75_tpm": 13.38,
+      "sample_count": 184
+    },
+    "Lung": {
+      "median_tpm": 8.37,
+      "q75_tpm": 12.56,
+      "sample_count": 258
+    },
+    "Kidney": {
+      "median_tpm": 4.73,
+      "q75_tpm": 7.09,
+      "sample_count": 230
+    },
+    "Muscle": {
+      "median_tpm": 4.16,
+      "q75_tpm": 6.24,
+      "sample_count": 261
+    },
+    "Skin": {
+      "median_tpm": 8.38,
+      "q75_tpm": 12.57,
+      "sample_count": 289
+    },
+    "Breast": {
+      "median_tpm": 2.6,
+      "q75_tpm": 3.9,
+      "sample_count": 242
+    },
+    "Colon": {
+      "median_tpm": 3.8,
+      "q75_tpm": 5.69,
+      "sample_count": 74
+    },
+    "Stomach": {
+      "median_tpm": 7.45,
+      "q75_tpm": 11.18,
+      "sample_count": 280
+    },
+    "Pancreas": {
+      "median_tpm": 7.51,
+      "q75_tpm": 11.27,
+      "sample_count": 250
+    },
+    "Prostate": {
+      "median_tpm": 9.46,
+      "q75_tpm": 14.19,
+      "sample_count": 189
+    },
+    "Ovary": {
+      "median_tpm": 6.36,
+      "q75_tpm": 9.55,
+      "sample_count": 224
+    },
+    "Testis": {
+      "median_tpm": 1.51,
+      "q75_tpm": 2.27,
+      "sample_count": 174
+    }
+  }
+}
