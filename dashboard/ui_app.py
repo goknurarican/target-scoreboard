@@ -3618,165 +3618,68 @@ def render_ppi_analysis_section():
         render_mini_ppi_card(analysis_gene)
 # Main application
 def main():
-    """Main dashboard function with all new features integrated."""
+    """Main dashboard function with tabbed layout structure."""
 
-    # Load professional theme
-    load_professional_css()
+    # Load professional theme with enhanced CSS
+    load_professional_css_enhanced()
 
-    # Platform header
+    # Enhanced Platform header
     st.markdown("""
-    <div class="platform-header">
-        <div class="platform-title">VantAI Target Scoreboard</div>
-        <div class="platform-subtitle">
-            Advanced computational platform for modality-aware target prioritization using multi-omics integration
+    <div class="platform-header-enhanced">
+        <div class="header-backdrop"></div>
+        <div class="header-content">
+            <div class="platform-title-large">VantAI Target Scoreboard</div>
+            <div class="platform-subtitle-large">
+                Advanced computational platform for modality-aware target prioritization using multi-omics integration
+            </div>
+            <div class="header-badges">
+                <span class="badge">AI-Powered</span>
+                <span class="badge">Multi-Omics</span>
+                <span class="badge">Real-Time</span>
+            </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # FEATURE 1: Sidebar with URL state management
+    # Sidebar with URL state management
     selected_disease_name, disease_id, targets, weights = render_sidebar_with_url_state()
 
     # MAIN CONTENT AREA
     if "scoring_results" in st.session_state:
         results = st.session_state["scoring_results"]
         target_scores = results.get("targets", [])
+        rank_impact = results.get("rank_impact", [])
+        current_weights = st.session_state.get("last_request", {}).get("weights", {})
 
         if target_scores:
-            # Analytics overview
-            st.markdown('<div class="section-header">Analytics Overview</div>', unsafe_allow_html=True)
+            # Configuration summary bar
+            render_config_summary_bar(selected_disease_name, len(targets), weights)
 
-            total_scores = [ts.get("total_score", 0) for ts in target_scores]
+            # TABBED LAYOUT - Main navigation
+            tab_over, tab_rank, tab_explain, tab_ev, tab_sens, tab_bench = st.tabs([
+                "📊 Overview", "🏆 Rankings", "🔍 Explain", "📚 Evidence", "⚖️ Sensitivity", "📈 Benchmark"
+            ])
 
-            metrics_html = f"""
-            <div class="metrics-grid">
-                {render_metric_card("Targets Analyzed", len(target_scores), "Total targets processed")}
-                {render_metric_card("Best Candidate", f"{max(total_scores):.3f}", "Highest scoring target")}
-                {render_metric_card("Mean Score", f"{sum(total_scores) / len(total_scores):.3f}", "Cohort average")}
-                {render_metric_card("Processing Time", f"{results.get('processing_time_ms', 0):.1f}ms", "Computational efficiency")}
-            </div>
-            """
-            st.markdown(metrics_html, unsafe_allow_html=True)
+            with tab_over:
+                render_analytics_overview(target_scores, results)
 
-            # Weight sensitivity and stability analysis
-            if "last_request" in st.session_state:
-                try:
-                    render_stability_sensitivity_analysis(
-                        st.session_state["scoring_results"],
-                        st.session_state["last_request"]
-                    )
-                except:
-                    pass  # Skip if function not implemented
+            with tab_rank:
+                render_rankings_section(target_scores, rank_impact)
 
-            # Ranking impact analysis
-            if "last_request" in st.session_state:
-                current_weights = st.session_state["last_request"]["weights"]
-                rank_impact = results.get("rank_impact", [])
-                if rank_impact:
-                    try:
-                        render_ranking_impact_analysis(rank_impact, current_weights)
-                    except:
-                        pass  # Skip if function not implemented
+            with tab_explain:
+                render_explain_section(target_scores, rank_impact, current_weights)
 
-            # Enhanced results table with ranking indicators
-            st.markdown('<div class="section-header">Target Rankings</div>', unsafe_allow_html=True)
-            rank_impact = results.get("rank_impact", [])
-            render_enhanced_results_table(target_scores, rank_impact)
+            with tab_ev:
+                render_evidence_section(target_scores)
 
-            # Channel Ablation Analysis
-            if "last_request" in st.session_state:
-                try:
-                    render_channel_ablation_analysis(
-                        st.session_state["scoring_results"],
-                        st.session_state["last_request"]
-                    )
-                except:
-                    pass  # Skip if function not implemented
+            with tab_sens:
+                render_sensitivity_section(rank_impact, current_weights, target_scores)
 
-            # Target details with ALL NEW FEATURES
-            st.markdown('<div class="section-header">Detailed Analysis</div>', unsafe_allow_html=True)
+            with tab_bench:
+                render_benchmark_section(results, selected_disease_name)
 
-            target_names = [ts.get("target", "Unknown") for ts in target_scores]
-            selected_target = st.selectbox(
-                "Select target for detailed analysis",
-                target_names,
-                key="target_select_detailed"
-            )
-
-            if selected_target:
-                target_data = next((ts for ts in target_scores if ts.get("target") == selected_target), None)
-                if target_data:
-                    # FEATURE 3: Evidence section with diagnostics separation
-                    explanation = target_data.get("explanation", {})
-                    if explanation:
-                        try:
-                            render_evidence_section_with_diagnostics(explanation)
-                        except:
-                            # Fallback to original evidence matrix
-                            try:
-                                render_evidence_matrix(explanation)
-                            except:
-                                pass
-
-                    # FEATURE 2: Explanation panel with delta rank estimates
-                    rank_impact = results.get("rank_impact", [])
-                    try:
-                        render_actionable_explanation_panel_with_deltas(target_data, selected_target, rank_impact)
-                    except:
-                        # Fallback to original explanation panel
-                        render_actionable_explanation_panel(target_data, selected_target)
-
-                    # FEATURE 4: Mini PPI network card
-                    try:
-                        render_mini_ppi_card(selected_target)
-                    except:
-                        pass  # Skip if PPI network unavailable
-
-                    # Modality Components panel (existing)
-                    modality_fit = (target_data.get("breakdown", {}) or {}).get("modality_fit", {}) or {}
-
-                    if modality_fit:
-                        # Component scores
-                        e3 = float(modality_fit.get("e3_coexpr", 0.0) or 0.0)
-                        tern = float(modality_fit.get("ternary_proxy", 0.0) or 0.0)
-                        hot = float(modality_fit.get("ppi_hotspot", 0.0) or 0.0)
-
-                        st.markdown(f"""
-                        <div class="target-details">
-                          <h4>Modality Components</h4>
-                          <div class="component-score">
-                            <span class="component-name">E3 Co-expression</span>
-                            <span class="component-value {get_score_class(e3)}">{e3:.3f}</span>
-                          </div>
-                          <div class="component-score">
-                            <span class="component-name">Ternary Feasibility</span>
-                            <span class="component-value {get_score_class(tern)}">{tern:.3f}</span>
-                          </div>
-                          <div class="component-score">
-                            <span class="component-name">PPI Hotspot</span>
-                            <span class="component-value {get_score_class(hot)}">{hot:.3f}</span>
-                          </div>
-                        </div>
-                        """, unsafe_allow_html=True)
-
-            # Benchmark Analysis
-            try:
-                render_benchmark_panel(results, selected_disease_name)
-            except:
-                pass  # Skip if function not implemented
-
-            # Data version footer
-            footer_html = render_data_version_footer(results, results.get('processing_time_ms', 0))
-            st.markdown(footer_html, unsafe_allow_html=True)
-
-            # Version tooltip (expandable)
-            with st.expander("Data Source Details"):
-                st.markdown("""
-                **Data Source Information:**
-                - **OT:** Open Targets Platform (genetics, safety)
-                - **STRING:** Protein-protein interaction network  
-                - **Reactome:** Biological pathway database
-                - **VantAI:** Proprietary modality scoring
-                """)
+            # Back to top button
+            st.markdown('<a class="backtop" href="#">↑ Top</a>', unsafe_allow_html=True)
 
     else:
         # Welcome state
@@ -3798,5 +3701,679 @@ def main():
         Data sources: Open Targets, STRING, Reactome, proprietary modality databases
     </div>
     """, unsafe_allow_html=True)
+
+
+def load_professional_css_enhanced():
+    """Enhanced CSS with improved typography and spacing."""
+    enhanced_css = """
+    <style>
+    /* Base styles */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+    * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+
+    /* Enhanced Platform Header */
+    .platform-header-enhanced {
+        position: relative;
+        background: linear-gradient(135deg, #0B0F1A 0%, #1E293B 50%, #0F172A 100%);
+        border: 1px solid #334155;
+        border-radius: 20px;
+        padding: 4rem 3rem;
+        margin-bottom: 3rem;
+        text-align: center;
+        overflow: hidden;
+        box-shadow: 
+            0 25px 50px rgba(0, 0, 0, 0.5),
+            0 0 0 1px rgba(34, 211, 238, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    .header-backdrop {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: 
+            radial-gradient(circle at 30% 20%, rgba(34, 211, 238, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 70% 80%, rgba(167, 139, 250, 0.15) 0%, transparent 50%);
+        pointer-events: none;
+    }
+
+    .header-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .platform-title-large {
+        font-size: 4rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, #E2E8F0 0%, #22D3EE 50%, #A78BFA 100%);
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 1.5rem;
+        letter-spacing: -0.04em;
+        line-height: 1.1;
+        text-shadow: 0 0 40px rgba(34, 211, 238, 0.3);
+    }
+
+    .platform-subtitle-large {
+        color: #94A3B8;
+        font-size: 1.5rem;
+        font-weight: 400;
+        max-width: 800px;
+        margin: 0 auto 2rem auto;
+        line-height: 1.6;
+        letter-spacing: 0.01em;
+    }
+
+    .header-badges {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+    }
+
+    .badge {
+        display: inline-block;
+        background: linear-gradient(135deg, rgba(34, 211, 238, 0.2) 0%, rgba(167, 139, 250, 0.2) 100%);
+        border: 1px solid rgba(34, 211, 238, 0.3);
+        color: #22D3EE;
+        padding: 0.5rem 1.25rem;
+        border-radius: 999px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        letter-spacing: 0.025em;
+        text-transform: uppercase;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+
+    .badge:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(34, 211, 238, 0.4);
+        border-color: #22D3EE;
+    }
+
+    /* Responsive design for header */
+    @media (max-width: 768px) {
+        .platform-header-enhanced {
+            padding: 3rem 2rem;
+        }
+        .platform-title-large {
+            font-size: 2.5rem;
+        }
+        .platform-subtitle-large {
+            font-size: 1.2rem;
+        }
+        .header-badges {
+            gap: 0.5rem;
+        }
+        .badge {
+            font-size: 0.8rem;
+            padding: 0.4rem 1rem;
+        }
+    }
+
+    /* Enhanced typography */
+    h2 { font-size: 1.6rem !important; margin: 1.75rem 0 .75rem 0 !important; }
+    h3 { font-size: 1.25rem !important; margin: 1.25rem 0 .5rem 0 !important; }
+    h4 { font-size: 1.05rem !important; color: #94A3B8 !important; }
+
+    /* Section blocks */
+    .section { 
+        background: #0F172A; 
+        border: 1px solid #1E293B; 
+        border-radius: 12px; 
+        padding: 1.25rem; 
+        margin: 1rem 0 1.25rem; 
+    }
+
+    /* Config summary bar */
+    .config-summary {
+        background: linear-gradient(135deg, #1E293B 0%, #334155 100%);
+        border: 1px solid #475569;
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .config-item {
+        color: #E2E8F0;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .config-value {
+        color: #22D3EE;
+        font-weight: 600;
+    }
+
+    /* Sticky navigation */
+    .sticky-nav {
+        position: sticky; 
+        top: 0; 
+        z-index: 999; 
+        background: #0F172A;
+        padding: .5rem 0; 
+        border-bottom: 1px solid #1E293B;
+        margin-bottom: 1rem;
+    }
+
+    .pill {
+        display: inline-block; 
+        margin: .25rem; 
+        padding: .35rem .75rem; 
+        border-radius: 999px;
+        border: 1px solid #263247; 
+        color: #E2E8F0; 
+        font-size: .85rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .pill.active {
+        background: #22D3EE1a; 
+        border-color: #22D3EE;
+        color: #22D3EE;
+    }
+
+    .pill:hover {
+        background: #1E293B;
+        border-color: #475569;
+    }
+
+    /* Back to top */
+    .backtop { 
+        position: fixed; 
+        right: 20px; 
+        bottom: 24px; 
+        border: 1px solid #1E293B; 
+        border-radius: 999px; 
+        padding: .5rem .8rem; 
+        background: #0B0F1A80;
+        color: #22D3EE;
+        text-decoration: none;
+        font-weight: 600;
+        backdrop-filter: blur(10px);
+        transition: all 0.2s ease;
+    }
+
+    .backtop:hover {
+        background: #22D3EE20;
+        border-color: #22D3EE;
+        transform: translateY(-2px);
+    }
+
+    /* Enhanced metrics grid */
+    .metrics-grid-enhanced {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1rem;
+        margin: 1rem 0;
+    }
+
+    .metric-card-enhanced {
+        background: linear-gradient(145deg, #0F172A 0%, #1A1F2E 100%);
+        border: 1px solid #1E293B;
+        border-radius: 10px;
+        padding: 1.25rem;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .metric-card-enhanced:hover {
+        transform: translateY(-2px);
+        border-color: #22D3EE40;
+        box-shadow: 0 8px 24px rgba(34, 211, 238, 0.1);
+    }
+    </style>
+    """
+    st.markdown(enhanced_css, unsafe_allow_html=True)
+
+
+def render_config_summary_bar(disease_name, target_count, weights):
+    """Render configuration summary bar at the top."""
+    top_weight = max(weights.items(), key=lambda x: x[1])
+    weight_summary = f"{top_weight[0].title()}: {top_weight[1]:.2f}"
+
+    st.markdown(f"""
+    <div class="config-summary">
+        <div class="config-item">Disease: <span class="config-value">{disease_name}</span></div>
+        <div class="config-item">Targets: <span class="config-value">{target_count}</span></div>
+        <div class="config-item">Top Weight: <span class="config-value">{weight_summary}</span></div>
+        <div class="config-item">Analysis: <span class="config-value">Active</span></div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def sticky_local_nav(items, key="localnav"):
+    """Render sticky local navigation within tabs."""
+    if "local_section" not in st.session_state:
+        st.session_state.local_section = items[0]
+
+    with st.container():
+        st.markdown('<div class="sticky-nav">', unsafe_allow_html=True)
+        cols = st.columns(len(items))
+        for i, item in enumerate(items):
+            active_class = " active" if st.session_state.local_section == item else ""
+            if cols[i].button(item, key=f"{key}_{item}"):
+                st.session_state.local_section = item
+                st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
+
+
+def render_analytics_overview(target_scores, results):
+    """Render analytics overview section."""
+    st.markdown("## Analytics Overview")
+
+    total_scores = [ts.get("total_score", 0) for ts in target_scores]
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+        st.metric("Targets Analyzed", len(target_scores), help="Total targets processed")
+
+    with col2:
+        st.metric("Best Candidate", f"{max(total_scores):.3f}", help="Highest scoring target")
+
+    with col3:
+        st.metric("Mean Score", f"{sum(total_scores) / len(total_scores):.3f}", help="Cohort average")
+
+    with col4:
+        st.metric("Processing Time", f"{results.get('processing_time_ms', 0):.1f}ms", help="Computational efficiency")
+
+    # Score distribution visualization
+    st.markdown("### Score Distribution")
+    score_df = pd.DataFrame({
+        'Target': [ts.get('target', 'Unknown') for ts in target_scores],
+        'Total Score': total_scores
+    })
+    st.bar_chart(score_df.set_index('Target')['Total Score'])
+
+
+def render_rankings_section(target_scores, rank_impact):
+    """Render rankings section with enhanced table."""
+    st.markdown("## Target Rankings")
+
+    sticky_local_nav(["Table", "Chart", "Comparison"], "rankings")
+
+    if st.session_state.local_section == "Table":
+        render_enhanced_results_table_with_progress(target_scores, rank_impact)
+    elif st.session_state.local_section == "Chart":
+        render_rankings_chart(target_scores)
+    else:
+        render_rankings_comparison(target_scores)
+
+
+def render_enhanced_results_table_with_progress(target_scores, rank_impact=None):
+    """Enhanced results table with progress columns."""
+    if not target_scores:
+        st.warning("No target scores to display")
+        return
+
+    sorted_targets = sorted(target_scores, key=lambda x: x.get("total_score", 0), reverse=True)
+    rank_lookup = {}
+    if rank_impact:
+        rank_lookup = {item["target"]: item for item in rank_impact}
+
+    table_data = []
+    for i, ts in enumerate(sorted_targets, 1):
+        target = ts.get('target', 'Unknown')
+        breakdown = ts.get("breakdown", {})
+        modality_fit = breakdown.get("modality_fit", {})
+
+        rank_info = rank_lookup.get(target, {})
+        movement = rank_info.get("movement", "unchanged")
+        delta = rank_info.get("delta", 0)
+
+        if movement == "up":
+            rank_indicator = f"📈 {i} (+{delta})"
+        elif movement == "down":
+            rank_indicator = f"📉 {i} (-{abs(delta)})"
+        else:
+            rank_indicator = f"➡️ {i}"
+
+        table_data.append({
+            "Rank": rank_indicator,
+            "Target": target,
+            "Total Score": ts.get("total_score", 0),
+            "Genetics": breakdown.get("genetics", 0) or 0,
+            "PPI Network": breakdown.get("ppi_proximity", 0) or 0,
+            "Pathway": breakdown.get("pathway_enrichment", 0) or 0,
+            "Safety": breakdown.get("safety_off_tissue", 0) or 0,
+            "Modality": modality_fit.get("overall_druggability", 0) if modality_fit else 0
+        })
+
+    df = pd.DataFrame(table_data)
+
+    # Enhanced column configuration with progress bars
+    column_config = {
+        "Rank": st.column_config.TextColumn("Rank", width="small"),
+        "Target": st.column_config.TextColumn("Target", width="medium"),
+        "Total Score": st.column_config.ProgressColumn("Total Score",
+                                                       min_value=0.0, max_value=1.0, format="%.3f", width="medium"),
+        "Genetics": st.column_config.ProgressColumn("Genetics",
+                                                    min_value=0.0, max_value=1.0, format="%.3f"),
+        "PPI Network": st.column_config.ProgressColumn("PPI",
+                                                       min_value=0.0, max_value=1.0, format="%.3f"),
+        "Pathway": st.column_config.ProgressColumn("Pathway",
+                                                   min_value=0.0, max_value=1.0, format="%.3f"),
+        "Safety": st.column_config.ProgressColumn("Safety (↓ better)",
+                                                  min_value=0.0, max_value=1.0, format="%.3f"),
+        "Modality": st.column_config.ProgressColumn("Modality",
+                                                    min_value=0.0, max_value=1.0, format="%.3f"),
+    }
+
+    st.dataframe(
+        df,
+        column_config=column_config,
+        use_container_width=True,
+        hide_index=True,
+        height=min(500, (len(df) + 1) * 40 + 40)
+    )
+
+
+def render_rankings_chart(target_scores):
+    """Render rankings as horizontal bar chart."""
+    sorted_targets = sorted(target_scores, key=lambda x: x.get("total_score", 0), reverse=True)[:10]
+
+    chart_data = pd.DataFrame({
+        'Target': [ts.get('target', 'Unknown') for ts in sorted_targets],
+        'Score': [ts.get('total_score', 0) for ts in sorted_targets]
+    })
+
+    st.bar_chart(chart_data.set_index('Target')['Score'], horizontal=True)
+
+
+def render_rankings_comparison(target_scores):
+    """Render side-by-side target comparison."""
+    st.markdown("### Target Comparison")
+
+    if len(target_scores) >= 2:
+        col1, col2 = st.columns(2)
+        target_names = [ts.get('target', 'Unknown') for ts in target_scores]
+
+        with col1:
+            target1 = st.selectbox("First Target", target_names, key="compare1")
+        with col2:
+            target2 = st.selectbox("Second Target", target_names, key="compare2")
+
+        if target1 != target2:
+            data1 = next(ts for ts in target_scores if ts.get('target') == target1)
+            data2 = next(ts for ts in target_scores if ts.get('target') == target2)
+
+            comparison_data = {
+                'Metric': ['Total Score', 'Genetics', 'PPI', 'Pathway', 'Safety', 'Modality'],
+                target1: [
+                    data1.get('total_score', 0),
+                    data1.get('breakdown', {}).get('genetics', 0) or 0,
+                    data1.get('breakdown', {}).get('ppi_proximity', 0) or 0,
+                    data1.get('breakdown', {}).get('pathway_enrichment', 0) or 0,
+                    data1.get('breakdown', {}).get('safety_off_tissue', 0) or 0,
+                    (data1.get('breakdown', {}).get('modality_fit', {}) or {}).get('overall_druggability', 0) or 0
+                ],
+                target2: [
+                    data2.get('total_score', 0),
+                    data2.get('breakdown', {}).get('genetics', 0) or 0,
+                    data2.get('breakdown', {}).get('ppi_proximity', 0) or 0,
+                    data2.get('breakdown', {}).get('pathway_enrichment', 0) or 0,
+                    data2.get('breakdown', {}).get('safety_off_tissue', 0) or 0,
+                    (data2.get('breakdown', {}).get('modality_fit', {}) or {}).get('overall_druggability', 0) or 0
+                ]
+            }
+
+            comparison_df = pd.DataFrame(comparison_data)
+            st.dataframe(comparison_df, use_container_width=True, hide_index=True)
+
+
+def render_explain_section(target_scores, rank_impact, current_weights):
+    """Render explanation section."""
+    st.markdown("## Target Explanation")
+
+    target_names = [ts.get("target", "Unknown") for ts in target_scores]
+    selected_target = st.selectbox("Select target for detailed analysis", target_names, key="explain_target")
+
+    if selected_target:
+        target_data = next((ts for ts in target_scores if ts.get("target") == selected_target), None)
+        if target_data:
+            sticky_local_nav(["Contributions", "Network", "Modality"], "explain")
+
+            if st.session_state.local_section == "Contributions":
+                try:
+                    render_actionable_explanation_panel_with_deltas(target_data, selected_target, rank_impact)
+                except:
+                    render_actionable_explanation_panel(target_data, selected_target)
+
+            elif st.session_state.local_section == "Network":
+                try:
+                    render_mini_ppi_card(selected_target)
+                except:
+                    st.info("PPI network analysis unavailable")
+
+            else:  # Modality
+                render_modality_components(target_data)
+
+
+def render_modality_components(target_data):
+    """Render modality components section."""
+    modality_fit = (target_data.get("breakdown", {}) or {}).get("modality_fit", {}) or {}
+
+    if modality_fit:
+        st.markdown("### Modality Fit Analysis")
+
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            e3 = float(modality_fit.get("e3_coexpr", 0.0) or 0.0)
+            st.metric("E3 Co-expression", f"{e3:.3f}")
+
+        with col2:
+            tern = float(modality_fit.get("ternary_proxy", 0.0) or 0.0)
+            st.metric("Ternary Feasibility", f"{tern:.3f}")
+
+        with col3:
+            hot = float(modality_fit.get("ppi_hotspot", 0.0) or 0.0)
+            st.metric("PPI Hotspot", f"{hot:.3f}")
+
+        # Detailed breakdown
+        modality_data = pd.DataFrame({
+            'Component': ['E3 Co-expression', 'Ternary Feasibility', 'PPI Hotspot'],
+            'Score': [e3, tern, hot]
+        })
+
+        st.bar_chart(modality_data.set_index('Component')['Score'])
+    else:
+        st.info("No modality fit data available for this target")
+
+
+def render_evidence_section(target_scores):
+    """Render evidence section with matrix and filters."""
+    st.markdown("## Supporting Evidence")
+
+    sticky_local_nav(["Matrix", "Details", "Diagnostics"], "evidence")
+
+    if st.session_state.local_section == "Matrix":
+        render_supporting_evidence_matrix(target_scores)
+    elif st.session_state.local_section == "Details":
+        render_evidence_details(target_scores)
+    else:
+        render_evidence_diagnostics(target_scores)
+
+
+def render_supporting_evidence_matrix(target_scores):
+    """Render evidence distribution matrix."""
+    st.markdown("### Evidence Distribution")
+
+    types = {
+        "literature": "📚 Literature",
+        "database": "🗄️ Databases",
+        "proprietary": "🔬 VantAI",
+        "other": "🔎 Other"
+    }
+
+    counts = {k: 0 for k in types}
+
+    for ts in target_scores:
+        evidence_refs = (ts.get("explanation") or {}).get("evidence_refs", [])
+        for ref in evidence_refs:
+            ref_type = ref.get("type", "other") if isinstance(ref, dict) else "other"
+            counts[ref_type] = counts.get(ref_type, 0) + 1
+
+    cols = st.columns(len(types))
+    for i, (k, label) in enumerate(types.items()):
+        cols[i].metric(label, counts.get(k, 0))
+
+    # Filter by evidence types
+    selected_types = st.multiselect(
+        "Filter evidence types",
+        options=list(types.keys()),
+        default=list(types.keys()),
+        format_func=lambda x: types[x]
+    )
+
+    # Display filtered evidence
+    if selected_types:
+        for ts in target_scores:
+            target_name = ts.get("target", "Unknown")
+            evidence_refs = (ts.get("explanation") or {}).get("evidence_refs", [])
+
+            filtered_evidence = [
+                ref for ref in evidence_refs
+                if (ref.get("type", "other") if isinstance(ref, dict) else "other") in selected_types
+            ]
+
+            if filtered_evidence:
+                with st.expander(f"{target_name} ({len(filtered_evidence)} evidence)"):
+                    for ref in filtered_evidence:
+                        if isinstance(ref, dict):
+                            label = ref.get("label", "Unknown")
+                            url = ref.get("url", "#")
+                            if url and url != "#":
+                                st.markdown(f"[{label}]({url})")
+                            else:
+                                st.markdown(f"- {label}")
+                        else:
+                            st.markdown(f"- {str(ref)}")
+
+
+def render_evidence_details(target_scores):
+    """Render detailed evidence for selected target."""
+    target_names = [ts.get("target", "Unknown") for ts in target_scores]
+    selected_target = st.selectbox("Select target for evidence details", target_names, key="evidence_target")
+
+    if selected_target:
+        target_data = next((ts for ts in target_scores if ts.get("target") == selected_target), None)
+        if target_data:
+            explanation = target_data.get("explanation", {})
+            if explanation:
+                try:
+                    render_evidence_section_with_diagnostics(explanation)
+                except:
+                    render_evidence_matrix(explanation)
+
+
+def render_evidence_diagnostics(target_scores):
+    """Render diagnostic evidence information."""
+    st.markdown("### Diagnostic Information")
+
+    all_diagnostics = []
+    for ts in target_scores:
+        evidence_refs = (ts.get("explanation") or {}).get("evidence_refs", [])
+        user_evidence, diagnostic_evidence = filter_diagnostic_evidence(evidence_refs)
+        if diagnostic_evidence:
+            all_diagnostics.extend(diagnostic_evidence)
+
+    if all_diagnostics:
+        render_diagnostic_evidence_panel(all_diagnostics)
+    else:
+        st.info("No diagnostic information available")
+
+
+def render_sensitivity_section(rank_impact, current_weights, target_scores):
+    """Render sensitivity analysis section."""
+    st.markdown("## Sensitivity Analysis")
+
+    sticky_local_nav(["Weight Impact", "Ablation", "Stability"], "sensitivity")
+
+    if st.session_state.local_section == "Weight Impact":
+        if rank_impact:
+            try:
+                render_ranking_impact_analysis(rank_impact, current_weights)
+            except:
+                st.info("Weight impact analysis unavailable")
+        else:
+            st.info("No ranking impact data available")
+
+    elif st.session_state.local_section == "Ablation":
+        try:
+            render_channel_ablation_analysis(
+                {"targets": target_scores},
+                {"weights": current_weights}
+            )
+        except:
+            st.info("Ablation analysis unavailable")
+
+    else:  # Stability
+        try:
+            render_stability_sensitivity_analysis(
+                {"targets": target_scores},
+                {"weights": current_weights}
+            )
+        except:
+            st.info("Stability analysis unavailable")
+
+
+def render_benchmark_section(results, selected_disease_name):
+    """Render benchmark analysis section."""
+    st.markdown("## Benchmark Analysis")
+
+    try:
+        render_benchmark_panel(results, selected_disease_name)
+    except:
+        st.info("Benchmark analysis unavailable")
+
+
+# Helper functions that need to be defined or imported
+def filter_diagnostic_evidence(evidence_refs):
+    """Filter evidence into user and diagnostic categories."""
+    diagnostic_prefixes = [
+        "RWR_", "Centrality_", "PPI_", "OT_cache", "STRING_cache",
+        "Error_", "Debug_", "Internal_", "Cache_", "Fetch_", "API_",
+        "Demo_", "Fallback_", "Timeout_", "Status_", "Version_"
+    ]
+
+    user_evidence = []
+    diagnostic_evidence = []
+
+    for ref in evidence_refs:
+        ref_text = ref.get("label", str(ref)) if isinstance(ref, dict) else str(ref)
+        is_diagnostic = any(ref_text.startswith(prefix) for prefix in diagnostic_prefixes)
+
+        if is_diagnostic:
+            diagnostic_evidence.append(ref)
+        else:
+            user_evidence.append(ref)
+
+    return user_evidence, diagnostic_evidence
+
+
+def render_diagnostic_evidence_panel(diagnostic_evidence):
+    """Render diagnostic evidence panel."""
+    if not diagnostic_evidence:
+        return
+
+    st.markdown("**Technical Information & Debug Data**")
+    st.caption("Internal system information for debugging and performance analysis")
+
+    for ref in diagnostic_evidence:
+        ref_text = ref.get("label", str(ref)) if isinstance(ref, dict) else str(ref)
+        st.code(ref_text, language=None)
 if __name__ == "__main__":
     main()
