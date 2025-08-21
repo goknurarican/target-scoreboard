@@ -3,6 +3,13 @@
 A comprehensive computational platform for modality-aware target prioritization in drug discovery, integrating multi-omics data sources to support evidence-based decision making.
 <img width="914" height="381" alt="Screenshot 2025-08-21 at 15 51 50" src="https://github.com/user-attachments/assets/958dcf62-c795-49d4-988b-13df067fb470" />
 
+## 🎥 Demo Video
+
+Watch the 90-second technical demo here:  
+👉 [https://youtu.be/L896NhYdsZA](https://youtu.be/L896NhYdsZA)
+
+[![Target Scoreboard Demo](https://img.youtube.com/vi/L896NhYdsZA/0.jpg)](https://youtu.be/L896NhYdsZA)
+
 ## Overview
 This Target Scoreboard provides systematic evaluation of therapeutic targets by combining genetic associations, protein interaction networks, pathway analysis, safety assessments, and modality-specific druggability scores. The platform offers transparent, explainable scoring with robust sensitivity analysis capabilities.
 <img width="917" height="565" alt="Screenshot 2025-08-21 at 11 50 54" src="https://github.com/user-attachments/assets/d6fc7ea5-c739-4f50-9ccd-4773eafc903c" />
