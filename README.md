@@ -1,7 +1,6 @@
 # Target Scoreboard for VantAI
 
 A comprehensive computational platform for modality-aware target prioritization in drug discovery, integrating multi-omics data sources to support evidence-based decision making.
-<img width="914" height="381" alt="Screenshot 2025-08-21 at 15 51 50" src="https://github.com/user-attachments/assets/958dcf62-c795-49d4-988b-13df067fb470" />
 
 ## 🎥 Demo Video
 
