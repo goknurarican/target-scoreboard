@@ -6,7 +6,7 @@ A comprehensive computational platform for modality-aware target prioritization 
 This Target Scoreboard provides systematic evaluation of therapeutic targets by combining genetic associations, protein interaction networks, pathway analysis, safety assessments, and modality-specific druggability scores. The platform offers transparent, explainable scoring with robust sensitivity analysis capabilities.
 <img width="917" height="565" alt="Screenshot 2025-08-21 at 11 50 54" src="https://github.com/user-attachments/assets/d6fc7ea5-c739-4f50-9ccd-4773eafc903c" />
 
-// Analytics Overview showing target scoring distribution and key metrics
+Analytics Overview showing target scoring distribution and key metrics
 
 ## Key Features
 Multi-Modal Scoring System
@@ -20,7 +20,8 @@ Multi-Modal Scoring System
 ## Interactive Network Analysis
 <img width="874" height="699" alt="Screenshot 2025-08-21 at 11 53 36" src="https://github.com/user-attachments/assets/c89fe72c-6bb1-4490-a73b-6241971d4221" />
 
-// PPI network visualization showing first-shell neighbors and interaction strengths
+PPI network visualization showing first-shell neighbors and interaction strengths
+
 The platform provides detailed protein-protein interaction analysis with:
 
 * First-shell neighbor identification with confidence scores
@@ -73,12 +74,7 @@ Data Sources
 * Reactome 2024: Curated biological pathway database
 * VantAI Proprietary: Modality-specific scoring algorithms
 
-## Installation
-Prerequisites
 
-Python 3.11+
-Node.js (for development dependencies)
-Docker (optional, for containerized deployment)
 ## Quick Start
 
 1. Install dependencies: `pip install -r requirements.txt`
@@ -87,11 +83,11 @@ Docker (optional, for containerized deployment)
 4. Start dashboard: `streamlit run dashboard/app.py`
 
 ## Setup
-# Clone repository
+Clone repository
 git clone https://github.com/vantai/target-scoreboard.git
 cd target-scoreboard
 
-# Create virtual environment
+Create virtual environment
 python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
