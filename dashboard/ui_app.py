@@ -18,9 +18,10 @@ import os
 import requests
 import pandas as pd
 import io
+sys.path.append(str(Path(__file__).parent.parent))
+
 from dashboard.components.explanation_panel import render_evidence_matrix
 
-sys.path.append(str(Path(__file__).parent.parent))
 try:
     from dashboard.components.explanation_panel import render_evidence_matrix
 
