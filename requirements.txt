@@ -1,6 +1,10 @@
 # VantAI Target Scoreboard - Professional Edition Requirements
 # Optimized for stability and professional deployment
 
+
+
+plotly>=5.20
+
 # Core Python data stack (NumPy 1.x for compatibility)
 numpy>=1.24.0,<2.0.0
 pandas>=2.0.0,<2.2.0

@@ -3428,10 +3428,7 @@ def check_interactive_network_viz():
 
 def render_mini_ppi_card(target_gene):
     """
-    Render compact PPI network card for a target gene.
-
-    Args:
-        target_gene: Gene symbol to analyze
+    Render compact PPI network card with improved fallback handling.
     """
     st.markdown("#### PPI Network Neighbors")
 
@@ -3450,9 +3447,6 @@ def render_mini_ppi_card(target_gene):
         st.info(f"No PPI neighbors found for {target_gene}")
         return
 
-    # Check for interactive visualization
-    viz_available, InteractiveNetworkViz = check_interactive_network_viz()
-
     # Header with statistics
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -3462,98 +3456,88 @@ def render_mini_ppi_card(target_gene):
     with col3:
         st.metric("Total Neighbors", f"{total_neighbors}")
 
-    # Interactive network visualization (if available)
-    if viz_available and len(neighbors) > 0:
-        try:
-            st.markdown("**Network Visualization**")
+    # Try network visualization with proper fallback
+    try:
+        st.markdown("**Network Visualization**")
 
-            # Create small subgraph centered on target
-            viz = InteractiveNetworkViz()
+        # Create InteractiveNetworkViz with theme colors
+        theme_colors = {
+            'accent_cyan': '#22D3EE',
+            'accent_violet': '#A78BFA',
+            'bg_primary': '#0B0F1A',
+            'bg_surface': '#0F172A',
+            'text_primary': '#E2E8F0'
+        }
 
-            # Build subgraph data
-            nodes = [{'id': target_gene, 'label': target_gene, 'color': '#22D3EE', 'size': 20}]
-            edges = []
+        viz = InteractiveNetworkViz(theme_colors)
 
-            for neighbor in neighbors:
-                nodes.append({
-                    'id': neighbor['gene'],
-                    'label': neighbor['gene'],
-                    'color': '#A78BFA',
-                    'size': 15
-                })
-                edges.append({
-                    'from': target_gene,
-                    'to': neighbor['gene'],
-                    'weight': neighbor['weight'],
-                    'label': f"{neighbor['weight']:.3f}",
-                    'color': '#94A3B8'
-                })
+        # Build network data
+        nodes = [{'id': target_gene, 'label': target_gene, 'color': '#22D3EE', 'size': 25}]
+        edges = []
 
-            # Render compact network
-            viz.render_network(
-                nodes=nodes,
-                edges=edges,
-                height=300,
-                title=f"PPI Network: {target_gene}"
-            )
+        for neighbor in neighbors:
+            nodes.append({
+                'id': neighbor['gene'],
+                'label': neighbor['gene'],
+                'color': '#A78BFA',
+                'size': 20
+            })
+            edges.append({
+                'from': target_gene,
+                'to': neighbor['gene'],
+                'weight': neighbor['weight']
+            })
 
-            # Full network link
-            if st.button("🔍 Open Full Network Analysis", key=f"full_network_{target_gene}"):
-                st.info("Full network analysis would open in expanded view")
+        # Render network
+        fig = viz.render_network(nodes, edges, height=350, title=f"PPI Network: {target_gene}")
+        if fig:
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            raise Exception("Network rendering failed")
 
-        except Exception as e:
-            st.warning(f"Network visualization failed: {str(e)[:50]}...")
-            viz_available = False
+    except Exception as e:
+        st.warning(f"Network visualization unavailable, showing table instead")
 
-    # Fallback: Neighbors table
-    if not viz_available or len(neighbors) == 0:
+        # Fallback: Neighbors table
         st.markdown("**First-Shell Neighbors**")
 
-        if neighbors:
-            # Create neighbors table
-            neighbors_data = []
-            for i, neighbor in enumerate(neighbors, 1):
-                neighbors_data.append({
-                    'Rank': i,
-                    'Gene': neighbor['gene'],
-                    'Weight': f"{neighbor['weight']:.4f}",
-                    'Confidence': 'High' if neighbor['weight'] > 0.7 else 'Medium' if neighbor[
-                                                                                          'weight'] > 0.4 else 'Low'
-                })
+        neighbors_data = []
+        for i, neighbor in enumerate(neighbors, 1):
+            neighbors_data.append({
+                'Rank': i,
+                'Gene': neighbor['gene'],
+                'Weight': f"{neighbor['weight']:.4f}",
+                'Confidence': 'High' if neighbor['weight'] > 0.7 else 'Medium' if neighbor['weight'] > 0.4 else 'Low'
+            })
 
-            neighbors_df = pd.DataFrame(neighbors_data)
+        neighbors_df = pd.DataFrame(neighbors_data)
 
-            # Display with custom styling
-            st.dataframe(
-                neighbors_df,
-                use_container_width=True,
-                hide_index=True,
-                height=min(300, len(neighbors_df) * 35 + 40),
-                column_config={
-                    "Rank": st.column_config.NumberColumn("Rank", width="small"),
-                    "Gene": st.column_config.TextColumn("Gene", width="medium"),
-                    "Weight": st.column_config.TextColumn("Weight", width="small",
-                                                          help="Edge weight from STRING database"),
-                    "Confidence": st.column_config.TextColumn("Confidence", width="small")
-                }
-            )
+        st.dataframe(
+            neighbors_df,
+            use_container_width=True,
+            hide_index=True,
+            height=min(300, len(neighbors_df) * 35 + 40),
+            column_config={
+                "Rank": st.column_config.NumberColumn("Rank", width="small"),
+                "Gene": st.column_config.TextColumn("Gene", width="medium"),
+                "Weight": st.column_config.TextColumn("Weight", width="small"),
+                "Confidence": st.column_config.TextColumn("Confidence", width="small")
+            }
+        )
 
-            # Additional statistics
-            if len(neighbors) > 0:
-                avg_weight = sum(n['weight'] for n in neighbors) / len(neighbors)
-                max_weight = max(n['weight'] for n in neighbors)
+    # Network statistics
+    if neighbors:
+        avg_weight = sum(n['weight'] for n in neighbors) / len(neighbors)
+        max_weight = max(n['weight'] for n in neighbors)
 
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.caption(f"Average edge weight: {avg_weight:.3f}")
-                with col2:
-                    st.caption(f"Strongest connection: {max_weight:.3f}")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.caption(f"Average edge weight: {avg_weight:.3f}")
+        with col2:
+            st.caption(f"Strongest connection: {max_weight:.3f}")
 
-            # Show truncation notice
-            if total_neighbors > len(neighbors):
-                st.caption(f"Showing top {len(neighbors)} of {total_neighbors} total neighbors")
-        else:
-            st.info(f"No significant PPI neighbors found for {target_gene}")
+        if total_neighbors > len(neighbors):
+            st.caption(f"Showing top {len(neighbors)} of {total_neighbors} total neighbors")
 
     # Analysis insights
     if neighbors:
@@ -3572,15 +3556,14 @@ def render_mini_ppi_card(target_gene):
                 insights.append(f"**Moderate interactions:** {len(medium_confidence)} medium-confidence connections")
 
             if total_neighbors > 20:
-                insights.append(f"**Hub protein:** {target_gene} has {total_neighbors} total connections (network hub)")
+                insights.append(f"**Hub protein:** {target_gene} has {total_neighbors} total connections")
             elif total_neighbors > 10:
                 insights.append(f"**Well-connected:** {target_gene} has {total_neighbors} connections")
             else:
-                insights.append(f"**Peripheral:** {target_gene} has {total_neighbors} connections (network periphery)")
+                insights.append(f"**Peripheral:** {target_gene} has {total_neighbors} connections")
 
             for insight in insights:
                 st.markdown(insight)
-
 
 # Integration function for target details
 def render_target_details_with_ppi(target_data, selected_target):
@@ -3703,8 +3686,9 @@ def main():
     """, unsafe_allow_html=True)
 
 
+
 def load_professional_css_enhanced():
-    """Enhanced CSS with improved typography and spacing."""
+    """Enhanced CSS with improved typography, spacing, and navigation fixes."""
     enhanced_css = """
     <style>
     /* Base styles */
@@ -3796,26 +3780,6 @@ def load_professional_css_enhanced():
         border-color: #22D3EE;
     }
 
-    /* Responsive design for header */
-    @media (max-width: 768px) {
-        .platform-header-enhanced {
-            padding: 3rem 2rem;
-        }
-        .platform-title-large {
-            font-size: 2.5rem;
-        }
-        .platform-subtitle-large {
-            font-size: 1.2rem;
-        }
-        .header-badges {
-            gap: 0.5rem;
-        }
-        .badge {
-            font-size: 0.8rem;
-            padding: 0.4rem 1rem;
-        }
-    }
-
     /* Enhanced typography */
     h2 { font-size: 1.6rem !important; margin: 1.75rem 0 .75rem 0 !important; }
     h3 { font-size: 1.25rem !important; margin: 1.25rem 0 .5rem 0 !important; }
@@ -3855,38 +3819,75 @@ def load_professional_css_enhanced():
         font-weight: 600;
     }
 
-    /* Sticky navigation */
+    /* FIXED: Sticky navigation */
     .sticky-nav {
         position: sticky; 
         top: 0; 
         z-index: 999; 
         background: #0F172A;
-        padding: .5rem 0; 
+        padding: 0.5rem 0; 
         border-bottom: 1px solid #1E293B;
         margin-bottom: 1rem;
+        backdrop-filter: blur(10px);
     }
 
     .pill {
         display: inline-block; 
-        margin: .25rem; 
-        padding: .35rem .75rem; 
+        margin: 0.25rem; 
+        padding: 0.35rem 0.75rem; 
         border-radius: 999px;
         border: 1px solid #263247; 
         color: #E2E8F0; 
-        font-size: .85rem;
+        font-size: 0.85rem;
         cursor: pointer;
         transition: all 0.2s ease;
+        background: transparent;
     }
 
     .pill.active {
-        background: #22D3EE1a; 
-        border-color: #22D3EE;
-        color: #22D3EE;
+        background: #22D3EE1a !important; 
+        border-color: #22D3EE !important;
+        color: #22D3EE !important;
     }
 
     .pill:hover {
         background: #1E293B;
         border-color: #475569;
+    }
+
+    /* FIXED: Navigation button styling */
+    .stButton > button {
+        width: 100% !important;
+        background: transparent !important;
+        border: 1px solid #263247 !important;
+        color: #E2E8F0 !important;
+        border-radius: 999px !important;
+        padding: 0.35rem 0.75rem !important;
+        font-size: 0.85rem !important;
+        transition: all 0.2s ease !important;
+        margin: 0.25rem !important;
+    }
+
+    .stButton > button:hover {
+        background: #1E293B !important;
+        border-color: #475569 !important;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+
+    .stButton > button:focus, 
+    .stButton > button:active {
+        background: #22D3EE1a !important;
+        border-color: #22D3EE !important;
+        color: #22D3EE !important;
+        box-shadow: none !important;
+        outline: none !important;
+    }
+
+    /* Tab content container */
+    .tab-content {
+        min-height: 400px;
+        padding: 1rem 0;
     }
 
     /* Back to top */
@@ -3933,10 +3934,86 @@ def load_professional_css_enhanced():
         border-color: #22D3EE40;
         box-shadow: 0 8px 24px rgba(34, 211, 238, 0.1);
     }
+
+    /* Welcome state styling */
+    .welcome-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: linear-gradient(145deg, #0F172A 0%, #1A1F2E 100%);
+        border: 1px solid #1E293B;
+        border-radius: 16px;
+        margin: 2rem 0;
+    }
+
+    .welcome-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, #22D3EE 0%, #A78BFA 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .feature-highlights {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .feature-item {
+        background: #1E293B40;
+        border: 1px solid #334155;
+        border-radius: 12px;
+        padding: 1.5rem 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .feature-item:hover {
+        background: #1E293B80;
+        border-color: #22D3EE40;
+        transform: translateY(-2px);
+    }
+
+    .feature-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .feature-text {
+        color: #E2E8F0;
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+
+    /* Responsive design for header */
+    @media (max-width: 768px) {
+        .platform-header-enhanced {
+            padding: 3rem 2rem;
+        }
+        .platform-title-large {
+            font-size: 2.5rem;
+        }
+        .platform-subtitle-large {
+            font-size: 1.2rem;
+        }
+        .header-badges {
+            gap: 0.5rem;
+        }
+        .badge {
+            font-size: 0.8rem;
+            padding: 0.4rem 1rem;
+        }
+        .feature-highlights {
+            grid-template-columns: 1fr;
+        }
+    }
     </style>
     """
     st.markdown(enhanced_css, unsafe_allow_html=True)
-
 
 def render_config_summary_bar(disease_name, target_count, weights):
     """Render configuration summary bar at the top."""
@@ -3954,19 +4031,31 @@ def render_config_summary_bar(disease_name, target_count, weights):
 
 
 def sticky_local_nav(items, key="localnav"):
-    """Render sticky local navigation within tabs."""
-    if "local_section" not in st.session_state:
-        st.session_state.local_section = items[0]
+    """Fixed sticky local navigation that preserves tab state."""
+    # Use unique key for each tab context to avoid state conflicts
+    session_key = f"{key}_local_section"
+
+    # Initialize state only if not exists for this specific context
+    if session_key not in st.session_state:
+        st.session_state[session_key] = items[0]
 
     with st.container():
         st.markdown('<div class="sticky-nav">', unsafe_allow_html=True)
         cols = st.columns(len(items))
         for i, item in enumerate(items):
-            active_class = " active" if st.session_state.local_section == item else ""
-            if cols[i].button(item, key=f"{key}_{item}"):
-                st.session_state.local_section = item
-                st.rerun()
+            active_class = " active" if st.session_state[session_key] == item else ""
+            # Use unique key for each button to avoid conflicts
+            button_key = f"{key}_{item}_{i}"
+            if cols[i].button(item, key=button_key):
+                st.session_state[session_key] = item
+                # Use st.rerun() instead of st.experimental_rerun() for newer Streamlit
+                try:
+                    st.rerun()
+                except AttributeError:
+                    st.experimental_rerun()
         st.markdown('</div>', unsafe_allow_html=True)
+
+    return st.session_state[session_key]
 
 
 def render_analytics_overview(target_scores, results):
@@ -3999,16 +4088,17 @@ def render_analytics_overview(target_scores, results):
 
 
 def render_rankings_section(target_scores, rank_impact):
-    """Render rankings section with enhanced table."""
+    """Fixed rankings section with proper navigation state management."""
     st.markdown("## Target Rankings")
 
-    sticky_local_nav(["Table", "Chart", "Comparison"], "rankings")
+    # Get current section for this specific context
+    current_section = sticky_local_nav(["Table", "Chart", "Comparison"], "rankings")
 
-    if st.session_state.local_section == "Table":
+    if current_section == "Table":
         render_enhanced_results_table_with_progress(target_scores, rank_impact)
-    elif st.session_state.local_section == "Chart":
+    elif current_section == "Chart":
         render_rankings_chart(target_scores)
-    else:
+    else:  # Comparison
         render_rankings_comparison(target_scores)
 
 
@@ -4081,7 +4171,7 @@ def render_enhanced_results_table_with_progress(target_scores, rank_impact=None)
 
 
 def render_rankings_chart(target_scores):
-    """Render rankings as horizontal bar chart."""
+    """Render rankings as horizontal bar chart - fixed for Streamlit compatibility."""
     sorted_targets = sorted(target_scores, key=lambda x: x.get("total_score", 0), reverse=True)[:10]
 
     chart_data = pd.DataFrame({
@@ -4089,7 +4179,8 @@ def render_rankings_chart(target_scores):
         'Score': [ts.get('total_score', 0) for ts in sorted_targets]
     })
 
-    st.bar_chart(chart_data.set_index('Target')['Score'], horizontal=True)
+    # Fix: Remove unsupported horizontal parameter
+    st.bar_chart(chart_data.set_index('Target')['Score'])
 
 
 def render_rankings_comparison(target_scores):
@@ -4134,7 +4225,7 @@ def render_rankings_comparison(target_scores):
 
 
 def render_explain_section(target_scores, rank_impact, current_weights):
-    """Render explanation section."""
+    """Fixed explanation section with proper state management."""
     st.markdown("## Target Explanation")
 
     target_names = [ts.get("target", "Unknown") for ts in target_scores]
@@ -4143,15 +4234,16 @@ def render_explain_section(target_scores, rank_impact, current_weights):
     if selected_target:
         target_data = next((ts for ts in target_scores if ts.get("target") == selected_target), None)
         if target_data:
-            sticky_local_nav(["Contributions", "Network", "Modality"], "explain")
+            # Get current section for this specific context
+            current_section = sticky_local_nav(["Contributions", "Network", "Modality"], "explain")
 
-            if st.session_state.local_section == "Contributions":
+            if current_section == "Contributions":
                 try:
                     render_actionable_explanation_panel_with_deltas(target_data, selected_target, rank_impact)
                 except:
                     render_actionable_explanation_panel(target_data, selected_target)
 
-            elif st.session_state.local_section == "Network":
+            elif current_section == "Network":
                 try:
                     render_mini_ppi_card(selected_target)
                 except:
@@ -4194,16 +4286,17 @@ def render_modality_components(target_data):
 
 
 def render_evidence_section(target_scores):
-    """Render evidence section with matrix and filters."""
+    """Fixed evidence section with proper state management."""
     st.markdown("## Supporting Evidence")
 
-    sticky_local_nav(["Matrix", "Details", "Diagnostics"], "evidence")
+    # Get current section for this specific context
+    current_section = sticky_local_nav(["Matrix", "Details", "Diagnostics"], "evidence")
 
-    if st.session_state.local_section == "Matrix":
+    if current_section == "Matrix":
         render_supporting_evidence_matrix(target_scores)
-    elif st.session_state.local_section == "Details":
+    elif current_section == "Details":
         render_evidence_details(target_scores)
-    else:
+    else:  # Diagnostics
         render_evidence_diagnostics(target_scores)
 
 
@@ -4297,12 +4390,20 @@ def render_evidence_diagnostics(target_scores):
 
 
 def render_sensitivity_section(rank_impact, current_weights, target_scores):
-    """Render sensitivity analysis section."""
+    """Fixed sensitivity analysis section with proper state management."""
     st.markdown("## Sensitivity Analysis")
 
-    sticky_local_nav(["Weight Impact", "Ablation", "Stability"], "sensitivity")
+    # Get current section for this specific context
+    current_section = sticky_local_nav(["Weight Impact", "Ablation", "Stability"], "sensitivity")
 
-    if st.session_state.local_section == "Weight Impact":
+    # Get the last request data with complete ScoreRequest format
+    last_request = st.session_state.get("last_request")
+
+    if not last_request:
+        st.warning("No analysis data available. Please run an analysis first.")
+        return
+
+    if current_section == "Weight Impact":
         if rank_impact:
             try:
                 render_ranking_impact_analysis(rank_impact, current_weights)
@@ -4311,23 +4412,55 @@ def render_sensitivity_section(rank_impact, current_weights, target_scores):
         else:
             st.info("No ranking impact data available")
 
-    elif st.session_state.local_section == "Ablation":
+    elif current_section == "Ablation":
+        # Pass the complete last_request instead of partial data
         try:
             render_channel_ablation_analysis(
-                {"targets": target_scores},
-                {"weights": current_weights}
+                st.session_state.get("scoring_results", {}),
+                last_request  # This contains disease, targets, and weights
             )
-        except:
-            st.info("Ablation analysis unavailable")
+        except Exception as e:
+            st.error(f"Ablation analysis error: {str(e)}")
 
     else:  # Stability
+        # Pass the complete last_request instead of partial data
         try:
             render_stability_sensitivity_analysis(
-                {"targets": target_scores},
-                {"weights": current_weights}
+                st.session_state.get("scoring_results", {}),
+                last_request  # This contains disease, targets, and weights
             )
-        except:
-            st.info("Stability analysis unavailable")
+        except Exception as e:
+            st.error(f"Stability analysis error: {str(e)}")
+
+
+def render_rankings_chart_altair(target_scores):
+    """Alternative chart using Altair for better control."""
+    try:
+        import altair as alt
+
+        sorted_targets = sorted(target_scores, key=lambda x: x.get("total_score", 0), reverse=True)[:10]
+
+        chart_data = pd.DataFrame({
+            'Target': [ts.get('target', 'Unknown') for ts in sorted_targets],
+            'Score': [ts.get('total_score', 0) for ts in sorted_targets]
+        })
+
+        # Create horizontal bar chart with Altair
+        chart = alt.Chart(chart_data).mark_bar().encode(
+            x=alt.X('Score:Q', title='Total Score'),
+            y=alt.Y('Target:O', sort='-x', title='Target'),
+            color=alt.Color('Score:Q', scale=alt.Scale(scheme='viridis'))
+        ).properties(
+            width=600,
+            height=300,
+            title='Target Rankings'
+        )
+
+        st.altair_chart(chart, use_container_width=True)
+
+    except ImportError:
+        # Fallback to simple bar chart if Altair not available
+        render_rankings_chart(target_scores)
 
 
 def render_benchmark_section(results, selected_disease_name):
