@@ -91,17 +91,17 @@ Create virtual environment
 python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
-# Install dependencies
+Install dependencies
 pip install -r requirements.txt
 
-# Set environment variables
+Set environment variables
 export API_PORT=8001
 export STREAMLIT_PORT=8501
 
-# Start backend API
+Start backend API
 python -m uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
 
-# Start dashboard (in separate terminal)
+Start dashboard (in separate terminal)
 streamlit run dashboard/ui_app.py --server.port 8501
 
 ## License
