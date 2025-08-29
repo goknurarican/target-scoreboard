@@ -1,0 +1,21 @@
+{
+  "EGFR": {
+    "risk_level": "low",
+    "approved_drugs": ["erlotinib", "gefitinib", "osimertinib"],
+    "known_toxicities": ["skin_rash", "diarrhea"],
+    "tissue_specificity": 0.7
+  },
+  "ERBB2": {
+    "risk_level": "low",
+    "approved_drugs": ["trastuzumab", "pertuzumab"],
+    "known_toxicities": ["cardiotoxicity"],
+    "tissue_specificity": 0.8
+  },
+  "MET": {
+    "risk_level": "moderate",
+    "approved_drugs": ["capmatinib"],
+    "known_toxicities": ["edema", "nausea"],
+    "tissue_specificity": 0.5
+  }
+}
+

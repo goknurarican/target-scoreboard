@@ -2,377 +2,420 @@
 # All rights reserved. Licensed for internal evaluation only.
 # See LICENSE-EVALUATION.md for terms.
 
-
 """
-PPI proximity channel with Random Walk with Restart (RWR) for network medicine.
+PPI proximity channel - Phase 1B Production with STRING-DB integration.
+Real protein-protein interaction data with RWR and centrality analysis.
 """
+import asyncio
+import logging
 import networkx as nx
 import numpy as np
 from scipy.sparse import csr_matrix
 from scipy.sparse.linalg import norm
 from typing import Dict, List, Tuple, Optional, Set
-import logging
-from pathlib import Path
+
+from ..schemas import ChannelScore, EvidenceRef, DataQualityFlags, PPINetwork, get_utc_now
+from ..validation import get_validator
+from ..data_access.stringdb import get_stringdb_client
 
 logger = logging.getLogger(__name__)
 
 
-class PPINetwork:
-    """PPI network with centrality and RWR analysis capabilities."""
+class PPIProximityChannel:
+    """
+    Production PPI proximity channel using real STRING-DB data.
+    """
 
-    def __init__(self, edges_file: str = "data_demo/ppi_edges.tsv"):
-        self.graph = nx.Graph()
-        self.adjacency_matrix = None
-        self.node_to_index = {}
-        self.index_to_node = {}
-        self.edges_file = edges_file
-        self._load_network()
+    def __init__(self):
+        self.validator = get_validator()
+        self.channel_name = "ppi"
+        self._fallback_network = None
 
-    def _load_network(self):
-        """Load PPI network from TSV file or create demo network."""
-        edges_path = Path(self.edges_file)
+    async def compute_score(self, gene: str, disease_genes: Optional[List[str]] = None) -> ChannelScore:
+        """
+        Compute PPI proximity score using STRING-DB data + network analysis.
 
-        if not edges_path.exists():
-            logger.warning(f"PPI edges file not found: {edges_path}")
-            self._create_demo_network()
-            return
+        Args:
+            gene: Target gene symbol
+            disease_genes: Disease-associated genes for RWR seeding
+
+        Returns:
+            ChannelScore with proximity metrics and evidence
+        """
+        evidence_refs = []
+        components = {}
+        quality_flags = DataQualityFlags()
 
         try:
-            with open(edges_path, 'r') as f:
-                for line_num, line in enumerate(f):
-                    if line_num == 0 and line.startswith('protein1'):
-                        continue  # Skip header
+            # Fetch PPI network from STRING-DB
+            stringdb_client = await get_stringdb_client()
+            ppi_network = await stringdb_client.fetch_ppi(gene, limit=50)
 
-                    parts = line.strip().split('\t')
-                    if len(parts) >= 2:
-                        protein1, protein2 = parts[0], parts[1]
-                        # Add edge with optional confidence score
-                        confidence = float(parts[2]) if len(parts) > 2 else 1.0
-                        self.graph.add_edge(protein1, protein2, weight=confidence)
+            # Validate network quality
+            network_quality = await stringdb_client.validate_network_quality(ppi_network)
+            quality_flags = network_quality
+
+            # Check if network is usable
+            if len(ppi_network.edges) == 0:
+                logger.warning(f"Empty PPI network for {gene}")
+                return ChannelScore(
+                    name=self.channel_name,
+                    score=None,
+                    status="data_missing",
+                    components={"network_size": 0},
+                    evidence=[],
+                    quality=DataQualityFlags(partial=True, notes="No PPI interactions found")
+                )
+
+            # Build NetworkX graph from STRING data
+            nx_graph = self._build_networkx_graph(ppi_network)
+
+            # Compute proximity score
+            if disease_genes and len(disease_genes) > 1:
+                # Use RWR if we have disease context
+                proximity_score = await self._compute_rwr_score(gene, disease_genes, nx_graph)
+                method = "rwr"
+            else:
+                # Fall back to centrality analysis
+                proximity_score = self._compute_centrality_score(gene, nx_graph)
+                method = "centrality"
+
+            # Build components
+            components = {
+               "network_size": float(len(ppi_network.edges)),
+                "avg_confidence": float(
+                    sum(edge.confidence for edge in ppi_network.edges) / len(ppi_network.edges))
+                                                   }
+            # metinleri kalite notlarına ekle
+            quality_flags.notes = f"method={method}; string_version={ppi_network.source}"
+
+            # Add centrality metrics as components
+            centrality_scores = self._compute_centrality_metrics(gene, nx_graph)
+            components.update(centrality_scores)
+
+            # Convert STRING evidence to EvidenceRef
+            for edge in ppi_network.edges[:5]:  # Include top 5 edges as evidence
+                for evidence in edge.evidence:
+                    evidence_refs.append(evidence)
+
+            # Add summary evidence
+            string_evidence = EvidenceRef(
+                source="stringdb",
+                title=f"STRING PPI network: {len(ppi_network.edges)} interactions",
+                url=f"https://string-db.org/network/{gene}",
+                source_quality="high",
+                timestamp=get_utc_now()
+            )
+            evidence_refs.append(string_evidence)
 
             logger.info(
-                f"Loaded PPI network: {self.graph.number_of_nodes()} nodes, {self.graph.number_of_edges()} edges")
+                f"PPI proximity computed for {gene}",
+                extra={
+                    "gene": gene,
+                    "score": proximity_score,
+                    "network_size": len(ppi_network.edges),
+                    "method": method,
+                    "avg_confidence": components["avg_confidence"]
+                }
+            )
+
+            return ChannelScore(
+                name=self.channel_name,
+                score=proximity_score,
+                status="ok",
+                components=components,
+                evidence=evidence_refs,
+                quality=quality_flags
+            )
 
         except Exception as e:
-            logger.error(f"Error loading PPI network: {e}")
-            self._create_demo_network()
+            logger.error(f"PPI proximity error for {gene}: {e}")
 
-        self._prepare_adjacency_matrix()
+            # Try fallback network if available
+            return ChannelScore(
+                               name=self.channel_name, score = None, status = "error",
+                          components = {}, evidence = [],
+                           quality = DataQualityFlags(notes=f"Channel error: {str(e)[:100]}")
+                                                   )
 
-    def _create_demo_network(self):
-        """Create a robust demo network for testing."""
-        logger.info("Creating demo PPI network")
-        self.graph = nx.Graph()
+    def _build_networkx_graph(self, ppi_network: PPINetwork) -> nx.Graph:
+        """Convert PPINetwork to NetworkX graph."""
+        graph = nx.Graph()
 
-        # Create a comprehensive demo network with known cancer genes and their interactions
-        demo_edges = [
-            # EGFR signaling pathway
-            ("EGFR", "ERBB2", 0.95), ("EGFR", "GRB2", 0.90), ("EGFR", "SOS1", 0.85),
-            ("EGFR", "STAT3", 0.80), ("EGFR", "PIK3CA", 0.75),
+        for edge in ppi_network.edges:
+            graph.add_edge(
+                edge.source_gene,
+                edge.partner,
+                weight=edge.confidence,
+                confidence=edge.confidence
+            )
 
-            # ERBB2 interactions
-            ("ERBB2", "GRB2", 0.85), ("ERBB2", "PIK3CA", 0.80), ("ERBB2", "STAT3", 0.75),
+        return graph
 
-            # RAS/MAPK pathway
-            ("KRAS", "RAF1", 0.95), ("KRAS", "PIK3CA", 0.85), ("KRAS", "SOS1", 0.80),
-            ("RAF1", "MAP2K1", 0.90), ("MAP2K1", "MAPK1", 0.90), ("MAPK1", "JUN", 0.85),
-            ("BRAF", "MAP2K1", 0.95), ("BRAF", "RAF1", 0.75),
-
-            # PI3K/AKT pathway
-            ("PIK3CA", "AKT1", 0.90), ("AKT1", "MTOR", 0.85), ("AKT1", "GSK3B", 0.80),
-            ("PTEN", "AKT1", 0.85), ("PTEN", "PIK3CA", 0.75),
-
-            # p53 pathway
-            ("TP53", "MDM2", 0.95), ("TP53", "CDKN1A", 0.90), ("TP53", "ATM", 0.85),
-            ("TP53", "BRCA1", 0.80), ("MDM2", "ATM", 0.75),
-
-            # BRCA interactions
-            ("BRCA1", "BRCA2", 0.90), ("BRCA1", "ATM", 0.85), ("BRCA2", "RAD51", 0.85),
-
-            # MET pathway
-            ("MET", "GRB2", 0.85), ("MET", "SOS1", 0.80), ("MET", "PIK3CA", 0.75),
-
-            # ALK interactions
-            ("ALK", "GRB2", 0.80), ("ALK", "STAT3", 0.85), ("ALK", "PIK3CA", 0.75),
-
-            # Additional hub connections
-            ("GRB2", "SOS1", 0.90), ("GRB2", "PIK3CA", 0.80),
-            ("STAT3", "JUN", 0.75), ("STAT3", "MYC", 0.80),
-
-            # Cell cycle
-            ("RB1", "E2F1", 0.90), ("RB1", "CDKN1A", 0.75), ("E2F1", "MYC", 0.80),
-
-            # VHL pathway
-            ("VHL", "HIF1A", 0.95), ("HIF1A", "VEGFA", 0.85),
-
-            # Additional cancer-relevant interactions
-            ("MYC", "MAX", 0.90), ("JUN", "FOS", 0.85), ("VEGFA", "KDR", 0.90)
-        ]
-
-        for node1, node2, weight in demo_edges:
-            self.graph.add_edge(node1, node2, weight=weight)
-
-        logger.info(
-            f"Created demo PPI network: {self.graph.number_of_nodes()} nodes, {self.graph.number_of_edges()} edges")
-
-        self._prepare_adjacency_matrix()
-
-    def _prepare_adjacency_matrix(self):
-        """Prepare adjacency matrix for RWR calculations."""
-        nodes = list(self.graph.nodes())
-        self.node_to_index = {node: i for i, node in enumerate(nodes)}
-        self.index_to_node = {i: node for i, node in enumerate(nodes)}
-
-        n = len(nodes)
-        if n == 0:
-            return
-
-        # Create weighted adjacency matrix
-        adjacency = np.zeros((n, n))
-        for edge in self.graph.edges(data=True):
-            i = self.node_to_index[edge[0]]
-            j = self.node_to_index[edge[1]]
-            weight = edge[2].get('weight', 1.0)
-            adjacency[i, j] = weight
-            adjacency[j, i] = weight
-
-        self.adjacency_matrix = csr_matrix(adjacency)
-
-    def get_disease_seed_genes(self, disease_genes: List[str], n_seeds: int = 20) -> Set[str]:
-        """
-        Get seed genes for RWR from disease-associated genes.
-
-        Args:
-            disease_genes: List of disease-associated gene symbols
-            n_seeds: Maximum number of seeds to use
-
-        Returns:
-            Set of seed gene symbols present in the network
-        """
-        # Find disease genes present in network
-        network_genes = set(self.graph.nodes())
-        seed_candidates = [gene for gene in disease_genes if gene in network_genes]
-
-        if not seed_candidates:
-            logger.warning("No disease genes found in network, using degree hubs as seeds")
-            # Fall back to highest degree nodes
-            degree_dict = dict(self.graph.degree())
-            top_hubs = sorted(degree_dict.items(), key=lambda x: x[1], reverse=True)[:n_seeds]
-            return {node for node, _ in top_hubs}
-
-        # Take top N seeds (prioritize by presence in network)
-        seeds = set(seed_candidates[:n_seeds])
-        logger.info(f"Using {len(seeds)} disease genes as RWR seeds: {list(seeds)[:5]}...")
-
-        return seeds
-
-    def random_walk_with_restart(self, seed_genes: Set[str], restart_prob: float = 0.3,
-                                 max_iter: int = 100, tolerance: float = 1e-6) -> Dict[str, float]:
-        """
-        Perform Random Walk with Restart (RWR) on the network.
-
-        Args:
-            seed_genes: Set of seed gene symbols to start random walk
-            restart_prob: Probability of restarting to seed nodes
-            max_iter: Maximum number of iterations
-            tolerance: Convergence tolerance
-
-        Returns:
-            Dict mapping gene symbols to steady-state probabilities
-        """
-        if self.adjacency_matrix is None or len(seed_genes) == 0:
-            return {}
-
-        n = self.adjacency_matrix.shape[0]
-
-        # Create seed vector
-        seed_vector = np.zeros(n)
-        seed_indices = []
-        for gene in seed_genes:
-            if gene in self.node_to_index:
-                idx = self.node_to_index[gene]
-                seed_indices.append(idx)
-                seed_vector[idx] = 1.0
-
-        if len(seed_indices) == 0:
-            logger.warning("No seed genes found in network")
-            return {}
-
-        # Normalize seed vector
-        seed_vector = seed_vector / np.sum(seed_vector)
-
-        # Create column-normalized adjacency matrix (transition matrix)
-        adjacency = self.adjacency_matrix.toarray()
-        column_sums = np.sum(adjacency, axis=0)
-        # Avoid division by zero
-        column_sums[column_sums == 0] = 1.0
-        transition_matrix = adjacency / column_sums[np.newaxis, :]
-
-        # Initialize probability vector
-        prob_vector = seed_vector.copy()
-
-        # Iterative random walk
-        for iteration in range(max_iter):
-            new_prob = (1 - restart_prob) * transition_matrix.dot(prob_vector) + restart_prob * seed_vector
-
-            # Check convergence
-            diff = norm(new_prob - prob_vector, ord=1)
-            if diff < tolerance:
-                logger.info(f"RWR converged after {iteration + 1} iterations (diff: {diff:.2e})")
-                break
-
-            prob_vector = new_prob
-        else:
-            logger.warning(f"RWR did not converge after {max_iter} iterations")
-
-        # Convert back to gene symbol mapping
-        result = {}
-        for i, prob in enumerate(prob_vector):
-            gene = self.index_to_node[i]
-            result[gene] = float(prob)
-
-        return result
-
-    def compute_centrality_scores(self, target: str) -> Dict[str, float]:
-        """Compute various centrality scores for a target."""
-        if target not in self.graph:
-            return {"degree": 0.0, "betweenness": 0.0, "closeness": 0.0}
-
-        # Degree centrality
-        degree_cent = nx.degree_centrality(self.graph).get(target, 0.0)
-
-        # Betweenness centrality (expensive for large graphs)
-        if self.graph.number_of_nodes() < 1000:
-            betweenness_cent = nx.betweenness_centrality(
-                self.graph,
-                k=min(100, self.graph.number_of_nodes())
-            ).get(target, 0.0)
-        else:
-            betweenness_cent = 0.0
-
-        # Closeness centrality
-        if nx.is_connected(self.graph):
-            closeness_cent = nx.closeness_centrality(self.graph).get(target, 0.0)
-        else:
-            # For disconnected graphs, compute on the component containing the target
-            if target in self.graph:
-                component = nx.node_connected_component(self.graph, target)
-                subgraph = self.graph.subgraph(component)
-                closeness_cent = nx.closeness_centrality(subgraph).get(target, 0.0)
-            else:
-                closeness_cent = 0.0
-
-        return {
-            "degree": degree_cent,
-            "betweenness": betweenness_cent,
-            "closeness": closeness_cent
-        }
-
-
-# Global network instance
-ppi_network = PPINetwork()
-
-
-def compute_ppi_proximity(target: str, disease_genes: Optional[List[str]] = None,
-                          rwr_enabled: bool = True) -> Tuple[float, List[str]]:
-    """
-    Compute PPI proximity score using centrality measures or RWR.
-
-    Args:
-        target: Target gene symbol
-        disease_genes: List of disease-associated genes for RWR seeding
-        rwr_enabled: Whether to use RWR (True) or fall back to centrality (False)
-
-    Returns:
-        (proximity_score, evidence_references)
-    """
-    evidence_refs = []
-    evidence_refs.append("STRING:v12.0")
-
-    # Check if target is in network
-    if target not in ppi_network.graph:
-        logger.warning(f"Target {target} not found in PPI network")
-        evidence_refs.append(f"PPI_status:not_in_network")
-        return 0.2, evidence_refs
-
-    if rwr_enabled and disease_genes:
+    async def _compute_rwr_score(self, target: str, disease_genes: List[str], graph: nx.Graph) -> float:
+        """Compute Random Walk with Restart score."""
         try:
-            # Use RWR approach
-            seed_genes = ppi_network.get_disease_seed_genes(disease_genes, n_seeds=20)
+            if target not in graph:
+                return 0.2
 
-            if seed_genes:
-                rwr_scores = ppi_network.random_walk_with_restart(seed_genes)
+            # Prepare disease seed genes (present in network)
+            network_genes = set(graph.nodes())
+            seed_genes = set(gene for gene in disease_genes if gene in network_genes)
 
-                if rwr_scores:
-                    # Get target's RWR score
-                    target_rwr_score = rwr_scores.get(target, 0.0)
+            if not seed_genes:
+                logger.warning("No disease genes found in network, using centrality fallback")
+                return self._compute_centrality_score(target, graph)
 
-                    # Min-max normalize across all scores
-                    all_scores = list(rwr_scores.values())
-                    if len(all_scores) > 1:
-                        min_score = min(all_scores)
-                        max_score = max(all_scores)
-                        if max_score > min_score:
-                            normalized_score = (target_rwr_score - min_score) / (max_score - min_score)
-                        else:
-                            normalized_score = 0.5
-                    else:
-                        normalized_score = target_rwr_score
+            # Prepare adjacency matrix
+            nodes = list(graph.nodes())
+            node_to_index = {node: i for i, node in enumerate(nodes)}
+            n = len(nodes)
 
-                    # Ensure reasonable bounds
-                    normalized_score = max(0.1, min(1.0, normalized_score))
+            if n == 0:
+                return 0.2
 
-                    evidence_refs.append(f"RWR_score:{target_rwr_score:.4f}")
-                    evidence_refs.append(f"RWR_seeds:{len(seed_genes)}")
-                    evidence_refs.append("RWR:seeded_by_disease_genes")
+            # Build adjacency matrix
+            adjacency = np.zeros((n, n))
+            for edge in graph.edges(data=True):
+                i = node_to_index[edge[0]]
+                j = node_to_index[edge[1]]
+                weight = edge[2].get('confidence', 1.0)
+                adjacency[i, j] = weight
+                adjacency[j, i] = weight
 
-                    logger.info(f"RWR score for {target}: {normalized_score:.3f} (raw: {target_rwr_score:.4f})")
-                    return normalized_score, evidence_refs
+            # Create seed vector
+            seed_vector = np.zeros(n)
+            for gene in seed_genes:
+                if gene in node_to_index:
+                    seed_vector[node_to_index[gene]] = 1.0
+
+            if np.sum(seed_vector) == 0:
+                return 0.2
+
+            seed_vector = seed_vector / np.sum(seed_vector)
+
+            # Create transition matrix
+            column_sums = np.sum(adjacency, axis=0)
+            column_sums[column_sums == 0] = 1.0
+            transition_matrix = adjacency / column_sums[np.newaxis, :]
+
+            # RWR iteration
+            restart_prob = 0.3
+            max_iter = 100
+            tolerance = 1e-6
+            prob_vector = seed_vector.copy()
+
+            for iteration in range(max_iter):
+                new_prob = (1 - restart_prob) * transition_matrix.dot(prob_vector) + restart_prob * seed_vector
+                diff = np.linalg.norm(new_prob - prob_vector, ord=1)
+
+                if diff < tolerance:
+                    break
+                prob_vector = new_prob
+
+            # Get target's RWR score
+            if target not in node_to_index:
+                return 0.2
+
+            target_rwr_score = prob_vector[node_to_index[target]]
+
+            # Normalize against all scores
+            all_scores = prob_vector[prob_vector > 0]
+            if len(all_scores) > 1:
+                min_score = np.min(all_scores)
+                max_score = np.max(all_scores)
+                if max_score > min_score:
+                    normalized_score = (target_rwr_score - min_score) / (max_score - min_score)
+                else:
+                    normalized_score = 0.5
+            else:
+                normalized_score = target_rwr_score
+
+            return max(0.1, min(1.0, normalized_score))
 
         except Exception as e:
             logger.error(f"RWR computation failed for {target}: {e}")
-            evidence_refs.append(f"RWR_error:{str(e)[:50]}")
+            return self._compute_centrality_score(target, graph)
 
-    # Fall back to centrality-based scoring
-    logger.info(f"Using centrality-based scoring for {target}")
-    centrality_scores = ppi_network.compute_centrality_scores(target)
+    def _compute_centrality_score(self, target: str, graph: nx.Graph) -> float:
+        """Compute centrality-based proximity score."""
+        if target not in graph:
+            return 0.2
 
-    # Combine centrality measures (weighted average)
-    combined_score = (
-            0.5 * centrality_scores["degree"] +
-            0.3 * centrality_scores["betweenness"] +
-            0.2 * centrality_scores["closeness"]
-    )
+        try:
+            # Degree centrality
+            degree_cent = nx.degree_centrality(graph).get(target, 0.0)
 
-    # Ensure minimum score
-    combined_score = max(0.1, combined_score)
+            # Betweenness centrality (for smaller networks)
+            betweenness_cent = 0.0
+            if graph.number_of_nodes() < 500:
+                betweenness_cent = nx.betweenness_centrality(
+                    graph, k=min(100, graph.number_of_nodes())
+                ).get(target, 0.0)
 
-    evidence_refs.append(f"Centrality_degree:{centrality_scores['degree']:.3f}")
-    evidence_refs.append(f"Centrality_betweenness:{centrality_scores['betweenness']:.3f}")
-    evidence_refs.append(f"Centrality_closeness:{centrality_scores['closeness']:.3f}")
-    evidence_refs.append("Centrality_method:fallback")
+            # Closeness centrality
+            closeness_cent = 0.0
+            if nx.is_connected(graph):
+                closeness_cent = nx.closeness_centrality(graph).get(target, 0.0)
+            else:
+                # Compute on target's component
+                if target in graph:
+                    component = nx.node_connected_component(graph, target)
+                    subgraph = graph.subgraph(component)
+                    closeness_cent = nx.closeness_centrality(subgraph).get(target, 0.0)
 
-    logger.info(f"Centrality score for {target}: {combined_score:.3f}")
-    return combined_score, evidence_refs
+            # Weighted combination
+            combined_score = (
+                    0.5 * degree_cent +
+                    0.3 * betweenness_cent +
+                    0.2 * closeness_cent
+            )
+
+            return max(0.1, min(1.0, combined_score))
+
+        except Exception as e:
+            logger.error(f"Centrality computation failed for {target}: {e}")
+            return 0.2
+
+    def _compute_centrality_metrics(self, target: str, graph: nx.Graph) -> Dict[str, float]:
+        """Compute detailed centrality metrics for components."""
+        if target not in graph:
+            return {"degree": 0.0, "betweenness": 0.0, "closeness": 0.0}
+
+        try:
+            metrics = {}
+
+            # Degree centrality
+            metrics["degree"] = nx.degree_centrality(graph).get(target, 0.0)
+
+            # Betweenness (for reasonable sized networks)
+            if graph.number_of_nodes() < 500:
+                metrics["betweenness"] = nx.betweenness_centrality(
+                    graph, k=min(100, graph.number_of_nodes())
+                ).get(target, 0.0)
+            else:
+                metrics["betweenness"] = 0.0
+
+            # Closeness
+            if nx.is_connected(graph):
+                metrics["closeness"] = nx.closeness_centrality(graph).get(target, 0.0)
+            else:
+                if target in graph:
+                    component = nx.node_connected_component(graph, target)
+                    subgraph = graph.subgraph(component)
+                    metrics["closeness"] = nx.closeness_centrality(subgraph).get(target, 0.0)
+                else:
+                    metrics["closeness"] = 0.0
+
+            return metrics
+
+        except Exception as e:
+            logger.error(f"Centrality metrics failed for {target}: {e}")
+            return {"degree": 0.0, "betweenness": 0.0, "closeness": 0.0}
+
+    async def _compute_fallback_score(self, target: str, disease_genes: Optional[List[str]] = None) -> float:
+        """Compute score using fallback demo network."""
+        if self._fallback_network is None:
+            self._fallback_network = self._create_demo_network()
+
+        return self._compute_centrality_score(target, self._fallback_network)
+
+    def _create_demo_network(self) -> nx.Graph:
+        """Create demo network as fallback."""
+        graph = nx.Graph()
+
+        # Known cancer gene interactions
+        demo_edges = [
+            ("EGFR", "ERBB2", 0.95), ("EGFR", "GRB2", 0.90), ("EGFR", "SOS1", 0.85),
+            ("KRAS", "RAF1", 0.95), ("KRAS", "PIK3CA", 0.85), ("BRAF", "MAP2K1", 0.95),
+            ("PIK3CA", "AKT1", 0.90), ("PTEN", "AKT1", 0.85), ("TP53", "MDM2", 0.95),
+            ("MET", "GRB2", 0.85), ("ALK", "STAT3", 0.85)
+        ]
+
+        for node1, node2, weight in demo_edges:
+            graph.add_edge(node1, node2, weight=weight)
+
+        return graph
+
+
+# ========================
+# Global channel instance
+# ========================
+
+_ppi_channel: Optional[PPIProximityChannel] = None
+
+
+async def get_ppi_channel() -> PPIProximityChannel:
+    """Get global PPI proximity channel instance."""
+    global _ppi_channel
+    if _ppi_channel is None:
+        _ppi_channel = PPIProximityChannel()
+    return _ppi_channel
+
+
+# ========================
+# Legacy compatibility functions
+# ========================
+
+async def compute_ppi_proximity(target: str, disease_genes: Optional[List[str]] = None, rwr_enabled: bool = True) -> \
+Tuple[float, List[str]]:
+    """
+    Legacy compatibility wrapper for existing scoring.py integration.
+
+    Args:
+        target: Target gene symbol
+        disease_genes: Disease-associated genes for RWR
+        rwr_enabled: Whether to use RWR (always True in production)
+
+    Returns:
+        (proximity_score, evidence_references) - compatible with existing code
+    """
+    try:
+        ppi_channel = await get_ppi_channel()
+        channel_result = await ppi_channel.compute_score(target, disease_genes)
+
+        # Convert to legacy format
+        if channel_result.status == "ok" and channel_result.score is not None:
+            score = channel_result.score
+
+            # Convert evidence refs to legacy string format
+            evidence_strings = []
+            for evidence in channel_result.evidence:
+                evidence_strings.append(f"Source:{evidence.source}")
+                if evidence.title:
+                    evidence_strings.append(f"Evidence:{evidence.title[:50]}")
+
+            # Add component info
+            for comp_name, comp_value in channel_result.components.items():
+                if isinstance(comp_value, (int, float)):
+                    evidence_strings.append(f"{comp_name}:{comp_value:.3f}")
+                else:
+                    evidence_strings.append(f"{comp_name}:{comp_value}")
+
+            return score, evidence_strings
+
+        elif channel_result.status == "data_missing":
+            logger.warning(f"No PPI data for {target}")
+            return 0.2, ["Status:data_missing", "Network:empty"]
+
+        else:  # error status
+            logger.error(f"PPI channel error for {target}")
+            return 0.2, [f"Status:error"]
+
+    except Exception as e:
+        logger.error(f"Legacy PPI score computation failed: {e}")
+        return 0.2, [f"Error:{str(e)[:50]}"]
 
 
 def get_ppi_network_stats() -> Dict:
-    """Get PPI network statistics."""
+    """Get PPI network statistics (placeholder for legacy compatibility)."""
     return {
-        "nodes": ppi_network.graph.number_of_nodes(),
-        "edges": ppi_network.graph.number_of_edges(),
-        "density": nx.density(ppi_network.graph),
-        "connected_components": nx.number_connected_components(ppi_network.graph),
-        "largest_component_size": len(
-            max(nx.connected_components(ppi_network.graph), key=len)
-        ) if ppi_network.graph.number_of_nodes() > 0 else 0
+        "notes": "Network stats now computed per-request from STRING-DB",
+        "source": "STRING-DB API",
+        "version": "12.0"
     }
 
 
 def get_network_neighbors(target: str, max_neighbors: int = 10) -> List[str]:
-    """Get network neighbors of a target gene."""
-    if target not in ppi_network.graph:
-        return []
-
-    neighbors = list(ppi_network.graph.neighbors(target))
-    return neighbors[:max_neighbors]
+    """Get network neighbors (placeholder - needs async refactor)."""
+    return []  # TODO: Implement async version

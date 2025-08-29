@@ -5,14 +5,26 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f6972594-5c1e-415c-9da7-b0816e64ec96" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vantai-target-scoreboard.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/data_access/chembl.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/data_access/patent_landscape.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/dashboard/components/network_viz.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/enhance_demo_data.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/start_interview_demo.sh" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/data_access/alphafold.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/data_access/expression_atlas.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/data_access/pubmed.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/data_access/stringdb.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/validation.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/safety_profiles.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/tissue_expression.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/channels/genetics.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/channels/genetics.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/channels/modality_fit.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/channels/modality_fit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/channels/pathway.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/channels/pathway.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/channels/ppi_proximity.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/channels/ppi_proximity.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/channels/safety.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/channels/safety.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/data_access/cache.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/data_access/cache.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/data_access/opentargets.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/data_access/opentargets.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/schemas.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/schemas.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/scoring.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/scoring.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dashboard/ui_app.py" beforeDir="false" afterPath="$PROJECT_DIR$/dashboard/ui_app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,19 +61,25 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "Errors",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.project.grazie&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/scripts" />
+      <recent name="$PROJECT_DIR$/tests" />
+    </key>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -80,6 +98,8 @@
       <updated>1755634742106</updated>
       <workItem from="1755634743483" duration="6973000" />
       <workItem from="1755642571971" duration="8694000" />
+      <workItem from="1755678240822" duration="40431000" />
+      <workItem from="1756046000133" duration="34148000" />
     </task>
     <servers />
   </component>

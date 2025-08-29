@@ -2,174 +2,236 @@
 # All rights reserved. Licensed for internal evaluation only.
 # See LICENSE-EVALUATION.md for terms.
 
-
 """
-Genetics channel for target scoring.
-Uses Open Targets association scores for genetic evidence.
+Genetics channel for target scoring - Phase 1C Production.
+Uses OpenTargets + PubMed via data_access layer. No synthetic fallbacks.
 """
-from typing import Tuple, List
 import logging
+from typing import List, Optional
+
+from ..schemas import ChannelScore, EvidenceRef, DataQualityFlags, get_utc_now
+from ..validation import get_validator
+from ..data_access.opentargets import get_ot_client
 
 logger = logging.getLogger(__name__)
 
 
-def compute_genetics_score(disease: str, target: str, ot_data: dict) -> Tuple[float, List[str]]:
+class GeneticsChannel:
     """
-    Compute genetics association score from Open Targets data with enhanced fallbacks.
+    Production genetics channel using real OpenTargets data.
+    """
+
+    def __init__(self):
+        self.validator = get_validator()
+        self.channel_name = "genetics"
+
+    async def compute_score(self, gene: str, disease: str) -> ChannelScore:
+        """
+        Compute genetics association score from OpenTargets + PubMed.
+
+        Args:
+            gene: Gene symbol
+            disease: Disease EFO ID
+
+        Returns:
+            ChannelScore with status, score, components, evidence, quality flags
+        """
+        evidence_refs = []
+        components = {}
+        quality_flags = DataQualityFlags()
+
+        try:
+            # Get OpenTargets client
+            ot_client = await get_ot_client()
+
+            # Fetch gene-disease associations
+            associations = await ot_client.fetch_gene_disease_associations(gene, disease)
+
+            if not associations:
+                logger.warning(f"No genetic associations found for {gene}-{disease}")
+                return ChannelScore(
+                    name=self.channel_name,
+                    score=None,
+                    status="data_missing",
+                    components={},
+                    evidence=[],
+                    quality=DataQualityFlags(partial=True, notes="No associations found")
+                )
+
+            # Validate association data
+            for association in associations:
+                validation_result = self.validator.validate("opentargets", association)
+                if not validation_result.ok:
+                    quality_flags.partial = True
+                    quality_flags.notes = f"Validation issues: {'; '.join(validation_result.issues[:3])}"
+
+            # Extract genetics scores
+            overall_score = 0.0
+            genetics_score = 0.0
+            literature_score = 0.0
+            total_evidence_count = 0
+
+            for association in associations:
+                if association.source == "opentargets":
+                    overall_score = max(overall_score, association.score)
+                elif association.source == "opentargets_genetics":
+                    genetics_score = max(genetics_score, association.score)
+
+                # Count evidence
+                total_evidence_count += len(association.evidence)
+
+                # Build evidence references
+                for evidence in association.evidence:
+                    evidence_refs.append(evidence)
+
+            # Use genetics-specific score if available, otherwise overall
+            final_genetics_score = genetics_score if genetics_score > 0 else overall_score
+
+            # Components breakdown
+            components = {
+                "ot_overall": overall_score,
+                "ot_genetics": genetics_score,
+                "literature": literature_score,
+                "evidence_count": total_evidence_count
+            }
+
+            # Determine confidence level based on evidence
+            if total_evidence_count >= 50:
+                confidence_level = "high"
+            elif total_evidence_count >= 10:
+                confidence_level = "medium"
+            else:
+                confidence_level = "low"
+                quality_flags.partial = True
+
+            # Add confidence to components
+            components["confidence_level"] = confidence_level
+
+            # Success case
+            logger.info(
+                f"Genetics score computed for {gene}-{disease}: {final_genetics_score:.3f}",
+                extra={
+                    "gene": gene,
+                    "disease": disease,
+                    "score": final_genetics_score,
+                    "evidence_count": total_evidence_count,
+                    "confidence": confidence_level
+                }
+            )
+
+            return ChannelScore(
+                name=self.channel_name,
+                score=final_genetics_score,
+                status="ok",
+                components=components,
+                evidence=evidence_refs,
+                quality=quality_flags
+            )
+
+        except Exception as e:
+            logger.error(f"Genetics channel error for {gene}-{disease}: {e}")
+
+            return ChannelScore(
+                name=self.channel_name,
+                score=None,
+                status="error",
+                components={"error": str(e)[:100]},
+                evidence=[],
+                quality=DataQualityFlags(notes=f"Channel error: {str(e)[:100]}")
+            )
+
+    async def fetch_literature_evidence(self, gene: str, disease: str) -> List[EvidenceRef]:
+        """
+        Fetch additional literature evidence via PubMed.
+
+        Args:
+            gene: Gene symbol
+            disease: Disease identifier
+
+        Returns:
+            List of EvidenceRef objects from literature
+        """
+        try:
+            # TODO: Implement PubMedClient when created in Phase 1B
+            # For now, return evidence from OpenTargets associations
+            ot_client = await get_ot_client()
+            evidence_refs = await ot_client.fetch_evidences(gene, disease)
+
+            logger.info(f"Fetched {len(evidence_refs)} literature evidence for {gene}-{disease}")
+            return evidence_refs
+
+        except Exception as e:
+            logger.error(f"Literature evidence fetch failed for {gene}-{disease}: {e}")
+            return []
+
+
+# ========================
+# Global channel instance
+# ========================
+
+_genetics_channel: Optional[GeneticsChannel] = None
+
+
+async def get_genetics_channel() -> GeneticsChannel:
+    """Get global genetics channel instance."""
+    global _genetics_channel
+    if _genetics_channel is None:
+        _genetics_channel = GeneticsChannel()
+    return _genetics_channel
+
+
+# ========================
+# Legacy compatibility functions (for existing scoring.py)
+# ========================
+
+async def compute_genetics_score(disease: str, target: str, ot_data: dict) -> tuple[float, List[str]]:
+    """
+    Legacy compatibility wrapper for existing scoring.py integration.
 
     Args:
         disease: Disease EFO identifier
         target: Target gene symbol
-        ot_data: Open Targets API response data
+        ot_data: OpenTargets API response (legacy format)
 
     Returns:
-        (genetics_score, evidence_references)
+        (genetics_score, evidence_references) - compatible with existing code
     """
     try:
-        evidence_refs = []
+        # Use new production channel
+        genetics_channel = await get_genetics_channel()
+        channel_result = await genetics_channel.compute_score(target, disease)
 
-        # Check if we have valid OT data
-        if not ot_data or ot_data.get("error") or "genetics" not in ot_data:
-            logger.info(f"Using demo genetics scoring for {target}")
-            return _get_demo_genetics_score(target, evidence_refs)
+        # Convert to legacy format
+        if channel_result.status == "ok" and channel_result.score is not None:
+            score = channel_result.score
 
-        # Extract genetics score from OT data
-        genetics_score = ot_data.get("genetics", 0.0)
-        overall_score = ot_data.get("overall", 0.0)
-        evidence_count = ot_data.get("evidence_count", 0)
-        release = ot_data.get("release", "2024.06")
+            # Convert evidence refs to legacy string format
+            evidence_strings = []
+            for evidence in channel_result.evidence:
+                if evidence.pmid:
+                    evidence_strings.append(f"PMID:{evidence.pmid}")
+                evidence_strings.append(f"Source:{evidence.source}")
 
-        # Normalize to 0-1 range and ensure minimum score
-        normalized_score = max(0.1, min(1.0, genetics_score))
+            # Add component info
+            for comp_name, comp_value in channel_result.components.items():
+                if isinstance(comp_value, (int, float)):
+                    evidence_strings.append(f"{comp_name}:{comp_value:.3f}")
+                else:
+                    evidence_strings.append(f"{comp_name}:{comp_value}")
 
-        # Build evidence references
-        evidence_refs.append(f"OpenTargets:{release}")
-        evidence_refs.append(f"OT_genetics:{genetics_score:.3f}")
+            return score, evidence_strings
 
-        if overall_score > 0.5:
-            evidence_refs.append(f"OT_overall:{overall_score:.3f}")
+        elif channel_result.status == "data_missing":
+            logger.warning(f"No genetics data for {target}-{disease}")
+            return 0.0, ["Status:data_missing"]
 
-        if evidence_count > 0:
-            evidence_refs.append(f"Evidence_count:{evidence_count}")
-
-        # Add confidence level based on evidence
-        if evidence_count >= 50:
-            evidence_refs.append("Confidence:high")
-        elif evidence_count >= 10:
-            evidence_refs.append("Confidence:medium")
-        else:
-            evidence_refs.append("Confidence:low")
-
-        logger.info(f"OT genetics score for {target}: {normalized_score:.3f} (evidence: {evidence_count})")
-        return normalized_score, evidence_refs
+        else:  # error status
+            logger.error(f"Genetics channel error for {target}-{disease}")
+            return 0.0, [f"Status:error"]
 
     except Exception as e:
-        logger.error(f"Error computing genetics score for {target}: {e}")
-        evidence_refs = [f"Genetics_error:{str(e)[:50]}"]
-        return _get_demo_genetics_score(target, evidence_refs)
-
-
-def _get_demo_genetics_score(target: str, evidence_refs: List[str]) -> Tuple[float, List[str]]:
-    """
-    Generate realistic demo genetics scores based on known target biology.
-
-    Args:
-        target: Target gene symbol
-        evidence_refs: Evidence references list to append to
-
-    Returns:
-        (demo_score, updated_evidence_refs)
-    """
-    # Enhanced demo scores based on real genetic associations
-    demo_scores = {
-        # Strong genetic associations (oncogenes with driver mutations)
-        "EGFR": 0.89,  # Strong NSCLC driver
-        "ALK": 0.94,   # Strong fusion driver
-        "ERBB2": 0.82, # HER2 amplifications
-        "BRAF": 0.85,  # V600E mutations
-        "KIT": 0.88,   # GIST driver
-        "ABL1": 0.91,  # BCR-ABL fusions
-
-        # Moderate genetic associations
-        "MET": 0.71,   # Amplifications and mutations
-        "KRAS": 0.78,  # Common but complex
-        "PIK3CA": 0.76, # Hotspot mutations
-        "PTEN": 0.69,  # Loss of function
-        "RET": 0.83,   # Fusion driver
-
-        # Tumor suppressors (strong but different pattern)
-        "TP53": 0.92,  # Most commonly mutated
-        "RB1": 0.79,   # Retinoblastoma gene
-        "BRCA1": 0.88, # Hereditary breast cancer
-        "BRCA2": 0.87, # Hereditary breast cancer
-        "VHL": 0.86,   # Von Hippel-Lindau
-        "APC": 0.84,   # Colorectal cancer
-
-        # Moderate associations
-        "PDGFRA": 0.68,
-        "FLT3": 0.74,
-        "IDH1": 0.71,
-        "IDH2": 0.69,
-        "NRAS": 0.65,
-
-        # Lower but significant
-        "SRC": 0.58,
-        "JAK2": 0.72,
-        "STAT3": 0.45,
-        "MYC": 0.63,
-        "CCND1": 0.57
-    }
-
-    # Get score with some variability for unlisted targets
-    if target in demo_scores:
-        base_score = demo_scores[target]
-        evidence_refs.append(f"Demo_genetics:{base_score:.2f}")
-        evidence_refs.append("Known_cancer_gene:curated")
-    else:
-        # Generate score based on target characteristics
-        base_score = _estimate_genetics_score_by_name(target)
-        evidence_refs.append(f"Demo_genetics:{base_score:.2f}")
-        evidence_refs.append("Estimated_score:heuristic")
-
-    evidence_refs.append("Data_source:demo_fallback")
-
-    return base_score, evidence_refs
-
-
-def _estimate_genetics_score_by_name(target: str) -> float:
-    """
-    Estimate genetics score based on gene name patterns and known biology.
-
-    Args:
-        target: Target gene symbol
-
-    Returns:
-        Estimated genetics score (0.1-0.8)
-    """
-    target_upper = target.upper()
-
-    # Oncogene patterns
-    if any(pattern in target_upper for pattern in ['ERB', 'EGFR', 'ALK', 'RET', 'MET']):
-        return 0.75
-
-    # Kinase patterns
-    if any(pattern in target_upper for pattern in ['KIN', 'CDK', 'PLK', 'AUR']):
-        return 0.65
-
-    # Tumor suppressor patterns
-    if any(pattern in target_upper for pattern in ['P53', 'RB', 'PTEN', 'VHL']):
-        return 0.80
-
-    # Transcription factor patterns
-    if any(pattern in target_upper for pattern in ['MYC', 'FOS', 'JUN', 'E2F']):
-        return 0.55
-
-    # Metabolic enzyme patterns
-    if any(pattern in target_upper for pattern in ['IDH', 'SDH', 'FH']):
-        return 0.60
-
-    # Default for unknown genes
-    return 0.35
+        logger.error(f"Legacy genetics score computation failed: {e}")
+        return 0.0, [f"Error:{str(e)[:50]}"]
 
 
 def get_genetics_explanation(score: float, evidence_refs: List[str]) -> str:
@@ -195,7 +257,7 @@ def get_genetics_explanation(score: float, evidence_refs: List[str]) -> str:
         return f"Minimal genetic association (score: {score:.3f}). Little to no genetic evidence found."
 
 
-def validate_genetics_inputs(disease: str, target: str) -> Tuple[bool, str]:
+def validate_genetics_inputs(disease: str, target: str) -> tuple[bool, str]:
     """
     Validate inputs for genetics scoring.
 
@@ -234,9 +296,9 @@ def get_genetics_data_summary() -> dict:
         Dictionary with scoring system information
     """
     return {
-        "primary_source": "Open Targets Platform",
-        "fallback_mode": "Curated demo scores",
-        "score_range": "0.1 - 1.0",
+        "primary_source": "Open Targets Platform (Production API)",
+        "fallback_mode": "None (data_missing status returned)",
+        "score_range": "0.0 - 1.0",
         "evidence_types": [
             "GWAS associations",
             "Rare disease mutations",
@@ -244,6 +306,7 @@ def get_genetics_data_summary() -> dict:
             "Copy number variations",
             "Structural variants"
         ],
-        "demo_targets_covered": 25,
-        "confidence_levels": ["low", "medium", "high"]
+        "validation": "DataQualityValidator with staleness checks",
+        "cache_ttl": "24 hours",
+        "status_types": ["ok", "data_missing", "error"]
     }

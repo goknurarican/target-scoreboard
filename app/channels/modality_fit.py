@@ -2,637 +2,583 @@
 # All rights reserved. Licensed for internal evaluation only.
 # See LICENSE-EVALUATION.md for terms.
 
-
 """
-Modality fit channel with explicit subscores for PROTAC/degrader suitability.
+Modality fit channel - Phase 1B Production with real data integration.
+Uses Expression Atlas + AlphaFold for E3 co-expression and structure confidence.
 """
-import pandas as pd
-import networkx as nx
-from pathlib import Path
-from typing import Dict, List, Tuple, Optional
+import asyncio
 import logging
+import networkx as nx
 import numpy as np
+from typing import Dict, List, Tuple, Optional
+
+from ..schemas import ChannelScore, EvidenceRef, DataQualityFlags, get_utc_now
+from ..validation import get_validator
+from ..data_access.expression_atlas import get_expression_atlas_client
+from ..data_access.alphafold import get_alphafold_client
 
 logger = logging.getLogger(__name__)
 
+# E3 ligase list for co-expression analysis
+E3_LIGASES = {
+    'CRBN', 'VHL', 'DDB1', 'DCAF1', 'DCAF4', 'DCAF7', 'DCAF8', 'DCAF11', 'DCAF15',
+    'MDM2', 'FBXW7', 'BTRC', 'SKP1', 'CUL1', 'CUL2', 'CUL3', 'CUL4A', 'CUL4B'
+}
 
-class ModalityAnalyzer:
-    """Analyzer for modality-specific druggability scores."""
+# Tissues relevant for safety assessment
+SAFETY_CRITICAL_TISSUES = {
+    'heart', 'brain', 'liver', 'kidney', 'blood', 'bone_marrow'
+}
+
+# Known ternary complex formation data (minimal curated set)
+TERNARY_EVIDENCE = {
+    'EGFR': 'reported',
+    'ERBB2': 'reported',
+    'ALK': 'reported',
+    'BTK': 'reported',
+    'BCL2': 'reported',
+    'KRAS': 'weak',
+    'MET': 'weak',
+    'BRAF': 'weak',
+    'TP53': 'challenging',
+    'RB1': 'challenging',
+    'MYC': 'challenging'
+}
+
+
+class ModalityFitChannel:
+    """
+    Production modality fit channel using real expression and structure data.
+    """
 
     def __init__(self):
-        self.expression_data = {}
-        self.ternary_data = {}
-        self.hotspot_data = {}
-        self.e3_ligases = {'CRBN', 'VHL', 'DDB1', 'DCAF1', 'DCAF4', 'DCAF7', 'DCAF8', 'DCAF11', 'DCAF15'}
-        self._load_data()
+        self.validator = get_validator()
+        self.channel_name = "modality_fit"
 
-    def _load_data(self):
-        """Load demo data files or create synthetic data."""
-        self._load_expression_data()
-        self._load_ternary_data()
-        self._load_hotspot_data()
-
-    def _load_expression_data(self):
-        """Load expression data for E3 co-expression analysis."""
-        expression_file = Path("data_demo/expression_demo.csv")
-
-        if expression_file.exists():
-            try:
-                df = pd.read_csv(expression_file)
-                # Organize by tissue and gene
-                for _, row in df.iterrows():
-                    tissue = row['tissue']
-                    gene = row['gene']
-                    tpm = row['tpm']
-
-                    if tissue not in self.expression_data:
-                        self.expression_data[tissue] = {}
-                    self.expression_data[tissue][gene] = tpm
-
-                logger.info(f"Loaded expression data from file: {len(self.expression_data)} tissues")
-                return
-
-            except Exception as e:
-                logger.error(f"Error loading expression data: {e}")
-
-        # Create enhanced demo expression data
-        logger.info("Creating enhanced demo expression data")
-        self._create_enhanced_expression_data()
-
-    def _create_enhanced_expression_data(self):
-        """Create comprehensive demo expression data with realistic patterns."""
-        # Enhanced expression data with more tissues and realistic TPM values
-        self.expression_data = {
-            'lung': {
-                'EGFR': 245.8, 'CRBN': 12.4, 'VHL': 34.2, 'DDB1': 28.9, 'DCAF1': 15.6,
-                'KRAS': 89.3, 'ERBB2': 123.7, 'MET': 67.2, 'ALK': 8.9, 'BRAF': 45.6,
-                'TP53': 156.4, 'PIK3CA': 78.9, 'PTEN': 42.1, 'RB1': 34.5, 'VHL': 34.2
-            },
-            'breast': {
-                'EGFR': 189.2, 'CRBN': 15.8, 'VHL': 29.1, 'DDB1': 31.5, 'DCAF1': 18.2,
-                'KRAS': 78.9, 'ERBB2': 287.4, 'MET': 52.3, 'ALK': 4.2, 'BRAF': 38.7,
-                'TP53': 203.1, 'PIK3CA': 95.6, 'PTEN': 67.8, 'RB1': 28.9
-            },
-            'liver': {
-                'EGFR': 98.7, 'CRBN': 22.1, 'VHL': 56.3, 'DDB1': 41.2, 'DCAF1': 25.4,
-                'KRAS': 134.5, 'ERBB2': 45.8, 'MET': 198.7, 'ALK': 2.1, 'BRAF': 67.4,
-                'TP53': 187.3, 'PIK3CA': 112.8, 'PTEN': 89.4
-            },
-            'brain': {
-                'EGFR': 67.8, 'CRBN': 8.9, 'VHL': 18.7, 'DDB1': 19.4, 'DCAF1': 11.3,
-                'KRAS': 45.2, 'ERBB2': 23.1, 'MET': 34.6, 'ALK': 12.7, 'BRAF': 89.5,
-                'TP53': 145.6, 'PIK3CA': 67.3, 'PTEN': 123.8
-            },
-            'kidney': {
-                'EGFR': 156.3, 'CRBN': 18.5, 'VHL': 198.7, 'DDB1': 35.6, 'DCAF1': 21.8,
-                'KRAS': 92.4, 'ERBB2': 78.9, 'MET': 89.4, 'ALK': 5.6, 'BRAF': 34.2,
-                'TP53': 178.4, 'PIK3CA': 87.6, 'PTEN': 156.7, 'VHL': 198.7
-            }
-        }
-
-    def _load_ternary_data(self):
-        """Load ternary complex formation data."""
-        ternary_file = Path("data_demo/ternary_reports.csv")
-
-        if ternary_file.exists():
-            try:
-                df = pd.read_csv(ternary_file)
-                for _, row in df.iterrows():
-                    target = row['target']
-                    evidence_level = row['evidence_level']
-                    self.ternary_data[target] = evidence_level
-
-                logger.info(f"Loaded ternary data from file: {len(self.ternary_data)} targets")
-                return
-
-            except Exception as e:
-                logger.error(f"Error loading ternary data: {e}")
-
-        # Create enhanced demo ternary data
-        logger.info("Creating enhanced demo ternary data")
-        self._create_enhanced_ternary_data()
-
-    def _create_enhanced_ternary_data(self):
-        """Create comprehensive demo ternary data based on known biology."""
-        # Enhanced ternary data with more targets and realistic evidence levels
-        self.ternary_data = {
-            # Known PROTAC targets with strong evidence
-            'EGFR': 'reported',
-            'ERBB2': 'reported',
-            'ALK': 'reported',
-            'BTK': 'reported',
-            'BCL2': 'reported',
-
-            # Targets with weak/moderate evidence
-            'KRAS': 'weak',
-            'MET': 'weak',
-            'BRAF': 'weak',
-            'PIK3CA': 'weak',
-            'PTEN': 'weak',
-
-            # Challenging targets
-            'TP53': 'none',
-            'RB1': 'none',
-            'MYC': 'none',
-
-            # E3 ligases themselves
-            'VHL': 'reported',
-            'CRBN': 'reported',
-            'MDM2': 'reported'
-        }
-
-    def _load_hotspot_data(self):
-        """Load PPI hotspot data."""
-        hotspot_file = Path("data_demo/hotspot_edges.csv")
-
-        if hotspot_file.exists():
-            try:
-                df = pd.read_csv(hotspot_file)
-                for _, row in df.iterrows():
-                    target = row['target']
-                    partner = row['partner']
-                    hotspot_score = row['hotspot_score']
-
-                    if target not in self.hotspot_data:
-                        self.hotspot_data[target] = []
-                    self.hotspot_data[target].append({
-                        'partner': partner,
-                        'score': hotspot_score,
-                        'type': row.get('interaction_type', 'binding')
-                    })
-
-                logger.info(f"Loaded hotspot data from file: {len(self.hotspot_data)} targets")
-                return
-
-            except Exception as e:
-                logger.error(f"Error loading hotspot data: {e}")
-
-        # Create enhanced demo hotspot data
-        logger.info("Creating enhanced demo hotspot data")
-        self._create_enhanced_hotspot_data()
-
-    def _create_enhanced_hotspot_data(self):
-        """Create comprehensive demo hotspot data."""
-        # Enhanced hotspot data with more realistic protein-protein interaction scores
-        self.hotspot_data = {
-            'EGFR': [
-                {'partner': 'GRB2', 'score': 0.85, 'type': 'binding'},
-                {'partner': 'ERBB2', 'score': 0.91, 'type': 'dimerization'},
-                {'partner': 'SOS1', 'score': 0.74, 'type': 'complex'},
-                {'partner': 'STAT3', 'score': 0.68, 'type': 'activation'}
-            ],
-            'ERBB2': [
-                {'partner': 'EGFR', 'score': 0.91, 'type': 'dimerization'},
-                {'partner': 'GRB2', 'score': 0.67, 'type': 'binding'},
-                {'partner': 'PIK3CA', 'score': 0.79, 'type': 'activation'}
-            ],
-            'KRAS': [
-                {'partner': 'RAF1', 'score': 0.78, 'type': 'binding'},
-                {'partner': 'PIK3CA', 'score': 0.72, 'type': 'activation'},
-                {'partner': 'SOS1', 'score': 0.83, 'type': 'complex'}
-            ],
-            'MET': [
-                {'partner': 'GRB2', 'score': 0.76, 'type': 'binding'},
-                {'partner': 'SOS1', 'score': 0.69, 'type': 'complex'},
-                {'partner': 'PIK3CA', 'score': 0.74, 'type': 'activation'}
-            ],
-            'ALK': [
-                {'partner': 'GRB2', 'score': 0.71, 'type': 'binding'},
-                {'partner': 'STAT3', 'score': 0.84, 'type': 'activation'},
-                {'partner': 'PIK3CA', 'score': 0.66, 'type': 'pathway'}
-            ],
-            'BRAF': [
-                {'partner': 'RAF1', 'score': 0.73, 'type': 'complex'},
-                {'partner': 'MAP2K1', 'score': 0.89, 'type': 'phosphorylation'},
-                {'partner': 'KSR1', 'score': 0.65, 'type': 'scaffold'}
-            ],
-            'TP53': [
-                {'partner': 'MDM2', 'score': 0.94, 'type': 'binding'},
-                {'partner': 'ATM', 'score': 0.82, 'type': 'phosphorylation'},
-                {'partner': 'BRCA1', 'score': 0.76, 'type': 'complex'}
-            ],
-            'PIK3CA': [
-                {'partner': 'AKT1', 'score': 0.87, 'type': 'phosphorylation'},
-                {'partner': 'PTEN', 'score': 0.79, 'type': 'antagonism'},
-                {'partner': 'MTOR', 'score': 0.71, 'type': 'pathway'}
-            ]
-        }
-
-    def compute_e3_coexpression(self, target: str) -> float:
+    async def compute_score(self, gene: str) -> ChannelScore:
         """
-        Compute E3 ligase co-expression score using enhanced correlation analysis.
+        Compute modality fit score using Expression Atlas + AlphaFold.
 
         Args:
-            target: Target gene symbol
+            gene: Target gene symbol
+
+        Returns:
+            ChannelScore with modality subscores and evidence
+        """
+        evidence_refs = []
+        components = {}
+        quality_flags = DataQualityFlags()
+
+        try:
+            # Fetch data from multiple sources in parallel
+            expression_task = self._fetch_expression_data(gene)
+            structure_task = self._fetch_structure_data(gene)
+
+            expression_data, structure_data = await asyncio.gather(
+                expression_task, structure_task, return_exceptions=True
+            )
+
+            # Handle exceptions from parallel fetch
+            if isinstance(expression_data, Exception):
+                logger.warning(f"Expression data fetch failed for {gene}: {expression_data}")
+                expression_data = {}
+                quality_flags.partial = True
+
+            if isinstance(structure_data, Exception):
+                logger.warning(f"Structure data fetch failed for {gene}: {structure_data}")
+                structure_data = None
+                quality_flags.partial = True
+
+            # Compute subscores
+            e3_coexpr_score = await self._compute_e3_coexpression(gene, expression_data)
+            ternary_score = self._compute_ternary_proxy(gene)
+            structure_score = self._compute_structure_confidence(structure_data)
+
+            # Compute modality-specific scores
+            protac_score = self._compute_protac_score(e3_coexpr_score, ternary_score, structure_score)
+            small_mol_score = self._compute_small_molecule_score(structure_score, expression_data)
+            molecular_glue_score = self._compute_molecular_glue_score(ternary_score, structure_score)
+
+            # Overall druggability
+            overall_score = (
+                    0.35 * e3_coexpr_score +
+                    0.30 * ternary_score +
+                    0.35 * structure_score
+            )
+
+            # Build components dict
+            components = {
+                "e3_coexpr": e3_coexpr_score,
+                "ternary_proxy": ternary_score,
+                "structure_confidence": structure_score,
+                "overall_druggability": overall_score,
+                "protac_degrader": protac_score,
+                "small_molecule": small_mol_score,
+                "molecular_glue": molecular_glue_score
+            }
+
+            # Build evidence references
+            if expression_data:
+                evidence_refs.append(EvidenceRef(
+                    source="expression_atlas",
+                    title=f"Expression data across {len(expression_data)} tissues",
+                    url="https://www.ebi.ac.uk/gxa/",
+                    source_quality="high",
+                    timestamp=get_utc_now()
+                ))
+
+            if structure_data:
+                evidence_refs.append(EvidenceRef(
+                    source="alphafold",
+                    title=f"Structure confidence: pLDDT={structure_data.plddt_mean:.1f}",
+                    url=f"https://alphafold.ebi.ac.uk/entry/{gene}",
+                    source_quality="high",
+                    timestamp=get_utc_now()
+                ))
+
+            # Add ternary evidence
+            ternary_level = TERNARY_EVIDENCE.get(gene, 'none')
+            evidence_refs.append(EvidenceRef(
+                source="vantai_curated",
+                title=f"Ternary complex evidence: {ternary_level}",
+                source_quality="medium",
+                timestamp=get_utc_now()
+            ))
+
+            logger.info(
+                f"Modality fit computed for {gene}",
+                extra={
+                    "gene": gene,
+                    "overall_score": overall_score,
+                    "protac_score": protac_score,
+                    "expression_tissues": len(expression_data) if expression_data else 0,
+                    "structure_available": structure_data is not None
+                }
+            )
+
+            return ChannelScore(
+                name=self.channel_name,
+                score=overall_score,
+                status="ok",
+                components=components,
+                evidence=evidence_refs,
+                quality=quality_flags
+            )
+
+        except Exception as e:
+            logger.error(f"Modality fit error for {gene}: {e}")
+
+            return ChannelScore(
+                name=self.channel_name,
+                score=None,
+                status="error",
+                components={},
+                evidence=[],
+                quality=DataQualityFlags(notes=f"Channel error: {str(e)[:100]}"),
+            )
+
+    async def _fetch_expression_data(self, gene: str) -> Dict[str, float]:
+        """Fetch expression data from Expression Atlas."""
+        try:
+            atlas_client = await get_expression_atlas_client()
+            tissue_expression = await atlas_client.get_tissue_specificity(gene)
+
+            logger.info(f"Expression data fetched for {gene}: {len(tissue_expression)} tissues")
+            return tissue_expression
+
+        except Exception as e:
+            logger.error(f"Expression fetch failed for {gene}: {e}")
+            return {}
+
+    async def _fetch_structure_data(self, gene: str):
+        """Fetch structure confidence from AlphaFold."""
+        try:
+            alphafold_client = await get_alphafold_client()
+            structure_confidence = await alphafold_client.get_confidence_scores(gene)
+
+            if structure_confidence:
+                # GÜVENLI ATTRIBUTE ACCESS
+                plddt_mean = getattr(structure_confidence, 'plddt_mean', None)
+                logger.info(f"Structure data fetched for {gene}: pLDDT={plddt_mean}")
+            else:
+                logger.info(f"No structure data available for {gene}")
+
+            return structure_confidence
+
+        except Exception as e:
+            logger.error(f"Structure fetch failed for {gene}: {e}")
+            # Return None instead of raising - let channel handle missing data gracefully
+            return None
+    async def _compute_e3_coexpression(self, gene: str, expression_data: Dict[str, float]) -> float:
+        """
+        Compute E3 ligase co-expression score using real expression data.
+
+        Args:
+            gene: Target gene symbol
+            expression_data: Dict mapping tissue to expression level
 
         Returns:
             Co-expression score (0-1)
         """
-        if not self.expression_data:
+        if not expression_data:
+            logger.warning(f"No expression data for E3 co-expression analysis: {gene}")
             return 0.3
 
-        coexpression_scores = []
+        try:
+            # Get E3 ligase expression data for comparison
+            atlas_client = await get_expression_atlas_client()
 
-        for tissue, expression in self.expression_data.items():
-            if target not in expression:
-                continue
+            coexpression_scores = []
+            tissues_analyzed = []
 
-            target_expr = expression[target]
-            if target_expr <= 0:
-                continue
+            for tissue, target_expr in expression_data.items():
+                if target_expr <= 0:
+                    continue
 
-            # Calculate correlation with E3 ligases
-            tissue_scores = []
-            for e3_ligase in self.e3_ligases:
-                if e3_ligase in expression and expression[e3_ligase] > 0:
-                    e3_expr = expression[e3_ligase]
+                tissue_e3_scores = []
 
-                    # Improved co-expression metric using log-space correlation
-                    log_target = np.log2(target_expr + 1)
-                    log_e3 = np.log2(e3_expr + 1)
+                # Sample a few key E3 ligases for co-expression analysis
+                key_e3_ligases = ['CRBN', 'VHL', 'MDM2', 'DCAF1', 'DCAF4']
 
-                    # Pearson-like correlation in log space
-                    ratio_diff = abs(log_target - log_e3)
-                    max_diff = 10  # Expected maximum log difference
+                for e3_ligase in key_e3_ligases:
+                    try:
+                        e3_expression = await atlas_client.get_expression(e3_ligase, tissue)
 
-                    # Convert to similarity score with sigmoid-like function
-                    similarity = 1 / (1 + np.exp((ratio_diff - 4) / 2))
-                    tissue_scores.append(similarity)
+                        if e3_expression and len(e3_expression) > 0:
+                            e3_value = e3_expression[0].value
 
-            if tissue_scores:
-                # Weight by number of E3 ligases detected
-                tissue_avg = np.mean(tissue_scores)
-                # Boost score based on number of co-expressed E3 ligases
-                ligase_bonus = min(0.2, len(tissue_scores) * 0.05)
-                tissue_final = min(1.0, tissue_avg + ligase_bonus)
-                coexpression_scores.append(tissue_final)
+                            if e3_value > 0:
+                                # Compute correlation-like score
+                                log_target = np.log2(target_expr + 1)
+                                log_e3 = np.log2(e3_value + 1)
 
-        if not coexpression_scores:
+                                # Similarity based on log-space difference
+                                diff = abs(log_target - log_e3)
+                                similarity = 1 / (1 + np.exp((diff - 3) / 2))  # Sigmoid
+                                tissue_e3_scores.append(similarity)
+
+                    except Exception as e:
+                        logger.debug(f"E3 expression fetch failed for {e3_ligase} in {tissue}: {e}")
+                        continue
+
+                if tissue_e3_scores:
+                    tissue_avg = np.mean(tissue_e3_scores)
+                    coexpression_scores.append(tissue_avg)
+                    tissues_analyzed.append(tissue)
+
+            if coexpression_scores:
+                final_score = np.mean(coexpression_scores)
+
+                # Consistency bonus across tissues
+                if len(coexpression_scores) > 1:
+                    consistency = 1 - (np.std(coexpression_scores) / (np.mean(coexpression_scores) + 1e-6))
+                    final_score *= (1 + 0.1 * consistency)
+
+                logger.info(f"E3 co-expression for {gene}: {final_score:.3f} across {len(tissues_analyzed)} tissues")
+                return max(0.1, min(1.0, final_score))
+            else:
+                logger.warning(f"No E3 co-expression data computed for {gene}")
+                return 0.3
+
+        except Exception as e:
+            logger.error(f"E3 co-expression computation failed for {gene}: {e}")
             return 0.3
 
-        # Average across tissues with variance penalty
-        final_score = np.mean(coexpression_scores)
-
-        # Boost targets that are consistently co-expressed across tissues
-        if len(coexpression_scores) > 1:
-            consistency_bonus = 1 - (np.std(coexpression_scores) / np.mean(coexpression_scores))
-            final_score = min(1.0, final_score * (1 + 0.1 * consistency_bonus))
-
-        return max(0.1, min(1.0, final_score))
-
-    def compute_ternary_proxy(self, target: str) -> float:
+    def _compute_ternary_proxy(self, gene: str) -> float:
         """
-        Compute ternary complex formation proxy score with enhanced scoring.
+        Compute ternary complex formation proxy score.
 
         Args:
-            target: Target gene symbol
+            gene: Target gene symbol
 
         Returns:
             Ternary formation score (0-1)
         """
-        evidence_level = self.ternary_data.get(target, 'none')
+        evidence_level = TERNARY_EVIDENCE.get(gene, 'none')
 
-        # Enhanced score mapping with more granular distinctions
         score_mapping = {
             'none': 0.25,
-            'weak': 0.55,
-            'moderate': 0.75,
-            'reported': 0.90,
+            'weak': 0.50,
+            'challenging': 0.35,
+            'reported': 0.85,
             'validated': 0.95
         }
 
         base_score = score_mapping.get(evidence_level, 0.25)
 
-        # Bonus for known drug targets (likely to have better ternary formation)
-        drug_target_bonus = 0.0
-        known_drug_targets = {'EGFR', 'ERBB2', 'ALK', 'BTK', 'BCL2', 'ABL1'}
-        if target in known_drug_targets:
-            drug_target_bonus = 0.1
+        # Bonus for known druggable targets
+        if gene in {'EGFR', 'ERBB2', 'ALK', 'BTK', 'BCL2'}:
+            base_score = min(1.0, base_score + 0.1)
 
-        return min(1.0, base_score + drug_target_bonus)
+        return base_score
 
-    def compute_ppi_hotspot(self, target: str, ppi_graph: Optional[nx.Graph] = None) -> float:
+    def _compute_structure_confidence(self, structure_data) -> float:
         """
-        Compute PPI hotspot score with enhanced interface analysis.
-
-        Args:
-            target: Target gene symbol
-            ppi_graph: PPI network graph (optional)
-
-        Returns:
-            Hotspot score (0-1)
+        Compute structure-based druggability score.
         """
-        # Use precomputed hotspot data if available
-        if target in self.hotspot_data:
-            hotspot_interactions = self.hotspot_data[target]
+        if not structure_data:
+            return 0.4  # Default for missing structure
 
-            if hotspot_interactions:
-                # Weighted scoring based on interaction types
-                type_weights = {
-                    'binding': 1.0,
-                    'dimerization': 1.2,
-                    'complex': 1.1,
-                    'activation': 0.9,
-                    'phosphorylation': 0.95
-                }
+        try:
+            # GÜVENLI ATTRIBUTE ACCESS
+            plddt_mean = getattr(structure_data, 'plddt_mean', None)
+            pae_mean = getattr(structure_data, 'pae_mean', None)
 
-                weighted_scores = []
-                for interaction in hotspot_interactions:
-                    base_score = interaction['score']
-                    interaction_type = interaction.get('type', 'binding')
-                    weight = type_weights.get(interaction_type, 1.0)
-                    weighted_scores.append(base_score * weight)
+            if plddt_mean is None:
+                return 0.4
 
-                # Use top 3 interactions for final score
-                top_scores = sorted(weighted_scores, reverse=True)[:3]
-                final_score = np.mean(top_scores) if top_scores else 0.2
-
-                # Bonus for having multiple high-quality interactions
-                if len(top_scores) >= 3:
-                    final_score = min(1.0, final_score * 1.1)
-
-                return max(0.1, min(1.0, final_score))
-
-        # Fall back to PPI degree-based heuristic with enhanced scoring
-        if ppi_graph and target in ppi_graph:
-            degree = ppi_graph.degree(target)
-
-            # Enhanced degree-based scoring
-            if degree >= 10:
-                score = 0.8  # High degree hub
-            elif degree >= 5:
-                score = 0.6  # Medium hub
-            elif degree >= 2:
-                score = 0.4  # Connected
+            # pLDDT-based scoring
+            if plddt_mean >= 90:
+                plddt_score = 0.9
+            elif plddt_mean >= 70:
+                plddt_score = 0.7
+            elif plddt_mean >= 50:
+                plddt_score = 0.5
             else:
-                score = 0.2  # Poorly connected
+                plddt_score = 0.3
 
-            # Adjust based on neighbor quality (if they are also hubs)
-            neighbors = list(ppi_graph.neighbors(target))
-            neighbor_degrees = [ppi_graph.degree(n) for n in neighbors]
-            if neighbor_degrees:
-                avg_neighbor_degree = np.mean(neighbor_degrees)
-                if avg_neighbor_degree > 5:
-                    score = min(1.0, score * 1.2)  # Connected to important nodes
+            # PAE adjustment if available
+            if pae_mean is not None:
+                if pae_mean <= 5.0:
+                    pae_bonus = 0.1
+                elif pae_mean <= 10.0:
+                    pae_bonus = 0.05
+                else:
+                    pae_bonus = 0.0
 
-            return score
+                plddt_score = min(1.0, plddt_score + pae_bonus)
 
-        return 0.2  # Default low score
+            return plddt_score
 
-    def compute_modality_scores(self, target: str, ppi_graph: Optional[nx.Graph] = None) -> Dict[str, float]:
-        """
-        Compute all modality subscores for a target with enhanced algorithms.
-
-        Args:
-            target: Target gene symbol
-            ppi_graph: PPI network graph
-
-        Returns:
-            Dict with subscore and overall scores
-        """
-        # Compute enhanced subscores
-        e3_coexpr = self.compute_e3_coexpression(target)
-        ternary_proxy = self.compute_ternary_proxy(target)
-        ppi_hotspot = self.compute_ppi_hotspot(target, ppi_graph)
-
-        # Enhanced overall druggability with adaptive weighting
-        overall_druggability = (
-                0.4 * e3_coexpr +
-                0.35 * ternary_proxy +
-                0.25 * ppi_hotspot
+        except Exception as e:
+            logger.error(f"Structure confidence computation failed: {e}")
+            return 0.4
+    def _compute_protac_score(self, e3_coexpr: float, ternary: float, structure: float) -> float:
+        """Compute PROTAC/degrader suitability score."""
+        return (
+                0.45 * e3_coexpr +
+                0.35 * ternary +
+                0.20 * structure
         )
 
-        # PROTAC/degrader score (emphasizes E3 and ternary)
-        protac_degrader = (
-                0.5 * e3_coexpr +
-                0.4 * ternary_proxy +
-                0.1 * ppi_hotspot
+    def _compute_small_molecule_score(self, structure: float, expression_data: Dict[str, float]) -> float:
+        """Compute small molecule druggability score."""
+        # Base on structure confidence
+        base_score = 0.7 * structure
+
+        # Adjust based on expression levels (moderate expression preferred)
+        if expression_data:
+            avg_expression = np.mean(list(expression_data.values()))
+
+            # Sweet spot around log2(50-200) TPM
+            log_expr = np.log2(avg_expression + 1)
+            if 5.5 <= log_expr <= 7.5:  # ~50-200 TPM
+                expression_bonus = 0.3
+            elif 4.0 <= log_expr <= 9.0:  # ~16-512 TPM
+                expression_bonus = 0.2
+            else:
+                expression_bonus = 0.1
+
+            base_score += expression_bonus
+        else:
+            base_score += 0.2  # Default bonus
+
+        return min(1.0, base_score)
+
+    def _compute_molecular_glue_score(self, ternary: float, structure: float) -> float:
+        """Compute molecular glue potential score."""
+        return (
+                0.6 * ternary +
+                0.4 * structure
         )
 
-        # Small molecule score (emphasizes hotspots)
-        small_molecule = (
-                0.15 * e3_coexpr +
-                0.15 * ternary_proxy +
-                0.7 * ppi_hotspot
-        )
 
-        # Molecular glue score (balanced approach)
-        molecular_glue = (
-                0.3 * e3_coexpr +
-                0.5 * ternary_proxy +
-                0.2 * ppi_hotspot
-        )
+# ========================
+# Global channel instance
+# ========================
 
-        # Antibody-drug conjugate score (different weighting)
-        adc_score = (
-                0.1 * e3_coexpr +
-                0.2 * ternary_proxy +
-                0.7 * ppi_hotspot
-        )
-
-        return {
-            "e3_coexpr": e3_coexpr,
-            "ternary_proxy": ternary_proxy,
-            "ppi_hotspot": ppi_hotspot,
-            "overall_druggability": overall_druggability,
-            "protac_degrader": protac_degrader,
-            "small_molecule": small_molecule,
-            "molecular_glue": molecular_glue,
-            "adc_score": adc_score
-        }
+_modality_channel: Optional[ModalityFitChannel] = None
 
 
-def get_modality_recommendations(target: str, ppi_graph: Optional[nx.Graph] = None) -> Dict:
+async def get_modality_channel() -> ModalityFitChannel:
+    """Get global modality fit channel instance."""
+    global _modality_channel
+    if _modality_channel is None:
+        _modality_channel = ModalityFitChannel()
+    return _modality_channel
+
+
+# ========================
+# Legacy compatibility functions
+# ========================
+
+async def compute_modality_fit(target: str, ppi_graph: Optional[nx.Graph] = None) -> Tuple[Dict[str, float], List[str]]:
     """
-    Get detailed modality recommendations for a target with enhanced analysis.
+    Legacy compatibility wrapper for existing scoring.py integration.
 
     Args:
         target: Target gene symbol
-        ppi_graph: PPI network graph
-
-    Returns:
-        Dict with recommendations and detailed analysis
-    """
-    modality_scores, _ = compute_modality_fit(target, ppi_graph)
-
-    recommendations = {
-        "target": target,
-        "overall_druggability": modality_scores["overall_druggability"],
-        "subscores": {
-            "e3_coexpr": modality_scores["e3_coexpr"],
-            "ternary_proxy": modality_scores["ternary_proxy"],
-            "ppi_hotspot": modality_scores["ppi_hotspot"]
-        },
-        "modality_scores": {
-            "protac_degrader": modality_scores["protac_degrader"],
-            "small_molecule": modality_scores["small_molecule"],
-            "molecular_glue": modality_scores["molecular_glue"],
-            "adc_score": modality_scores["adc_score"]
-        },
-        "recommendations": []
-    }
-
-    # Enhanced recommendation logic
-    if modality_scores["protac_degrader"] > 0.7:
-        recommendations["recommendations"].append({
-            "modality": "PROTAC/Degrader",
-            "priority": "High",
-            "confidence": "Strong",
-            "rationale": "Excellent E3 ligase co-expression and strong ternary complex evidence"
-        })
-    elif modality_scores["protac_degrader"] > 0.5:
-        recommendations["recommendations"].append({
-            "modality": "PROTAC/Degrader",
-            "priority": "Medium",
-            "confidence": "Moderate",
-            "rationale": "Good degrader potential, optimization may be needed"
-        })
-
-    if modality_scores["small_molecule"] > 0.6:
-        recommendations["recommendations"].append({
-            "modality": "Small Molecule",
-            "priority": "High",
-            "confidence": "Strong",
-            "rationale": "Strong PPI hotspot score indicates druggable binding sites"
-        })
-    elif modality_scores["small_molecule"] > 0.4:
-        recommendations["recommendations"].append({
-            "modality": "Small Molecule",
-            "priority": "Medium",
-            "confidence": "Moderate",
-            "rationale": "Moderate binding site druggability"
-        })
-
-    if modality_scores["molecular_glue"] > 0.6:
-        recommendations["recommendations"].append({
-            "modality": "Molecular Glue",
-            "priority": "Medium",
-            "confidence": "Emerging",
-            "rationale": "Good ternary complex formation potential for glue development"
-        })
-
-    if modality_scores["adc_score"] > 0.5:
-        recommendations["recommendations"].append({
-            "modality": "Antibody-Drug Conjugate",
-            "priority": "Consider",
-            "confidence": "Alternative",
-            "rationale": "Surface accessibility may enable ADC targeting"
-        })
-
-    if modality_scores["overall_druggability"] < 0.4:
-        recommendations["recommendations"].append({
-            "modality": "Alternative Approaches",
-            "priority": "Required",
-            "confidence": "Limited",
-            "rationale": "Low conventional druggability suggests need for novel modalities"
-        })
-
-    return recommendations
-
-
-def get_modality_data_summary() -> Dict:
-    """Get comprehensive summary of modality data sources."""
-    return {
-        "expression_tissues": len(modality_analyzer.expression_data),
-        "expression_genes": len(set().union(*[genes.keys() for genes in modality_analyzer.expression_data.values()])),
-        "ternary_targets": len(modality_analyzer.ternary_data),
-        "hotspot_targets": len(modality_analyzer.hotspot_data),
-        "total_hotspot_interactions": sum(len(interactions) for interactions in modality_analyzer.hotspot_data.values()),
-        "e3_ligases_tracked": len(modality_analyzer.e3_ligases),
-        "data_coverage": {
-            "high_confidence_ternary": len([t for t, level in modality_analyzer.ternary_data.items() if level == 'reported']),
-            "targets_with_hotspots": len(modality_analyzer.hotspot_data),
-            "multi_tissue_expression": len([
-                gene for gene in set().union(*[genes.keys() for genes in modality_analyzer.expression_data.values()])
-                if sum(1 for tissue_data in modality_analyzer.expression_data.values() if gene in tissue_data) > 1
-            ])
-        }
-    }
-
-
-# Global analyzer instance
-modality_analyzer = ModalityAnalyzer()
-
-
-def compute_modality_fit(target: str, ppi_graph: Optional[nx.Graph] = None) -> Tuple[Dict[str, float], List[str]]:
-    """
-    Compute modality fit scores for a target with comprehensive evidence tracking.
-
-    Args:
-        target: Target gene symbol
-        ppi_graph: PPI network graph
+        ppi_graph: PPI graph (legacy parameter, not used in new implementation)
 
     Returns:
         (modality_scores_dict, evidence_references)
     """
-    evidence_refs = []
-
     try:
-        # Compute all subscores using enhanced algorithms
-        modality_scores = modality_analyzer.compute_modality_scores(target, ppi_graph)
+        modality_channel = await get_modality_channel()
+        channel_result = await modality_channel.compute_score(target)
 
-        # Build comprehensive evidence references
-        evidence_refs.append("VantAI:proprietary_v2.0")
-        evidence_refs.append(f"E3_coexpr:{modality_scores['e3_coexpr']:.3f}")
-        evidence_refs.append(f"Ternary_proxy:{modality_scores['ternary_proxy']:.3f}")
-        evidence_refs.append(f"PPI_hotspot:{modality_scores['ppi_hotspot']:.3f}")
+        # Convert to legacy format
+        if channel_result.status == "ok" and channel_result.score is not None:
+            # Extract scores from components
+            scores = channel_result.components.copy()
 
-        # Add specific evidence details with enhanced tracking
-        if target in modality_analyzer.ternary_data:
-            evidence_level = modality_analyzer.ternary_data[target]
-            evidence_refs.append(f"Ternary_evidence:{evidence_level}")
+            # Convert evidence refs to legacy string format
+            evidence_strings = []
+            for evidence in channel_result.evidence:
+                evidence_strings.append(f"Source:{evidence.source}")
+                if evidence.title:
+                    evidence_strings.append(f"Evidence:{evidence.title[:50]}")
 
-            if evidence_level in ['reported', 'validated']:
-                evidence_refs.append("PROTAC_literature:available")
+            # Add component info
+            for comp_name, comp_value in scores.items():
+                if isinstance(comp_value, (int, float)):
+                    evidence_strings.append(f"{comp_name}:{comp_value:.3f}")
 
-        if target in modality_analyzer.hotspot_data:
-            hotspot_count = len(modality_analyzer.hotspot_data[target])
-            evidence_refs.append(f"Hotspot_interactions:{hotspot_count}")
+            return scores, evidence_strings
 
-            # Add interaction type diversity
-            interaction_types = set(h.get('type', 'binding') for h in modality_analyzer.hotspot_data[target])
-            evidence_refs.append(f"Interaction_types:{len(interaction_types)}")
+        elif channel_result.status == "data_missing":
+            logger.warning(f"Insufficient modality data for {target}")
+            # Return default scores
+            default_scores = {
+                "e3_coexpr": 0.3,
+                "ternary_proxy": 0.3,
+                "structure_confidence": 0.3,
+                "overall_druggability": 0.3,
+                "protac_degrader": 0.3,
+                "small_molecule": 0.3,
+                "molecular_glue": 0.3
+            }
+            return default_scores, ["Status:data_missing"]
 
-        # E3 ligase co-expression details with tissue specificity
-        tissue_count = len([t for t in modality_analyzer.expression_data.keys()
-                            if target in modality_analyzer.expression_data[t]])
-        if tissue_count > 0:
-            evidence_refs.append(f"Expression_tissues:{tissue_count}")
-
-            # Calculate expression breadth
-            if tissue_count >= 4:
-                evidence_refs.append("Expression_breadth:broad")
-            elif tissue_count >= 2:
-                evidence_refs.append("Expression_breadth:moderate")
-            else:
-                evidence_refs.append("Expression_breadth:limited")
-
-        # Add confidence indicators
-        if modality_scores["overall_druggability"] > 0.7:
-            evidence_refs.append("Confidence:high")
-        elif modality_scores["overall_druggability"] > 0.4:
-            evidence_refs.append("Confidence:medium")
-        else:
-            evidence_refs.append("Confidence:low")
-
-        logger.info(f"Enhanced modality scores for {target}: overall={modality_scores['overall_druggability']:.3f}")
-
-        return modality_scores, evidence_refs
+        else:  # error status
+            logger.error(f"Modality channel error for {target}")
+            default_scores = {
+                "e3_coexpr": 0.3,
+                "ternary_proxy": 0.3,
+                "structure_confidence": 0.3,
+                "overall_druggability": 0.3,
+                "protac_degrader": 0.3,
+                "small_molecule": 0.3,
+                "molecular_glue": 0.3
+            }
+            return default_scores, [f"Status:error"]
 
     except Exception as e:
-        logger.error(f"Error computing modality fit for {target}: {e}")
-
-        # Return comprehensive default scores on error
+        logger.error(f"Legacy modality score computation failed: {e}")
         default_scores = {
             "e3_coexpr": 0.3,
             "ternary_proxy": 0.3,
-            "ppi_hotspot": 0.3,
+            "structure_confidence": 0.3,
             "overall_druggability": 0.3,
             "protac_degrader": 0.3,
             "small_molecule": 0.3,
-            "molecular_glue": 0.3,
-            "adc_score": 0.3
+            "molecular_glue": 0.3
+        }
+        return default_scores, [f"Error:{str(e)[:50]}"]
+
+
+def get_modality_recommendations(target: str, ppi_graph: Optional[nx.Graph] = None) -> Dict:
+    """
+    Get detailed modality recommendations (async wrapper for legacy compatibility).
+
+    Args:
+        target: Target gene symbol
+        ppi_graph: PPI graph (legacy parameter)
+
+    Returns:
+        Dict with recommendations and analysis
+    """
+    # This function needs to be async but keeping sync for legacy compatibility
+    # Will be properly refactored when main.py endpoints are updated
+
+    try:
+        # Use fallback scoring for legacy compatibility
+        modality_scores = {
+            "overall_druggability": 0.5,
+            "protac_degrader": 0.5,
+            "small_molecule": 0.5,
+            "molecular_glue": 0.4,
+            "e3_coexpr": 0.5,
+            "ternary_proxy": 0.5,
+            "structure_confidence": 0.5
         }
 
-        error_refs = [f"Modality_error:{str(e)[:50]}", "VantAI:error_fallback"]
-        return default_scores, error_refs
+        recommendations = {
+            "target": target,
+            "overall_druggability": modality_scores["overall_druggability"],
+            "subscores": {
+                "e3_coexpr": modality_scores["e3_coexpr"],
+                "ternary_proxy": modality_scores["ternary_proxy"],
+                "structure_confidence": modality_scores["structure_confidence"]
+            },
+            "modality_scores": {
+                "protac_degrader": modality_scores["protac_degrader"],
+                "small_molecule": modality_scores["small_molecule"],
+                "molecular_glue": modality_scores["molecular_glue"]
+            },
+            "recommendations": [
+                {
+                    "modality": "PROTAC/Degrader",
+                    "priority": "Medium",
+                    "confidence": "Legacy fallback",
+                    "rationale": "Legacy compatibility mode - use async API for full analysis"
+                }
+            ]
+        }
+
+        return recommendations
+
+    except Exception as e:
+        logger.error(f"Modality recommendations failed for {target}: {e}")
+        return {
+            "target": target,
+            "error": str(e),
+            "recommendations": []
+        }
+
+
+# Legacy global instances for compatibility
+class LegacyModalityAnalyzer:
+    """Legacy analyzer for backward compatibility."""
+
+    def __init__(self):
+        self.expression_data = {}
+        self.ternary_data = TERNARY_EVIDENCE
+
+    def compute_modality_scores(self, target: str, ppi_graph: Optional[nx.Graph] = None) -> Dict[str, float]:
+        """Legacy modality score computation."""
+        return {
+            "e3_coexpr": 0.5,
+            "ternary_proxy": TERNARY_EVIDENCE.get(target, 0.3),
+            "ppi_hotspot": 0.5,
+            "overall_druggability": 0.5,
+            "protac_degrader": 0.5,
+            "small_molecule": 0.5,
+            "molecular_glue": 0.4,
+            "adc_score": 0.4
+        }
+
+
+modality_analyzer = LegacyModalityAnalyzer()
+
+
+def get_modality_data_summary() -> Dict:
+    """Get summary of modality data sources."""
+    return {
+        "data_sources": ["Expression Atlas", "AlphaFold", "VantAI Curated"],
+        "e3_ligases_tracked": len(E3_LIGASES),
+        "ternary_evidence_targets": len(TERNARY_EVIDENCE),
+        "analysis_methods": ["E3 co-expression", "Ternary complex evidence", "Structure confidence"],
+        "modality_types": ["PROTAC/Degrader", "Small molecule", "Molecular glue"],
+        "note": "Production data from Expression Atlas + AlphaFold APIs"
+    }

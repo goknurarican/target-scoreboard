@@ -155,8 +155,22 @@ VANTAI_THEME = {
 }
 
 # API configuration
+
+# Detect deployment environment
+def get_api_base_url():
+    # Check if running on Streamlit Cloud
+    if (os.getenv('STREAMLIT_SHARING_MODE') or 
+        'streamlit.app' in os.getenv('HOSTNAME', '') or
+        'streamlit.app' in os.getenv('SERVER_NAME', '')):
+        # Production/Cloud mode - API endpoint'ini buraya koy
+        return "https://your-backend-api.herokuapp.com"  # Henüz deploy etmen gerekecek
+    else:
+        # Local development
+        api_port = os.getenv('API_PORT', '8001')
+        return f"http://localhost:{api_port}"
+
+API_BASE_URL = get_api_base_url()
 API_PORT = os.getenv('API_PORT', '8001')
-API_BASE_URL = f"http://localhost:{API_PORT}"
 
 
 
@@ -3609,21 +3623,25 @@ def main():
 
     # Enhanced Platform header
     st.markdown("""
-    <div class="platform-header-enhanced">
-        <div class="header-backdrop"></div>
-        <div class="header-content">
-            <div class="platform-title-large">VantAI Target Scoreboard</div>
-            <div class="platform-subtitle-large">
-                Advanced computational platform for modality-aware target prioritization using multi-omics integration
-            </div>
-            <div class="header-badges">
-                <span class="badge">AI-Powered</span>
-                <span class="badge">Multi-Omics</span>
-                <span class="badge">Real-Time</span>
+        <div class="platform-header-enhanced">
+            <div class="header-backdrop"></div>
+            <div class="header-content">
+                <div class="platform-title-large">VantAI Target Scoreboard</div>
+                <div class="platform-subtitle-large">
+                    Advanced computational platform for modality-aware target prioritization using multi-omics integration
+                    <br><br>
+                    <span style="font-weight:600; color:#4FC3F7;">Developed by Göknur Arıcan</span>
+                    <br>
+                    <span style="font-size:0.9em; color:#B0BEC5;">(pronounced: <i>Gyok-noor A-ruh-jan</i>)</span>
+                </div>
+                <div class="header-badges">
+                    <span class="badge">AI-Powered</span>
+                    <span class="badge">Multi-Omics</span>
+                    <span class="badge">Real-Time</span>
+                </div>
             </div>
         </div>
-    </div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
     # Sidebar with URL state management
     selected_disease_name, disease_id, targets, weights = render_sidebar_with_url_state()

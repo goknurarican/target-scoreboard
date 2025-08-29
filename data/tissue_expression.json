@@ -1,0 +1,5 @@
+{
+  "EGFR": { "lung": 240.0, "skin": 90.0, "liver": 45.0, "kidney": 68.0, "brain": 23.0 },
+  "ERBB2": { "breast": 287.0, "lung": 124.0, "heart": 67.0, "brain": 35.0 },
+  "MET": { "liver": 199.0, "lung": 67.0, "kidney": 89.0, "brain": 35.0 }
+}
