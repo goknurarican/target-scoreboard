@@ -57,41 +57,34 @@ class DataQualityValidator:
         self.logger = logger
 
     def validate(self, source: str, payload: Any) -> ValidationResult:
-        """
-        Main validation entry point. Routes to appropriate validator based on source.
-        
-        Args:
-            source: Data source identifier (opentargets, stringdb, etc.)
-            payload: Data to validate
-            
-        Returns:
-            ValidationResult with ok/issues/quality flags
-        """
         issues = []
         quality = DataQualityFlags()
 
-        # Basic payload checks
         if payload is None:
             issues.append("Payload is None")
             return ValidationResult(ok=False, issues=issues, quality=quality)
 
-        if not isinstance(payload, (dict, list)) and not hasattr(payload, '__dict__'):
-            issues.append(f"Payload type {type(payload)} not supported for validation")
-            return ValidationResult(ok=False, issues=issues, quality=quality)
+        src = source.lower()
+        aliases = {
+            "ppi": "stringdb",
+            "ppi_proximity": "stringdb",
+            "network": "stringdb",
+            "genetics": "opentargets"
+        }
+        src = aliases.get(src, src)
 
-        # Source-specific validation
         try:
-            if source.lower() == "opentargets":
+            if src == "opentargets":
                 result = self.validate_associations(payload)
-            elif source.lower() == "stringdb":
+            elif src == "stringdb":
                 result = self.validate_ppi(payload)
-            elif source.lower() in ("expression_atlas", "atlas"):
+            elif src in ("expression_atlas", "atlas"):
                 result = self.validate_expression(payload)
-            elif source.lower() == "alphafold":
+            elif src == "alphafold":
                 result = self.validate_structure(payload)
             else:
-                # Generic validation for unknown sources
                 result = self._validate_generic(payload, source)
+
 
             # Check staleness
             staleness_result = self._check_staleness(payload, source)
@@ -458,7 +451,7 @@ class DataQualityValidator:
 
 # ========================
 # Global validator instance
-# ========================
+# ==========a==============
 
 _validator: Optional[DataQualityValidator] = None
 

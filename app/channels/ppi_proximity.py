@@ -17,6 +17,8 @@ from typing import Dict, List, Tuple, Optional, Set
 from ..schemas import ChannelScore, EvidenceRef, DataQualityFlags, PPINetwork, get_utc_now
 from ..validation import get_validator
 from ..data_access.stringdb import get_stringdb_client
+import os
+PPI_DISABLE_FALLBACK = os.getenv("PPI_DISABLE_FALLBACK", "true").lower() == "true"
 
 logger = logging.getLogger(__name__)
 
@@ -34,22 +36,29 @@ class PPIProximityChannel:
     async def compute_score(self, gene: str, disease_genes: Optional[List[str]] = None) -> ChannelScore:
         """
         Compute PPI proximity score using STRING-DB data + network analysis.
-
-        Args:
-            gene: Target gene symbol
-            disease_genes: Disease-associated genes for RWR seeding
-
-        Returns:
-            ChannelScore with proximity metrics and evidence
         """
+        # DEBUG LOG EKLE
+        logger.info(f"PPI compute_score: gene={gene}, disease_genes={disease_genes}")
+
         evidence_refs = []
         components = {}
         quality_flags = DataQualityFlags()
 
         try:
+            # DEBUG LOG EKLE
+            logger.info(f"Getting StringDB client for {gene}")
+
             # Fetch PPI network from STRING-DB
             stringdb_client = await get_stringdb_client()
+
+            # DEBUG LOG EKLE
+            logger.info(f"Calling fetch_ppi for {gene}")
+
             ppi_network = await stringdb_client.fetch_ppi(gene, limit=50)
+
+            # DEBUG LOG EKLE
+            logger.info(f"fetch_ppi returned network with {len(ppi_network.edges)} edges for {gene}")
+            # Fetch PPI network from STRING-DB
 
             # Validate network quality
             network_quality = await stringdb_client.validate_network_quality(ppi_network)
@@ -128,15 +137,80 @@ class PPIProximityChannel:
                 quality=quality_flags
             )
 
+
+
         except Exception as e:
+
             logger.error(f"PPI proximity error for {gene}: {e}")
 
-            # Try fallback network if available
-            return ChannelScore(
-                               name=self.channel_name, score = None, status = "error",
-                          components = {}, evidence = [],
-                           quality = DataQualityFlags(notes=f"Channel error: {str(e)[:100]}")
-                                                   )
+            if PPI_DISABLE_FALLBACK:
+                return ChannelScore(
+
+                    name=self.channel_name,
+
+                    score=None,
+
+                    status="error",
+
+                    components={"error": str(e)[:120]},
+
+                    evidence=[],
+
+                    quality=DataQualityFlags(partial=True, notes="STRING error; fallback disabled")
+
+                )
+
+            # (fallback açık ise - ama prod’da kapalı tutuyoruz)
+
+            try:
+
+                fallback_score = await self._compute_fallback_score(gene, disease_genes)
+
+                logger.warning(f"Using fallback PPI score for {gene}: {fallback_score}")
+
+                return ChannelScore(
+
+                    name=self.channel_name,
+
+                    score=fallback_score,
+
+                    status="ok",
+
+                    components={"method": "fallback", "network_size": 0},
+
+                    evidence=[EvidenceRef(
+
+                        source="fallback",
+
+                        title="Fallback PPI score - STRING API unavailable",
+
+                        timestamp=get_utc_now()
+
+                    )],
+
+                    quality=DataQualityFlags(partial=True, notes="Using fallback network")
+
+                )
+
+            except Exception as fallback_error:
+
+                logger.error(f"Fallback also failed for {gene}: {fallback_error}")
+
+                return ChannelScore(
+
+                    name=self.channel_name,
+
+                    score=None,
+
+                    status="error",
+
+                    components={"error": str(fallback_error)[:120]},
+
+                    evidence=[],
+
+                    quality=DataQualityFlags(notes="Both STRING and fallback failed")
+
+                )
 
     def _build_networkx_graph(self, ppi_network: PPINetwork) -> nx.Graph:
         """Convert PPINetwork to NetworkX graph."""
@@ -155,12 +229,18 @@ class PPIProximityChannel:
     async def _compute_rwr_score(self, target: str, disease_genes: List[str], graph: nx.Graph) -> float:
         """Compute Random Walk with Restart score."""
         try:
+            logger.info(f"RWR: target={target}, disease_genes={disease_genes}")
+
             if target not in graph:
+                logger.warning(f"RWR: Target {target} not in graph")
                 return 0.2
 
             # Prepare disease seed genes (present in network)
             network_genes = set(graph.nodes())
-            seed_genes = set(gene for gene in disease_genes if gene in network_genes)
+            logger.info(f"RWR: Network has {len(network_genes)} genes: {list(network_genes)[:10]}...")
+
+            seed_genes = {g for g in disease_genes if g in network_genes and g != target}
+            logger.info(f"RWR: Found {len(seed_genes)} seed genes in network: {seed_genes}")
 
             if not seed_genes:
                 logger.warning("No disease genes found in network, using centrality fallback")
@@ -219,24 +299,35 @@ class PPIProximityChannel:
 
             target_rwr_score = prob_vector[node_to_index[target]]
 
-            # Normalize against all scores
+            # NEW percentile-based normalization
             all_scores = prob_vector[prob_vector > 0]
             if len(all_scores) > 1:
-                min_score = np.min(all_scores)
-                max_score = np.max(all_scores)
-                if max_score > min_score:
-                    normalized_score = (target_rwr_score - min_score) / (max_score - min_score)
-                else:
-                    normalized_score = 0.5
+                # Calculate target's percentile (0-1 range)
+                target_percentile = np.sum(all_scores <= target_rwr_score) / len(all_scores)
+
+                # More granular score mapping - use actual percentile value
+                if target_percentile >= 0.95:  # Top 5%
+                    normalized_score = 0.75 + (target_percentile - 0.95) * 3.0  # 0.75-0.9
+                elif target_percentile >= 0.85:  # Top 15%
+                    normalized_score = 0.65 + (target_percentile - 0.85) * 1.0  # 0.65-0.75
+                elif target_percentile >= 0.70:  # Top 30%
+                    normalized_score = 0.50 + (target_percentile - 0.70) * 1.0  # 0.50-0.65
+                elif target_percentile >= 0.50:  # Top 50%
+                    normalized_score = 0.35 + (target_percentile - 0.50) * 0.75  # 0.35-0.50
+                else:  # Bottom 50%
+                    normalized_score = 0.20 + target_percentile * 0.30  # 0.20-0.35
+
+                logger.info(
+                    f"RWR {target}: raw_score={target_rwr_score:.4f}, percentile={target_percentile:.3f}, final={normalized_score:.3f}")
             else:
                 normalized_score = target_rwr_score
+                logger.info(
+                    f"RWR {target}: single_node, raw_score={target_rwr_score:.4f}, final={normalized_score:.3f}")
 
-            return max(0.1, min(1.0, normalized_score))
-
+            return max(0.2, min(0.9, normalized_score))
         except Exception as e:
             logger.error(f"RWR computation failed for {target}: {e}")
             return self._compute_centrality_score(target, graph)
-
     def _compute_centrality_score(self, target: str, graph: nx.Graph) -> float:
         """Compute centrality-based proximity score."""
         if target not in graph:
@@ -245,6 +336,7 @@ class PPIProximityChannel:
         try:
             # Degree centrality
             degree_cent = nx.degree_centrality(graph).get(target, 0.0)
+            logger.info(f"Centrality {target}: degree={degree_cent:.3f}")
 
             # Betweenness centrality (for smaller networks)
             betweenness_cent = 0.0
@@ -271,7 +363,19 @@ class PPIProximityChannel:
                     0.2 * closeness_cent
             )
 
-            return max(0.1, min(1.0, combined_score))
+            if combined_score > 0.8:  # Çok yüksek centrality
+                final_score = 0.7 + (combined_score - 0.8) * 0.5  # 0.7-0.9 arası
+            elif combined_score > 0.5:  # Orta centrality
+                final_score = 0.4 + (combined_score - 0.5) * 1.0  # 0.4-0.7 arası
+            else:  # Düşük centrality
+                final_score = 0.2 + combined_score * 0.4  # 0.2-0.4 arası
+
+            final_score = max(0.2, min(0.9, final_score))  # 0.2-0.9 arası sınırla
+            logger.info(
+                f"Centrality {target}: degree={degree_cent:.3f}, betweenness={betweenness_cent:.3f}, closeness={closeness_cent:.3f}")
+            logger.info(f"Centrality {target}: combined={combined_score:.3f}, final={final_score:.3f}")
+
+            return final_score
 
         except Exception as e:
             logger.error(f"Centrality computation failed for {target}: {e}")

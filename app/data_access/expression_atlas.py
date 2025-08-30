@@ -108,6 +108,7 @@ class ExpressionAtlasClient:
         last_exception = None
         for attempt in range(1 + MAX_RETRIES):
             try:
+
                 response = await session.get(url, params=params)
 
                 # Handle rate limiting

@@ -16,6 +16,8 @@ from typing import Dict, List, Optional, Tuple, Any
 
 import httpx
 
+NETWORK_ERRORS = (httpx.ConnectError, httpx.ReadError, httpx.WriteError, httpx.RemoteProtocolError)
+
 from ..schemas import (
     AssociationRecord,
     EvidenceRef,
@@ -104,22 +106,16 @@ class OpenTargetsClient:
         for attempt in range(1 + MAX_RETRIES):
             try:
                 response = await session.post(self.base_url, json=payload)
-                
-                # Handle HTTP errors
-                if response.status_code == 429:
-                    wait_time = RETRY_BACKOFF_SECONDS * (2 ** attempt)
-                    logger.warning(f"Rate limited by OpenTargets, waiting {wait_time}s")
-                    await asyncio.sleep(wait_time)
-                    continue
-                elif response.status_code >= 500:
-                    raise OpenTargetsError(f"Server error: {response.status_code}", response.status_code)
-                elif response.status_code >= 400:
-                    raise OpenTargetsError(f"Client error: {response.status_code}", response.status_code)
-
+                if response.status_code >= 400:
+                    # Daha açıklayıcı hata
+                    try:
+                        j = response.json()
+                        msg = "; ".join([e.get("message", str(e)) for e in j.get("errors", [])]) or response.text
+                    except Exception:
+                        msg = response.text
+                    raise OpenTargetsError(f"Client error: {response.status_code} - {msg}", response.status_code)
                 response.raise_for_status()
                 data = response.json()
-
-                # Handle GraphQL errors
                 if "errors" in data:
                     error_msg = "; ".join([e.get("message", str(e)) for e in data["errors"]])
                     raise OpenTargetsError(f"GraphQL errors: {error_msg}", response_data=data)
@@ -136,7 +132,7 @@ class OpenTargetsClient:
                     continue
             except Exception as e:
                 last_exception = e
-                if attempt < MAX_RETRIES and isinstance(e, (httpx.NetworkError, OpenTargetsError)):
+                if attempt < MAX_RETRIES and isinstance(e, (OpenTargetsError,) + NETWORK_ERRORS):
                     wait_time = RETRY_BACKOFF_SECONDS * (2 ** attempt)
                     logger.warning(f"OpenTargets error, retry {attempt+1}/{MAX_RETRIES}: {e}")
                     await asyncio.sleep(wait_time)
@@ -150,59 +146,44 @@ class OpenTargetsClient:
         raise OpenTargetsError(error_msg) from last_exception
 
     async def get_target_id(self, gene_symbol: str) -> Optional[str]:
-        """
-        Resolve gene symbol to ENSG ID via OpenTargets search.
-        
-        Args:
-            gene_symbol: Gene symbol (e.g., 'EGFR')
-            
-        Returns:
-            ENSG ID or None if not found
-        """
-        # If already ENSG, return as-is
         gene_symbol = gene_symbol.strip().upper()
         if gene_symbol.startswith("ENSG"):
             return gene_symbol
 
         async def _fetch_target_id():
             query = """
-            query FindTarget($q: String!) {
-                search(queryString: $q, entityNames: ["target"]) {
-                    hits {
-                        id
-                        name
-                        entity
-                        object {
-                            ... on Target {
-                                approvedSymbol
-                                alternativeSymbols
-                            }
-                        }
+            query TargetSearch($q:String!){
+              search(queryString:$q, entityNames:["target"]){
+                hits{
+                  id
+                  entity
+                  name
+                  object{
+                    ... on Target{
+                      approvedSymbol
+                      synonyms{ label }
+                      symbolSynonyms{ label }
                     }
+                  }
                 }
+              }
             }
             """
-            
             variables = {"q": gene_symbol}
-            data, fetch_time = await self._execute_graphql(query, variables)
-            
-            # Parse results
-            hits = data.get("data", {}).get("search", {}).get("hits", [])
-            
-            # Look for exact symbol match first
+            data, _ = await self._execute_graphql(query, variables)
+            hits = (((data or {}).get("data") or {}).get("search") or {}).get("hits", [])
             for hit in hits:
-                if hit.get("entity") == "target":
-                    target_obj = hit.get("object", {})
-                    approved = target_obj.get("approvedSymbol", "").upper()
-                    alternatives = target_obj.get("alternativeSymbols", [])
-                    
-                    if approved == gene_symbol or gene_symbol in [alt.upper() for alt in alternatives]:
-                        ensg_id = hit.get("id", "")
-                        if ensg_id.startswith("ENSG"):
-                            logger.info(f"Gene symbol resolved: {gene_symbol} -> {ensg_id}")
-                            return ensg_id
-
-            # No exact match found
+                if (hit.get("entity") or "").lower() != "target":
+                    continue
+                obj = hit.get("object") or {}
+                approved = (obj.get("approvedSymbol") or "").upper()
+                syns = [(s.get("label") or "").upper() for s in (obj.get("synonyms") or [])]
+                syns2 = [(s.get("label") or "").upper() for s in (obj.get("symbolSynonyms") or [])]
+                if gene_symbol == approved or gene_symbol in syns or gene_symbol in syns2:
+                    ensg_id = hit.get("id") or ""
+                    if ensg_id.startswith("ENSG"):
+                        logger.info(f"Gene symbol resolved: {gene_symbol} -> {ensg_id}")
+                        return ensg_id
             logger.warning(f"Gene symbol not found in OpenTargets: {gene_symbol}")
             return None
 
@@ -218,71 +199,55 @@ class OpenTargetsClient:
             return None
 
     async def fetch_gene_disease_associations(self, gene: str, disease: str) -> List[AssociationRecord]:
-        """
-        Fetch gene-disease associations from OpenTargets.
-        
-        Args:
-            gene: Gene symbol or ENSG ID
-            disease: Disease EFO ID
-            
-        Returns:
-            List of AssociationRecord objects
-        """
         async def _fetch_associations():
-            # Resolve gene symbol to ENSG
             ensg_id = await self.get_target_id(gene)
             if not ensg_id:
                 logger.warning(f"Cannot resolve gene {gene} to ENSG ID")
                 return []
 
             query = """
-            query GetAssociations($diseaseId: String!, $targetId: String!) {
-                associationDiseaseTarget(diseaseId: $diseaseId, targetId: $targetId) {
-                    id
+            query GetAssoc($targetId:String!,$diseaseId:String!,$page:Pagination){
+              target(ensemblId:$targetId){
+                associatedDiseases(
+                  Bs:[$diseaseId],
+                  enableIndirect:true,
+                  page:$page
+                ){
+                  count
+                  rows{
                     score
-                    datatypeScores {
-                        id
-                        score
-                    }
+                    datatypeScores{ id score }
+                    disease{ id name }
+                  }
+                }
+              }
+              disease(efoId:$diseaseId){
+                associatedTargets(
+                  Bs:[$targetId],
+                  enableIndirect:true,
+                  page:$page
+                ){
+                  count
+                  rows{
+                    score
+                    datatypeScores{ id score }
+                    target{ id approvedSymbol }
+                  }
                 }
                 evidences(
-                    diseaseId: $diseaseId
-                    targetId: $targetId
-                    size: 100
-                ) {
-                    count
-                    rows {
-                        disease {
-                            id
-                            name
-                        }
-                        target {
-                            id
-                            approvedSymbol
-                        }
-                        score
-                        scoreExponent
-                        datasourceId
-                        datatypeId
-                        literature
-                    }
-                }
-                meta {
-                    apiVersion {
-                        major
-                        minor
-                        patch
-                    }
-                    dataVersion {
-                        year
-                        month
-                        iteration
-                    }
-                }
+                  ensemblIds:[$targetId],
+                  enableIndirect:true,
+                  datasourceIds:["ot_genetics_portal"],
+                  size:1
+                ){ count }
+              }
+              meta{
+                apiVersion{ x y z }
+                dataVersion{ year month iteration }
+              }
             }
             """
-
-            variables = {"diseaseId": disease, "targetId": ensg_id}
+            variables = {"targetId": ensg_id, "diseaseId": disease, "page": {"index": 0, "size": 1}}
             data, fetch_time = await self._execute_graphql(query, variables)
 
             return self._parse_associations(data, gene, disease, fetch_time)
@@ -294,7 +259,6 @@ class OpenTargetsClient:
             gene=gene,
             disease=disease
         )
-
     async def fetch_evidences(self, gene: str, disease: str) -> List[EvidenceRef]:
         """
         Fetch evidence references for gene-disease pair.
@@ -336,94 +300,79 @@ class OpenTargetsClient:
             disease=disease
         )
 
-    def _parse_associations(self, api_response: Dict, gene: str, disease: str, fetch_time: float) -> List[AssociationRecord]:
-        """Parse OpenTargets API response into AssociationRecord objects."""
-        associations = []
-        
+    def _parse_associations(self, api_response: Dict, gene: str, disease: str, fetch_time: float) -> List[
+        AssociationRecord]:
+        associations: List[AssociationRecord] = []
         try:
-            # Extract main association data
-            adt = api_response.get("data", {}).get("associationDiseaseTarget", {})
-            evidences_data = api_response.get("data", {}).get("evidences", {})
-            meta = api_response.get("data", {}).get("meta", {})
+            tgt = (api_response.get("data", {}) or {}).get("target", {}) or {}
+            dis = (api_response.get("data", {}) or {}).get("disease", {}) or {}
 
-            # Parse evidence references
-            evidence_refs = []
-            for evidence_row in evidences_data.get("rows", []):
-                literature = evidence_row.get("literature", [])
-                if literature:
-                    for lit in literature:
-                        evidence_refs.append(EvidenceRef(
-                            source="opentargets",
-                            pmid=str(lit) if lit else None,
-                            title=None,  # Will be filled by PubMed client
-                            url=f"https://pubmed.ncbi.nlm.nih.gov/{lit}/" if lit else None,
-                            source_quality="high",
-                            timestamp=get_utc_now()
-                        ))
+            # Target -> associatedDiseases
+            t_rows = ((tgt.get("associatedDiseases") or {}).get("rows") or [])
+            # Disease -> associatedTargets
+            d_rows = ((dis.get("associatedTargets") or {}).get("rows") or [])
 
-            # Create main association record
-            if adt:
-                overall_score = float(adt.get("score", 0.0))
-                
-                # Extract genetics score from datatypes
-                genetics_score = 0.0
-                for datatype in adt.get("datatypeScores", []):
-                    datatype_id = datatype.get("id", "").lower()
-                    if datatype_id in ("genetic_association", "genetics"):
-                        genetics_score = max(genetics_score, float(datatype.get("score", 0.0)))
+            rows = []
+            if t_rows: rows.append(t_rows[0])
+            if d_rows: rows.append(d_rows[0])
 
-                association = AssociationRecord(
+            # Evidence sayısı
+            evidence_count = (((dis.get("evidences") or {}).get("count")) or 0)
+
+            overall = 0.0
+            genetics = 0.0
+
+            for r in rows:
+                overall = max(overall, float(r.get("score") or 0.0))
+                for ds in (r.get("datatypeScores") or []):
+                    did = str(ds.get("id") or "").lower()
+                    if ("genetic" in did) or ("somatic" in did):
+                        genetics = max(genetics, float(ds.get("score") or 0.0))
+
+            # Her iki yön de boşsa boş liste döndür (çağıran fallback’ı halleder)
+            if overall == 0.0 and genetics == 0.0 and evidence_count == 0:
+                return []
+
+            # Tek bir birleşik kayıt üret
+            associations.append(
+                AssociationRecord(
                     gene=gene.upper(),
                     disease=disease,
-                    score=overall_score,
-                    pval=None,  # Not available in this query
+                    score=overall if overall > 0 else genetics,
+                    pval=None,
                     source="opentargets",
                     timestamp=get_utc_now(),
-                    evidence=evidence_refs
+                    evidence=[EvidenceRef(source="opentargets", title=f"OT evidences: {evidence_count}",
+                                          timestamp=get_utc_now())]
                 )
+            )
 
-                associations.append(association)
-
-                # Add genetics-specific record if different
-                if genetics_score > 0 and genetics_score != overall_score:
-                    genetics_association = AssociationRecord(
+            # (İsteğe bağlı) genetics ayrı bir kayıt olarak farklıysa ekle
+            if genetics > 0 and genetics != overall:
+                associations.append(
+                    AssociationRecord(
                         gene=gene.upper(),
                         disease=disease,
-                        score=genetics_score,
+                        score=genetics,
                         pval=None,
                         source="opentargets_genetics",
                         timestamp=get_utc_now(),
-                        evidence=evidence_refs
+                        evidence=[]
                     )
-                    associations.append(genetics_association)
+                )
 
-            # Validate parsed data
-            for association in associations:
-                validation_result = self.validator.validate("opentargets", association)
-                if not validation_result.ok:
-                    logger.warning(
-                        f"Association validation failed: {validation_result.issues}",
-                        extra={
-                            "gene": gene,
-                            "disease": disease,
-                            "issues": validation_result.issues
-                        }
-                    )
+            # doğrulama
+            for a in associations:
+                vr = self.validator.validate("opentargets", a)
+                if not vr.ok:
+                    logger.warning("Association validation issues: %s", vr.issues)
 
             logger.info(
-                f"Parsed {len(associations)} associations for {gene}-{disease}",
-                extra={
-                    "gene": gene,
-                    "disease": disease,
-                    "association_count": len(associations),
-                    "evidence_count": len(evidence_refs),
-                    "fetch_time_ms": fetch_time
-                }
+                "Parsed associations for %s-%s overall=%.3f genetics=%.3f evidences=%d (%.1fms)",
+                gene, disease, overall, genetics, evidence_count, fetch_time
             )
-
         except Exception as e:
-            logger.error(f"Error parsing OpenTargets response: {e}", extra={"gene": gene, "disease": disease})
-            # Return empty list instead of raising - let caller handle missing data
+            logger.error("Error parsing OpenTargets response: %s", e, extra={"gene": gene, "disease": disease})
             return []
 
         return associations
@@ -499,46 +448,34 @@ class OpenTargetsClient:
     async def health_check(self) -> Dict[str, Any]:
         """
         Check OpenTargets API health and connectivity.
-        
-        Returns:
-            Health status dict
         """
         try:
             start_time = time.time()
-            
-            # Simple ping query
             query = """
             query HealthCheck {
-                meta {
-                    apiVersion {
-                        major
-                        minor
-                    }
-                    dataVersion {
-                        year
-                        month
-                    }
-                }
+              meta {
+                name
+                apiVersion { x y z }
+                dataVersion { year month iteration }
+              }
             }
             """
-            
             data, _ = await self._execute_graphql(query, {})
-            
             response_time = (time.time() - start_time) * 1000
-            meta = data.get("data", {}).get("meta", {})
-            
+
+            meta = (data.get("data") or {}).get("meta") or {}
             return {
                 "status": "healthy",
                 "response_time_ms": response_time,
                 "api_version": meta.get("apiVersion", {}),
                 "data_version": meta.get("dataVersion", {}),
+                "name": meta.get("name"),
                 "timestamp": datetime.utcnow().isoformat()
             }
-
         except Exception as e:
             logger.error(f"OpenTargets health check failed: {e}")
             return {
-                "status": "unhealthy", 
+                "status": "unhealthy",
                 "error": str(e),
                 "timestamp": datetime.utcnow().isoformat()
             }
@@ -556,7 +493,7 @@ async def get_ot_client() -> OpenTargetsClient:
     global _ot_client
     if _ot_client is None:
         _ot_client = OpenTargetsClient()
-        logger.info("OpenTargets client initialized")
+        logger.info("OpenTargets client initialized (mode=live, url=%s)", OT_GRAPHQL_URL)
     return _ot_client
 
 
@@ -574,68 +511,46 @@ async def cleanup_ot_client() -> None:
 # ========================
 
 async def fetch_ot_association(disease_efo: str, target_symbol_or_ensg: str) -> Dict:
-    """
-    High-level convenience function for gene-disease associations.
-    
-    Args:
-        disease_efo: Disease EFO ID
-        target_symbol_or_ensg: Gene symbol or ENSG ID
-        
-    Returns:
-        Compact dict with association scores and metadata
-    """
     try:
         client = await get_ot_client()
         associations = await client.fetch_gene_disease_associations(target_symbol_or_ensg, disease_efo)
-        
+
         if not associations:
             return {
-                "overall": 0.0,
-                "genetics": 0.0,
-                "text_mining": 0.0,
-                "known_drug": 0.0,
-                "evidence_count": 0,
-                "release": "OT-unknown",
-                "cached": False,
-                "fetch_ms": 0.0,
-                "status": "data_missing"
+                "overall": 0.0, "overallScore": 0.0, "genetics": 0.0,
+                "evidence_count": 0, "release": "OT-unknown",
+                "cached": False, "fetch_ms": 0.0, "status": "data_missing"
             }
 
-        # Extract scores from associations
         overall_score = 0.0
         genetics_score = 0.0
         evidence_count = 0
 
-        for assoc in associations:
-            if assoc.source == "opentargets":
-                overall_score = max(overall_score, assoc.score)
-            elif assoc.source == "opentargets_genetics":
-                genetics_score = max(genetics_score, assoc.score)
-            evidence_count += len(assoc.evidence)
+        for a in associations:
+            if a.source == "opentargets":
+                overall_score = max(overall_score, a.score)
+            elif a.source == "opentargets_genetics":
+                genetics_score = max(genetics_score, a.score)
+            evidence_count += len(a.evidence or [])
 
+        status = "ok" if (
+                (overall_score > 0.0) or (genetics_score > 0.0) or (evidence_count > 0)
+        ) else "data_missing"
         return {
             "overall": overall_score,
+            "overallScore": overall_score,
             "genetics": genetics_score,
-            "text_mining": 0.0,  # TODO: Extract from evidence types
-            "known_drug": 0.0,   # TODO: Extract from evidence types  
             "evidence_count": evidence_count,
-            "release": "OT-24.12",  # TODO: Extract from meta
-            "cached": True,  # TODO: Track cache hit from fetch
-            "fetch_ms": 0.0,  # TODO: Track actual fetch time
-            "status": "ok"
+            "release": "OT-25.06",
+            "cached": True,
+            "fetch_ms": 0.0,
+            "status": status
         }
 
     except Exception as e:
-        logger.error(f"Association fetch failed: {e}", extra={"gene": target_symbol_or_ensg, "disease": disease_efo})
+        logger.error("Association fetch failed: %s", e, extra={"gene": target_symbol_or_ensg, "disease": disease_efo})
         return {
-            "overall": 0.0,
-            "genetics": 0.0,
-            "text_mining": 0.0,
-            "known_drug": 0.0,
-            "evidence_count": 0,
-            "release": "OT-unknown",
-            "cached": False,
-            "fetch_ms": 0.0,
-            "status": "error",
-            "error": str(e)
+            "overall": 0.0, "genetics": 0.0,
+            "evidence_count": 0, "release": "OT-unknown",
+            "cached": False, "fetch_ms": 0.0, "status": "error", "error": str(e)
         }

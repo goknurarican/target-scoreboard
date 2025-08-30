@@ -753,9 +753,9 @@ def call_api(endpoint, method="GET", data=None):
     try:
         url = f"{API_BASE_URL}{endpoint}"
         if method == "POST":
-            response = requests.post(url, json=data, timeout=30)
+            response = requests.post(url, json=data, timeout=90)
         else:
-            response = requests.get(url, timeout=30)
+            response = requests.get(url, timeout=90)
 
         if response.status_code == 200:
             return response.json()
@@ -774,7 +774,7 @@ def handle_export_download(export_format, request_data):
     """Handle export download via API call."""
     try:
         export_url = f"{API_BASE_URL}/export/{export_format}"
-        response = requests.post(export_url, json=request_data, timeout=30)
+        response = requests.post(export_url, json=request_data, timeout=90)
 
         if response.status_code == 200:
             # Get filename from Content-Disposition header

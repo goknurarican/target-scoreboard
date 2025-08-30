@@ -28,25 +28,16 @@ class GeneticsChannel:
     async def compute_score(self, gene: str, disease: str) -> ChannelScore:
         """
         Compute genetics association score from OpenTargets + PubMed.
-
-        Args:
-            gene: Gene symbol
-            disease: Disease EFO ID
-
-        Returns:
-            ChannelScore with status, score, components, evidence, quality flags
         """
-        evidence_refs = []
+        evidence_refs: List[EvidenceRef] = []
         components = {}
         quality_flags = DataQualityFlags()
 
         try:
-            # Get OpenTargets client
             ot_client = await get_ot_client()
-
-            # Fetch gene-disease associations
             associations = await ot_client.fetch_gene_disease_associations(gene, disease)
 
+            # Hiç association yoksa doğrudan data_missing
             if not associations:
                 logger.warning(f"No genetic associations found for {gene}-{disease}")
                 return ChannelScore(
@@ -55,17 +46,18 @@ class GeneticsChannel:
                     status="data_missing",
                     components={},
                     evidence=[],
-                    quality=DataQualityFlags(partial=True, notes="No associations found")
+                    quality=DataQualityFlags(partial=True, notes="No associations found (OT v4)")
                 )
 
-            # Validate association data
+            # Validasyon
             for association in associations:
-                validation_result = self.validator.validate("opentargets", association)
-                if not validation_result.ok:
+                vr = self.validator.validate("opentargets", association)
+                if not vr.ok:
                     quality_flags.partial = True
-                    quality_flags.notes = f"Validation issues: {'; '.join(validation_result.issues[:3])}"
+                    n = "; ".join(vr.issues[:3])
+                    quality_flags.notes = (quality_flags.notes + " | " if quality_flags.notes else "") + f"Validation: {n}"
 
-            # Extract genetics scores
+            # Skorları topla
             overall_score = 0.0
             genetics_score = 0.0
             literature_score = 0.0
@@ -73,21 +65,30 @@ class GeneticsChannel:
 
             for association in associations:
                 if association.source == "opentargets":
-                    overall_score = max(overall_score, association.score)
+                    overall_score = max(overall_score, float(association.score or 0.0))
                 elif association.source == "opentargets_genetics":
-                    genetics_score = max(genetics_score, association.score)
+                    genetics_score = max(genetics_score, float(association.score or 0.0))
 
-                # Count evidence
-                total_evidence_count += len(association.evidence)
+                # Kanıtlar
+                if association.evidence:
+                    total_evidence_count += len(association.evidence)
+                    evidence_refs.extend(association.evidence)
 
-                # Build evidence references
-                for evidence in association.evidence:
-                    evidence_refs.append(evidence)
+            # Evidence dedupe (pmid -> url -> title sırası)
+            deduped = []
+            seen = set()
+            for ev in evidence_refs:
+                key = (ev.source or "", ev.pmid or ev.url or ev.title or "")
+                if key in seen:
+                    continue
+                seen.add(key)
+                deduped.append(ev)
+            evidence_refs = deduped
 
-            # Use genetics-specific score if available, otherwise overall
+            # Nihai skor: varsa genetics, yoksa overall
             final_genetics_score = genetics_score if genetics_score > 0 else overall_score
 
-            # Components breakdown
+            # Bileşenler
             components = {
                 "ot_overall": overall_score,
                 "ot_genetics": genetics_score,
@@ -95,7 +96,7 @@ class GeneticsChannel:
                 "evidence_count": total_evidence_count
             }
 
-            # Determine confidence level based on evidence
+            # Güven seviyesi (basit sezgisel)
             if total_evidence_count >= 50:
                 confidence_level = "high"
             elif total_evidence_count >= 10:
@@ -103,26 +104,35 @@ class GeneticsChannel:
             else:
                 confidence_level = "low"
                 quality_flags.partial = True
-
-            # Add confidence to components
             components["confidence_level"] = confidence_level
 
-            # Success case
+            # --- EN ÖNEMLİ KISIM ---
+            # Sinyal var mı? (skor>0 veya kanıt>0)
+            has_signal = (final_genetics_score and final_genetics_score > 0.0) or (total_evidence_count > 0)
+
+            status = "ok" if has_signal else "data_missing"
+            score_to_return = final_genetics_score if has_signal else None
+
+            if not has_signal:
+                # Nedenini de yaz
+                quality_flags.notes = (
+                    (quality_flags.notes + " | ") if quality_flags.notes else ""
+                ) + "No OT genetic/overall signal for this disease (OT v4)"
+
             logger.info(
-                f"Genetics score computed for {gene}-{disease}: {final_genetics_score:.3f}",
+                f"Genetics score for {gene}-{disease}: "
+                f"{'none' if score_to_return is None else f'{score_to_return:.3f}'} "
+                f"(status={status}, evidences={total_evidence_count}, conf={confidence_level})",
                 extra={
-                    "gene": gene,
-                    "disease": disease,
-                    "score": final_genetics_score,
-                    "evidence_count": total_evidence_count,
-                    "confidence": confidence_level
+                    "gene": gene, "disease": disease, "score": score_to_return,
+                    "evidence_count": total_evidence_count, "confidence": confidence_level, "status": status
                 }
             )
 
             return ChannelScore(
                 name=self.channel_name,
-                score=final_genetics_score,
-                status="ok",
+                score=score_to_return,
+                status=status,
                 components=components,
                 evidence=evidence_refs,
                 quality=quality_flags
@@ -130,7 +140,6 @@ class GeneticsChannel:
 
         except Exception as e:
             logger.error(f"Genetics channel error for {gene}-{disease}: {e}")
-
             return ChannelScore(
                 name=self.channel_name,
                 score=None,

@@ -34,6 +34,8 @@ HIGH_CONFIDENCE_PLDDT = float(os.getenv("HIGH_CONFIDENCE_PLDDT", "90.0"))
 MEDIUM_CONFIDENCE_PLDDT = float(os.getenv("MEDIUM_CONFIDENCE_PLDDT", "70.0"))
 MAX_PAE_THRESHOLD = float(os.getenv("MAX_PAE_THRESHOLD", "5.0"))
 
+ALPHAFOLD_ENABLED = os.getenv("ALPHAFOLD_ENABLED", "false").lower() == "true"
+
 
 class AlphaFoldError(Exception):
     """AlphaFold specific errors."""
@@ -178,11 +180,13 @@ class AlphaFoldClient:
         return None
 
     async def get_confidence_scores(self, gene: str) -> Optional[StructureConfidence]:
-        """
-        Get structure confidence scores for a gene from AlphaFold.
-        """
+        """Get structure confidence scores for a gene from AlphaFold."""
+        if not ALPHAFOLD_ENABLED:
+            logger.info("AlphaFold disabled via ALPHAFOLD_ENABLED=false; skipping fetch")
+            return None
 
         async def _fetch_confidence():
+
             # Resolve to UniProt ID
             uniprot_id = await self._resolve_uniprot_id(gene)
             if not uniprot_id:
@@ -197,25 +201,24 @@ class AlphaFoldClient:
                     logger.info(f"No AlphaFold structure for {gene} ({uniprot_id})")
                     return None
 
-                # Extract confidence scores
-                plddt_data = response_data.get("plddt", [])
-                pae_data = response_data.get("pae", [])
+                    # Extract confidence scores - GÜVENLI PARSING ZATEN VAR
+                    plddt_data = response_data.get("plddt", [])
+                    pae_data = response_data.get("pae", [])
 
-                # Calculate mean pLDDT - GÜVENLI PARSING
-                plddt_mean = None
-                if plddt_data:
-                    try:
-                        if isinstance(plddt_data, list) and len(plddt_data) > 0:
-                            plddt_values = []
-                            for x in plddt_data:
-                                if isinstance(x, (int, float)):
-                                    plddt_values.append(float(x))
+                    # Calculate mean pLDDT - GÜVENLI PARSING
+                    plddt_mean = None
+                    if plddt_data:
+                        try:
+                            if isinstance(plddt_data, list) and len(plddt_data) > 0:
+                                plddt_values = []
+                                for x in plddt_data:
+                                    if isinstance(x, (int, float)):
+                                        plddt_values.append(float(x))
 
-                            if plddt_values:
-                                plddt_mean = sum(plddt_values) / len(plddt_values)
-                    except Exception as e:
-                        logger.warning(f"pLDDT parsing error for {gene}: {e}")
-
+                                if plddt_values:
+                                    plddt_mean = sum(plddt_values) / len(plddt_values)
+                        except Exception as e:
+                            logger.warning(f"pLDDT parsing error for {gene}: {e}")
                 # Calculate mean PAE - GÜVENLI PARSING
                 pae_mean = None
                 if pae_data:
@@ -300,7 +303,9 @@ class AlphaFoldClient:
         Returns:
             Dict with structure summary or empty dict if not available
         """
-
+        if not ALPHAFOLD_ENABLED:
+            logger.info("AlphaFold disabled; returning empty summary")
+            return {}
         async def _fetch_summary():
             uniprot_id = await self._resolve_uniprot_id(gene)
             if not uniprot_id:
@@ -342,6 +347,9 @@ class AlphaFoldClient:
         Returns:
             Health status dict
         """
+        if not ALPHAFOLD_ENABLED:
+            return {"status": "disabled", "api_version": ALPHAFOLD_VERSION, "timestamp": get_utc_now().isoformat()}
+
         try:
             start_time = time.time()
 

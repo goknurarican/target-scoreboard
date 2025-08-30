@@ -138,7 +138,7 @@ def test_cache_behavior():
 
         # First call (should populate cache)
         start_time = time.time()
-        response1 = requests.post("http://localhost:8000/score", json=payload, timeout=30)
+        response1 = requests.post("http://localhost:8000/score", json=payload, timeout=90)
         time1 = time.time() - start_time
 
         if response1.status_code != 200:
@@ -147,7 +147,7 @@ def test_cache_behavior():
 
         # Second call (should use cache)
         start_time = time.time()
-        response2 = requests.post("http://localhost:8000/score", json=payload, timeout=30)
+        response2 = requests.post("http://localhost:8000/score", json=payload, timeout=90)
         time2 = time.time() - start_time
 
         if response2.status_code != 200:

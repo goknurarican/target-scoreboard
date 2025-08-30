@@ -14,7 +14,8 @@ import uuid
 from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import Dict, Any, Optional
-
+from fastapi import Body
+from .schemas import ScoreRequest
 from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -29,6 +30,8 @@ from .schemas import (
 from .scoring import score_targets, validate_score_request
 from .data_access.opentargets import get_ot_client, cleanup_ot_client
 from .data_access.cache import get_cache_manager, cleanup_cache, cache_stats
+from .data_access.stringdb import get_stringdb_client, cleanup_stringdb_client
+
 logger = logging.getLogger(__name__)
 
 # ========================
@@ -139,13 +142,16 @@ class DIContainer:
             logger.info("Cache manager initialized")
 
             # TODO: Initialize other clients in Phase 1B
-            # self._clients["stringdb"] = await get_stringdb_client()
+            self._clients["stringdb"] = await get_stringdb_client()
+            logger.info("STRING-DB client initialized")
             # self._clients["expression_atlas"] = await get_expression_atlas_client()
             # self._clients["alphafold"] = await get_alphafold_client()
             # self._clients["pubmed"] = await get_pubmed_client()
 
             self._initialized = True
             init_time = (time.time() - start_time) * 1000
+            if "stringdb" in self._clients:
+                await cleanup_stringdb_client()
 
             logger.info(
                 f"DI container initialized in {init_time:.1f}ms",
@@ -456,6 +462,8 @@ async def root():
     }
 
 
+
+
 @app.post("/score", response_model=ScoreResponse)
 async def score_targets_endpoint(request: ScoreRequest, http_request: Request):
     """Score targets using production pipeline with data quality validation."""
@@ -717,7 +725,104 @@ def get_env_config_docs() -> Dict[str, str]:
         "DEFAULT_STALENESS_HOURS": "Default staleness threshold"
     }
 
+#####
+# main.py'de @app.get("/system/info") endpoint'inden sonra ekle:
 
+@app.post("/sensitivity/ablation")
+async def run_ablation_analysis(request: ScoreRequest, http_request: Request):
+    """Channel ablation analysis endpoint"""
+    request_id = getattr(http_request.state, 'request_id', str(uuid.uuid4()))
+
+    try:
+        # Normal scoring yap
+        target_scores, metadata = await score_targets(request)
+
+        # Ablation analysis çalıştır
+        from .scoring import compute_channel_ablation
+        ablation_results = compute_channel_ablation(target_scores, request.weights or DEFAULT_WEIGHTS)
+
+        return {
+            "ablation_analysis": ablation_results,
+            "baseline_scores": [{"target": ts.target, "score": ts.total_score} for ts in target_scores],
+            "metadata": metadata,
+            "request_id": request_id
+        }
+    except Exception as e:
+        logger.error(f"Ablation analysis failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+DEFAULT_WEIGHTS = {
+    "genetics": float(os.getenv("WEIGHT_GENETICS", "0.35")),
+    "ppi": float(os.getenv("WEIGHT_PPI", "0.25")),
+    "pathway": float(os.getenv("WEIGHT_PATHWAY", "0.20")),
+    "safety": float(os.getenv("WEIGHT_SAFETY", "0.10")),
+    "modality_fit": float(os.getenv("WEIGHT_MODALITY", "0.10"))
+}
+
+@app.get("/sensitivity/weight-impact")
+async def analyze_weight_impact(
+        disease: str,
+        targets: str,  # comma-separated
+        base_weights: Optional[str] = None
+):
+    """Weight sensitivity analysis endpoint"""
+    try:
+        targets_list = [t.strip().upper() for t in targets.split(',')]
+
+        # Parse weights if provided
+        weights = DEFAULT_WEIGHTS.copy()
+        if base_weights:
+            import json
+            weights.update(json.loads(base_weights))
+
+        request = ScoreRequest(
+            disease=disease,
+            targets=targets_list,
+            weights=weights
+        )
+
+        # Get baseline scores
+        target_scores, _ = await score_targets(request)
+
+        # Run weight perturbation simulation
+        from .scoring import simulate_weight_perturbations
+        stability_analysis = simulate_weight_perturbations(target_scores, weights)
+
+        return {
+            "weight_impact": stability_analysis,
+            "baseline_weights": weights,
+            "target_count": len(targets_list)
+        }
+    except Exception as e:
+        logger.error(f"Weight impact analysis failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/evidence/distribution")
+async def get_evidence_distribution():
+    """Evidence types distribution endpoint"""
+    return {
+        "literature": 0,
+        "databases": 0,
+        "vantai": 0,
+        "other": 0
+    }
+@app.post("/sensitivity/weight-impact")
+async def analyze_weight_impact_post(req: ScoreRequest):
+    """POST alias so the frontend can call this endpoint"""
+    try:
+        # baseline skorlar
+        target_scores, _ = await score_targets(req)
+        from .scoring import simulate_weight_perturbations
+        stability = simulate_weight_perturbations(target_scores, req.weights or DEFAULT_WEIGHTS)
+        return {
+            "weight_impact": stability,
+            "baseline_weights": req.weights or DEFAULT_WEIGHTS,
+            "target_count": len(req.targets)
+        }
+    except Exception as e:
+        logger.error(f"Weight impact analysis (POST) failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 if __name__ == "__main__":
     # Development server
     uvicorn.run(

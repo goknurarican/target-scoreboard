@@ -6,7 +6,7 @@
 Pydantic schemas for VantAI Target Scoreboard API - Phase 1.
 Kanonik modeller: gerçek veri entegrasyonu için production-ready şemalar.
 """
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 from typing import Optional, Dict, List, Any, Union, Literal
 from datetime import datetime
 import re
@@ -120,6 +120,7 @@ class ChannelScore(BaseModel):
     components: Dict[str, float] = Field(default_factory=dict, description="Sub-component scores")
     evidence: List[EvidenceRef] = Field(default_factory=list, description="Supporting evidence")
     quality: DataQualityFlags = Field(default_factory=DataQualityFlags, description="Data quality flags")
+
 
 
 class TargetScoreBundle(BaseModel):
@@ -279,9 +280,13 @@ class TargetScore(BaseModel):
     explanation: Dict[str, Any] = Field(default_factory=dict)
     timestamp: datetime
     warnings: Optional[List[str]] = None
+    channels: Optional[Dict[str, ChannelScore]] = Field(
+        default=None,
+        description="Per-channel detailed scores, components, evidence and quality"
+    )
+    model_config = ConfigDict(extra="allow")
 
-    class Config:
-        extra = "allow"
+
 
 
 class RequestSummary(BaseModel):
