@@ -1,116 +1,159 @@
-# Target Scoreboard for VantAI
+# VantAI Target Scoreboard (Demo)
 
-A comprehensive computational platform for modality-aware target prioritization in drug discovery, integrating multi-omics data sources to support evidence-based decision making.
+A lightweight, **modality‑aware target prioritization** demo that integrates real public datasets and transparent scoring to help with early shortlisting. Built end‑to‑end (API + UI) to showcase explainability, sensitivity, and shareable runs.
+
+> **Note (scope):** This is a two‑week, self‑initiated **demo** for evaluation purposes. Genetics & PPI are backed by real data; **safety, pathway, and modality‑fit are heuristic/proxy layers** and called out as such below.
+
+---
 
 ## 🎥 Demo Video
 
-Watch the 90-second technical demo here:  
-👉 [https://youtu.be/L896NhYdsZA](https://youtu.be/L896NhYdsZA)
+90‑second walkthrough → **[https://youtu.be/L896NhYdsZA](https://youtu.be/L896NhYdsZA)**
 
 [![Target Scoreboard Demo](https://img.youtube.com/vi/L896NhYdsZA/0.jpg)](https://youtu.be/L896NhYdsZA)
 
-## Overview
-This Target Scoreboard provides systematic evaluation of therapeutic targets by combining genetic associations, protein interaction networks, pathway analysis, safety assessments, and modality-specific druggability scores. The platform offers transparent, explainable scoring with robust sensitivity analysis capabilities.
+---
+
+## What it does (at a glance)
+
+* **Explainable multi‑channel score** per target: **Genetics**, **PPI proximity**, **Pathway**, **Safety**, **Modality‑fit** → weighted and normalized (default weights shown in UI).
+* **Why‑this‑rank? panel** with channel contributions, short interpretations, and **clickable evidence** (e.g., Open Targets links).
+* **Sensitivity tools:** weight impact, **channel ablation**, and rank **stability** (Dirichlet jitter) to see how robust a shortlist is.
+* **Benchmark (lite):** demo ground truths (NSCLC/Breast) with **Precision\@k** and **AUC‑PR** for sanity checks.
+* **Shareable runs:** full state (disease, targets, weights) is encoded in the URL for easy review.
+
+---
+
+## What’s real vs. proxy
+
+| Channel          | Data source / method                             | Status           |
+| ---------------- | ------------------------------------------------ | ---------------- |
+| **Genetics**     | Open Targets disease–gene associations           | **Real**         |
+| **PPI**          | STRING‑based proximity / neighbors               | **Real**         |
+| **Pathway**      | ORA on a limited set (to be expanded)            | **Semi / Proxy** |
+| **Safety**       | Off‑tissue/tissue specificity heuristic          | **Proxy**        |
+| **Modality‑fit** | E3 co‑expr, ternary hint, PPI hotspot heuristics | **Proxy**        |
+
+> The demo is intended for **early triage/shortlisting**, not final biological decisions.
+
+---
+
+## Screens & examples
+
+**Overview:** score distribution & run metrics
+
 <img width="917" height="565" alt="Screenshot 2025-08-21 at 11 50 54" src="https://github.com/user-attachments/assets/d6fc7ea5-c739-4f50-9ccd-4773eafc903c" />
 
-Analytics Overview showing target scoring distribution and key metrics
+**PPI neighbors / network:**
 
-## Key Features
-Multi-Modal Scoring System
-
-* Genetics Channel (35%): Disease association strength from GWAS and genetic studies via Open Targets
-* PPI Network Channel (25%): Protein interaction connectivity and centrality from STRING database
-* Pathway Channel (20%): Biological pathway enrichment analysis using Reactome data
-* Safety Channel (10%): Tissue specificity and off-target risk assessment
-* Modality Fit Channel (10%): Druggability evaluation for different therapeutic modalities
-  
-## Interactive Network Analysis
 <img width="874" height="699" alt="Screenshot 2025-08-21 at 11 53 36" src="https://github.com/user-attachments/assets/c89fe72c-6bb1-4490-a73b-6241971d4221" />
 
-PPI network visualization showing first-shell neighbors and interaction strengths
+**Modality‑fit (heuristic):**
 
-The platform provides detailed protein-protein interaction analysis with:
-
-* First-shell neighbor identification with confidence scores
-* Network centrality metrics for hub protein detection
-* Interactive visualization of target connectivity
-* Mechanism of action hypothesis generation
-
-
-## Modality-Specific Assessment
 <img width="900" height="659" alt="Screenshot 2025-08-21 at 11 55 24" src="https://github.com/user-attachments/assets/cab5e179-94ed-49b4-a75b-c45ba35a85d2" />
 
-Modality fit analysis showing E3 co-expression, ternary feasibility, and PPI hotspot scores
-Advanced druggability assessment includes:
+**Benchmark (lite):**
 
-* E3 Co-expression: Likelihood of successful PROTAC development
-* Ternary Feasibility: Ternary complex formation potential
-* PPI Hotspot: Protein-protein interaction druggability
-* Small molecule and degrader suitability scoring
-
-## Validation and Benchmarking 
 <img width="783" height="664" alt="Screenshot 2025-08-21 at 11 56 04" src="https://github.com/user-attachments/assets/eadbaf44-0fe2-48c7-b7b7-2243417a35ea" />
 
-Performance validation against known therapeutic targets with precision metrics
-Comprehensive validation framework featuring:
+---
 
-* Ground truth comparison against FDA-approved targets
-* Precision@k metrics (k=1,3,5) for ranking quality assessment
-* AUC-PR calculation for overall performance evaluation
-* Historical validation against clinical outcomes
+## Data sources (current)
 
-## Architecture
-Backend (FastAPI)
+* **Open Targets (GraphQL v4)** – disease–gene associations
+* **STRING v12** – protein–protein interactions
+* **Reactome (curated)** – pathway references (limited set in demo)
 
-* RESTful API with async processing capabilities
-* Multi-source data integration and caching
-* Configurable scoring algorithms with weight optimization
-* Export functionality (JSON/CSV) with metadata preservation
+Versions and timestamps are shown in the app footer / API responses where applicable.
 
-Frontend (Streamlit)
+---
 
-* Tabbed interface for organized workflow
-* Real-time analysis with shareable URLs
-* Interactive visualizations and progress tracking
-* Responsive design with professional theming
+## Quick start
 
-Data Sources
+### 1) Clone & env
 
-* Open Targets 2024.06: 15M+ target-disease associations
-* STRING v12.0: 24M protein interactions with confidence scores
-* Reactome 2024: Curated biological pathway database
-* VantAI Proprietary: Modality-specific scoring algorithms
-
-
-## Quick Start
-
-1. Install dependencies: `pip install -r requirements.txt`
-2. Start API: `uvicorn app.main:app --reload`
-3. Test API: `./examples/curl_score.sh`
-4. Start dashboard: `streamlit run dashboard/app.py`
-
-## Setup
-Clone repository
+```bash
 git clone https://github.com/vantai/target-scoreboard.git
 cd target-scoreboard
-
-Create virtual environment
 python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+source .venv/bin/activate  # Windows: .venv\\Scripts\\activate
+pip install -r requirements.txt
+```
 
-## Install dependencies
-`pip install -r requirements.txt`
+### 2) Run API (FastAPI)
 
-## Set environment variables
-`export API_PORT=8001`
-`export STREAMLIT_PORT=8501`
+```bash
+export API_PORT=8001
+python -m uvicorn app.main:app --host 0.0.0.0 --port $API_PORT --reload
+```
 
-## Start backend API
-`python -m uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload`
+**Sanity check (Genetics should populate):**
 
-## Start dashboard (in separate terminal)
-`streamlit run dashboard/ui_app.py --server.port 8501`
+```bash
+curl -sS -X POST http://localhost:8001/score \
+ -H 'Content-Type: application/json' \
+ -d '{
+   "disease": "EFO_0003060",                  
+   "targets": ["EGFR","ERBB2","ALK","KRAS","MET"],
+   "weights": {"genetics":0.35, "ppi":0.25, "pathway":0.20, "safety":0.10, "modality_fit":0.10}
+ }' | jq '.targets[0] | {target, genetics: .channels.genetics.score, evidence: .channels.genetics.evidence[0].url}'
+```
+
+### 3) Run UI (Streamlit)
+
+```bash
+export STREAMLIT_PORT=8501
+streamlit run dashboard/ui_app.py --server.port $STREAMLIT_PORT
+```
+
+The UI will detect local vs. hosted API automatically. You can share the analysis via the **Share** section (URL includes disease, targets, and weights).
+
+---
+
+## Architecture
+
+**Backend (FastAPI)**
+
+* REST endpoints; multi‑source integration and light caching
+* Scoring pipeline with per‑channel components
+* Sensitivity: **/sensitivity/ablation**, stability
+* JSON/CSV export with metadata (where applicable)
+
+**Frontend (Streamlit)**
+
+* Tabs: **Overview · Rankings · Explain · Evidence · Sensitivity · Benchmark**
+* Explain panel: channel contributions + short interpretations + evidence links
+* URL‑state (encode/decode/update) for reproducible runs
+
+---
+
+## Troubleshooting
+
+* **Genetics = 0?** Ensure the disease EFO is valid (e.g., NSCLC = `EFO_0003060`). If OT returns `null`, fix the ID and retry.
+* **Weights sum ≠ 1?** The UI warns; you can normalize or proceed.
+* **No pathway hits?** The demo uses a limited set; see roadmap below to expand.
+
+---
+
+## Limitations & roadmap
+
+1. **Safety 1.0:** integrate GTEx/HPA tissue‑specificity + LOEUF/pLI + DepMap essentiality → combined risk score.
+2. **Pathway 1.0:** expand to Reactome/KEGG/MSigDB with proper ORA/GSEA, p‑value & FDR, background controls.
+3. **Modality‑fit 1.0:** structure/localization signals (cell compartment, pocket druggability, E3 atlas).
+4. **Qualitative → score:** small LLM‑assisted “claim strength / consensus / recency” metric from PMIDs.
+5. **PPI provider adapter:** pluggable backend (STRING or proprietary) via a simple interface.
+
+---
+
+## Recent fixes (Aug–Sep 2025)
+
+* **Correct EFO mapping** (e.g., NSCLC → `EFO_0003060`); Genetics now returns real OT scores with evidence links.
+* **UI ↔ backend alignment** for `channels.genetics.score` across Rankings & Explain.
+* **Sensitivity/Ablation** endpoints wired in the UI; stability uses sample‑size controls to avoid timeouts.
+* **Shareable URL state** (targets + weights), clearer API errors, and basic health checks.
+
+---
 
 ## License
 
-All rights reserved. Shared for evaluation only under LICENSE-EVALUATION.md.
+All rights reserved. Shared for evaluation only under `LICENSE-EVALUATION.md`.
