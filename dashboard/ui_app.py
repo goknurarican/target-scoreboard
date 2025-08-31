@@ -1671,11 +1671,10 @@ def render_sidebar_with_url_state():
     # Disease selection
     st.markdown("### Disease Context")
     disease_options = {
-        "Lung carcinoma": "EFO_0000692",  # Broad lung cancer - VALID
-        "Lung adenocarcinoma": "MONDO_0005233",  # Specific subtype - VALID
+        "Non-small cell lung carcinoma": "EFO_0003060",        "Lung adenocarcinoma": "MONDO_0005233",  # Specific subtype - VALID
         "Breast carcinoma": "EFO_0000305",  # Breast cancer - VALID
-        "Colorectal carcinoma": "EFO_0001071",  # Colorectal cancer - VALID
-        "Prostate carcinoma": "EFO_0001663",  # Prostate cancer - VALID
+        "Colorectal carcinoma": "EFO_1001951",  # ✅ colorectal ca
+         "Prostate carcinoma": "EFO_0001663",  # Prostate cancer - VALID
     }
 
     # Use URL state if available
