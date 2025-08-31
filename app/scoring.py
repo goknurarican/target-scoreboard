@@ -90,52 +90,81 @@ class TargetBuilder:
     async def fetch_all(self) -> Dict[str, Any]:
         """
         Fetch data from all channels in parallel.
-
-        Returns:
-            Dict with raw channel data
         """
         start_time = time.time()
 
         try:
-            # Create async tasks for each channel
-            tasks = {}
-
+            # --- 1) Paralel işler (modality hariç) ---
+            tasks: Dict[str, Any] = {}
             if self.disease:
-                # Genetics channel (requires disease)
                 tasks["genetics"] = self._fetch_genetics_data()
 
-            # Other channels
             tasks["ppi"] = self._fetch_ppi_data()
             tasks["pathway"] = self._fetch_pathway_data()
             tasks["safety"] = self._fetch_safety_data()
 
-            # Execute all tasks in parallel
             results = await asyncio.gather(*tasks.values(), return_exceptions=True)
 
-            # Map results back to channel names
+            # --- 2) Sonuçları raw_data'ya yerleştir ---
             for channel, result in zip(tasks.keys(), results):
                 if isinstance(result, Exception):
                     logger.error(f"Channel {channel} fetch failed: {result}")
                     self.raw_data[channel] = {"status": "error", "error": str(result)}
                     self.lineage["quality_issues"].append(f"{channel}: {str(result)[:100]}")
-                    self.raw_data[channel] = result
-
                 else:
                     self.raw_data[channel] = result
                     self.lineage["sources"].append(f"{channel}: fetched")
+
+            # --- 3) PPI -> Modality (ppi_hotspot ile) ---
             try:
+                # PPI components'ı çek
                 ppi_components = None
                 ppi_raw = self.raw_data.get("ppi") or {}
                 if isinstance(ppi_raw, dict):
                     ppi_components = ppi_raw.get("components")
 
-                modality_result = await self._fetch_modality_data(ppi_components=ppi_components)
+                # Modality'i çağır (parametreli dene, olmazsa parametresiz)
+                modality_result = None
+                try:
+                    modality_result = await self._fetch_modality_data(
+                        ppi_components=ppi_components)  # yeni imzayı destekliyorsa
+                except TypeError:
+                    modality_result = await self._fetch_modality_data()  # eski imza
+
+                if not isinstance(modality_result, dict):
+                    modality_result = {"status": "error", "error": "modality returned non-dict"}
+
+                # Hotspot türet
+                hot = _derive_ppi_hotspot_from_components(self.gene, ppi_components or {})
+                if hot is not None:
+                    scores = dict(modality_result.get("scores") or {})
+                    old_overall = scores.get("overall_druggability", modality_result.get("score") or 0.0) or 0.0
+                    try:
+                        old_overall = float(old_overall)
+                    except Exception:
+                        old_overall = 0.0
+
+                    # %10 hotspot katkısı
+                    new_overall = max(0.0, min(1.0, 0.90 * old_overall + 0.10 * float(hot)))
+                    scores["ppi_hotspot"] = float(hot)
+                    scores["overall_druggability"] = new_overall
+
+                    modality_result["scores"] = scores
+                    modality_result["score"] = new_overall
+                    modality_result["status"] = modality_result.get("status") or "ok"
+
+                    logger.info(f"[PPI->MODALITY] hotspot={hot:.3f} overall {old_overall:.3f}->{new_overall:.3f}")
+
+                # raw_data'ya yaz
                 self.raw_data["modality_fit"] = modality_result
                 self.lineage["sources"].append("modality_fit: fetched")
+
             except Exception as e:
                 logger.error(f"Channel modality_fit fetch failed: {e}")
                 self.raw_data["modality_fit"] = {"status": "error", "error": str(e)}
                 self.lineage["quality_issues"].append(f"modality_fit: {str(e)[:100]}")
+
+            # --- 4) Zaman ve log ---
             fetch_time = (time.time() - start_time) * 1000
             self.lineage["transforms"].append(f"fetch_all: {fetch_time:.1f}ms")
 
@@ -144,7 +173,8 @@ class TargetBuilder:
                 extra={
                     "gene": self.gene,
                     "disease": self.disease,
-                    "channels_fetched": len([k for k, v in self.raw_data.items() if "error" not in v]),
+                    "channels_fetched": len(
+                        [k for k, v in self.raw_data.items() if isinstance(v, dict) and "error" not in v]),
                     "fetch_time_ms": fetch_time
                 }
             )
@@ -549,6 +579,7 @@ class TargetBuilder:
                     if isinstance(m, dict):
                         components.update(m)
                         score = m.get("overall_druggability", score)
+
                     elif hasattr(m, "overall_druggability"):
                         score = getattr(m, "overall_druggability", score)
 
