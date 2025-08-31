@@ -21,6 +21,130 @@ import os
 PPI_DISABLE_FALLBACK = os.getenv("PPI_DISABLE_FALLBACK", "true").lower() == "true"
 
 logger = logging.getLogger(__name__)
+# --- helpers for FE graph preview -------------------------------------------
+from typing import Iterable, Tuple, Dict, Any, List, Optional
+
+def _normalize_neighbor(n, target_symbol: str) -> Optional[Tuple[str, float]]:
+    """
+    Komşu girdilerini (str / tuple / dict) normalize edip (symbol, confidence) döndür.
+    """
+    try:
+        if n is None:
+            return None
+        if isinstance(n, str):
+            sym = n.strip().upper()
+            if not sym or sym == target_symbol:
+                return None
+            return sym, 1.0
+        if isinstance(n, (list, tuple)) and len(n) >= 1:
+            sym = str(n[0]).strip().upper()
+            conf = float(n[1]) if len(n) > 1 and n[1] is not None else 1.0
+            if not sym or sym == target_symbol:
+                return None
+            return sym, max(0.0, min(1.0, conf))
+        if isinstance(n, dict):
+            sym = str(
+                n.get("gene") or n.get("partner") or n.get("symbol") or
+                n.get("id") or n.get("name") or ""
+            ).strip().upper()
+            conf = float(n.get("confidence") or n.get("score") or n.get("weight") or 1.0)
+            if not sym or sym == target_symbol:
+                return None
+            return sym, max(0.0, min(1.0, conf))
+    except Exception:
+        return None
+    return None
+
+
+def _edge_iter(edge_candidates: Optional[Iterable[Any]]) -> List[Tuple[str, str, float]]:
+    """
+    Çeşitli edge şekillerini (model/dict) (source, target, confidence) üçlüsüne çevir.
+    """
+    if not edge_candidates:
+        return []
+    out = []
+    for e in edge_candidates:
+        try:
+            if hasattr(e, "source_gene") and hasattr(e, "partner"):
+                s = str(getattr(e, "source_gene")).upper()
+                t = str(getattr(e, "partner")).upper()
+                c = float(getattr(e, "confidence", 1.0) or 1.0)
+            elif isinstance(e, dict):
+                s = str(
+                    e.get("source_gene") or e.get("source") or e.get("from") or
+                    e.get("a") or e.get("u") or e.get("source_node") or ""
+                ).upper()
+                t = str(
+                    e.get("partner") or e.get("target") or e.get("to") or
+                    e.get("b") or e.get("v") or e.get("target_node") or ""
+                ).upper()
+                c = float(e.get("confidence") or e.get("score") or e.get("weight") or 1.0)
+            else:
+                continue
+            if not s or not t or s == t:
+                continue
+            out.append((s, t, max(0.0, min(1.0, c))))
+        except Exception:
+            continue
+    return out
+
+
+def _build_graph_preview(
+    target_symbol: str,
+    neighbors: Iterable[Any],
+    edge_candidates: Optional[Iterable[Any]] = None,
+    max_nodes: int = 50,
+    max_edges: int = 100,
+) -> Dict[str, Any]:
+    """
+    FE'nin beklediği küçük graph objesini üret: {nodes: [{id}], links: [{source,target,confidence}]}
+    """
+    nodes: List[Dict[str, str]] = []
+    links: List[Dict[str, Any]] = []
+
+    if not target_symbol:
+        return {"nodes": [], "links": []}
+
+    target_symbol = target_symbol.upper()
+    seen = set()
+
+    def add_node(sym: str) -> bool:
+        sym = sym.upper()
+        if sym not in seen and len(nodes) < max_nodes:
+            nodes.append({"id": sym})
+            seen.add(sym)
+            return True
+        return False
+
+    add_node(target_symbol)
+
+    # 1-hop komşular
+    neigh_pairs: List[Tuple[str, float]] = []
+    for n in neighbors or []:
+        nn = _normalize_neighbor(n, target_symbol)
+        if not nn:
+            continue
+        sym, conf = nn
+        if add_node(sym):
+            neigh_pairs.append((sym, conf))
+
+    # Aday edge'ler (varsa)
+    edges = _edge_iter(edge_candidates)
+    if edges:
+        for s, t, c in edges:
+            if s in seen and t in seen:
+                links.append({"source": s, "target": t, "confidence": c})
+                if len(links) >= max_edges:
+                    break
+
+    # Hiç edge yoksa yıldız (target ↔ komşu) fallback
+    if not links:
+        for sym, conf in neigh_pairs:
+            links.append({"source": target_symbol, "target": sym, "confidence": conf})
+            if len(links) >= max_edges:
+                break
+
+    return {"nodes": nodes, "links": links}
 
 
 class PPIProximityChannel:

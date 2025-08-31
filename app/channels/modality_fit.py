@@ -10,8 +10,8 @@ import asyncio
 import logging
 import networkx as nx
 import numpy as np
-from typing import Dict, List, Tuple, Optional
-
+from typing import Dict, List, Tuple, Optional,Any
+import math
 from ..schemas import ChannelScore, EvidenceRef, DataQualityFlags, get_utc_now
 from ..validation import get_validator
 from ..data_access.expression_atlas import get_expression_atlas_client
@@ -55,7 +55,11 @@ class ModalityFitChannel:
         self.validator = get_validator()
         self.channel_name = "modality_fit"
 
-    async def compute_score(self, gene: str) -> ChannelScore:
+    async def compute_score(
+            self,
+            gene: str,
+            ppi_components: Optional[Dict[str, Any]] = None,  # <— EKLENDİ
+    ) -> ChannelScore:
         """
         Compute modality fit score using Expression Atlas + AlphaFold.
 
@@ -89,33 +93,46 @@ class ModalityFitChannel:
                 structure_data = None
                 quality_flags.partial = True
 
-            # Compute subscores
-            e3_coexpr_score = await self._compute_e3_coexpression(gene, expression_data)
-            ternary_score = self._compute_ternary_proxy(gene)
-            structure_score = self._compute_structure_confidence(structure_data)
+                # alt skorlar
+                e3_coexpr_score = await self._compute_e3_coexpression(gene, expression_data)
+                ternary_score = self._compute_ternary_proxy(gene)
+                structure_score = self._compute_structure_confidence(structure_data)
 
-            # Compute modality-specific scores
-            protac_score = self._compute_protac_score(e3_coexpr_score, ternary_score, structure_score)
-            small_mol_score = self._compute_small_molecule_score(structure_score, expression_data)
-            molecular_glue_score = self._compute_molecular_glue_score(ternary_score, structure_score)
+                # PPI hotspot
+                ppi_hotspot = _derive_ppi_hotspot_from_components(gene, ppi_components)
 
-            # Overall druggability
-            overall_score = (
-                    0.35 * e3_coexpr_score +
-                    0.30 * ternary_score +
-                    0.35 * structure_score
-            )
+                overall_score = (
+                        0.30 * e3_coexpr_score +
+                        0.30 * ternary_score +
+                        0.30 * structure_score +
+                        (0.10 * ppi_hotspot if ppi_hotspot is not None else 0.0)
+                )
 
-            # Build components dict
-            components = {
-                "e3_coexpr": e3_coexpr_score,
-                "ternary_proxy": ternary_score,
-                "structure_confidence": structure_score,
-                "overall_druggability": overall_score,
-                "protac_degrader": protac_score,
-                "small_molecule": small_mol_score,
-                "molecular_glue": molecular_glue_score
-            }
+                protac_score = (
+                        0.40 * e3_coexpr_score +
+                        0.35 * ternary_score +
+                        0.15 * structure_score +
+                        (0.10 * ppi_hotspot if ppi_hotspot is not None else 0.0)
+                )
+                small_mol_score = self._compute_small_molecule_score(structure_score, expression_data)
+                molecular_glue_score = (
+                        0.55 * ternary_score +
+                        0.35 * structure_score +
+                        (0.10 * ppi_hotspot if ppi_hotspot is not None else 0.0)
+                )
+
+                components = {
+                    "e3_coexpr": e3_coexpr_score,
+                    "ternary_proxy": ternary_score,
+                    "structure_confidence": structure_score,
+                    "overall_druggability": overall_score,
+                    "protac_degrader": protac_score,
+                    "small_molecule": small_mol_score,
+                    "molecular_glue": molecular_glue_score,
+                }
+                if ppi_hotspot is not None:
+                    components["ppi_hotspot"] = ppi_hotspot
+
 
             # Build evidence references
             if expression_data:
@@ -412,7 +429,14 @@ async def get_modality_channel() -> ModalityFitChannel:
 # Legacy compatibility functions
 # ========================
 
-async def compute_modality_fit(target: str, ppi_graph: Optional[nx.Graph] = None) -> Tuple[Dict[str, float], List[str]]:
+# Legacy wrapper
+async def compute_modality_fit(
+    target: str,
+    ppi_graph: Optional[nx.Graph] = None,
+    ppi_components: Optional[Dict[str, Any]] = None,       # <— YENİ
+) -> Tuple[Dict[str, float], List[str]]:
+    modality_channel = await get_modality_channel()
+    channel_result = await modality_channel.compute_score(target, ppi_components=ppi_components)
     """
     Legacy compatibility wrapper for existing scoring.py integration.
 
@@ -582,3 +606,50 @@ def get_modality_data_summary() -> Dict:
         "modality_types": ["PROTAC/Degrader", "Small molecule", "Molecular glue"],
         "note": "Production data from Expression Atlas + AlphaFold APIs"
     }
+def _derive_ppi_hotspot_from_components(
+    target_symbol: str,
+    ppi_components: Optional[Dict[str, Any]]
+) -> Optional[float]:
+    """
+    PPI kanalındaki graph_preview / neighbors'tan 0-1 arası bir 'ppi_hotspot' skoru üretir.
+    - derece (komşu sayısı) ve ort. güveni harmanlar.
+    - 10 komşuda saturasyon (>=10 → 1.0).
+    """
+    if not ppi_components:
+        return None
+
+    preview = (ppi_components or {}).get("graph_preview") or {}
+    links = list(preview.get("links") or [])
+    neighbors = list((ppi_components or {}).get("neighbors") or [])
+
+    confidences = []
+
+    # 1) graph_preview varsa kenar güvenlerinden oku
+    if links:
+        t = (target_symbol or "").upper()
+        for e in links:
+            s = str(e.get("source", "")).upper()
+            u = str(e.get("target", "")).upper()
+            if not s or not u:
+                continue
+            # merkez – komşu kenarı zaten merkezden çıkarıldı
+            conf = e.get("confidence", e.get("value", 0.0)) or 0.0
+            confidences.append(float(conf))
+
+    # 2) link yoksa neighbors’tan oku
+    if not confidences and neighbors:
+        for n in neighbors:
+            conf = n.get("confidence", 0.0) or 0.0
+            confidences.append(float(conf))
+
+    degree = len(confidences)
+    if degree == 0:
+        return None
+
+    avg_conf = sum(confidences) / degree
+    # dereceyi 0..1’e getir (10 komşuda 1.0)
+    deg_norm = min(1.0, degree / 10.0)
+
+    # Basit birleşim: yarı yarıya ağırlık
+    score = 0.5 * deg_norm + 0.5 * avg_conf
+    return max(0.0, min(1.0, round(score, 3)))

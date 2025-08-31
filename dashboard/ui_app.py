@@ -3596,6 +3596,39 @@ def render_target_details_with_ppi(target_data, selected_target):
 
     # Continue with existing modality components, etc.
 
+def render_ppi_network_card(target_data: dict):
+    """Show mini PPI graph using channels.ppi.components.graph_preview."""
+    ppi = (target_data.get("channels") or {}).get("ppi") or {}
+    comps = ppi.get("components") or {}
+    preview = comps.get("graph_preview") or {}
+    neighbors = comps.get("neighbors") or []
+
+    st.markdown("#### PPI Network Neighbors")
+
+    has_graph = bool(preview and preview.get("nodes") and preview.get("links"))
+    if has_graph:
+        try:
+            # Plotly tabanlı fallback viz
+            viz = InteractiveNetworkViz()
+            fig = viz.render_from_preview(
+                preview,
+                height=420,
+                title=f"PPI: {target_data.get('target','')}"
+            )
+            st.plotly_chart(fig, use_container_width=True, theme=None)
+            return
+        except Exception as e:
+            st.warning(f"Graph render failed: {e}. Showing edge list.")
+            import pandas as pd
+            st.dataframe(pd.DataFrame(preview.get("links", [])), use_container_width=True, hide_index=True)
+            return
+
+    if neighbors:
+        import pandas as pd
+        st.info("Graph preview not available — showing neighbor list")
+        st.dataframe(pd.DataFrame(neighbors), use_container_width=True, hide_index=True)
+    else:
+        st.warning("PPI network analysis unavailable: no neighbors / graph for this target")
 
 # Standalone PPI analysis function
 def render_ppi_analysis_section():
@@ -3650,6 +3683,8 @@ def main():
     if "scoring_results" in st.session_state:
         results = st.session_state["scoring_results"]
         target_scores = results.get("targets", [])
+        render_evidence_distribution(target_scores)
+
         rank_impact = results.get("rank_impact", [])
         current_weights = st.session_state.get("last_request", {}).get("weights", {})
 
@@ -4244,32 +4279,32 @@ def render_rankings_comparison(target_scores):
 
 
 def render_explain_section(target_scores, rank_impact, current_weights):
-    """Fixed explanation section with proper state management."""
     st.markdown("## Target Explanation")
 
     target_names = [ts.get("target", "Unknown") for ts in target_scores]
     selected_target = st.selectbox("Select target for detailed analysis", target_names, key="explain_target")
+    if not selected_target:
+        return
 
-    if selected_target:
-        target_data = next((ts for ts in target_scores if ts.get("target") == selected_target), None)
-        if target_data:
-            # Get current section for this specific context
-            current_section = sticky_local_nav(["Contributions", "Network", "Modality"], "explain")
+    selected_target_data = next((ts for ts in target_scores if ts.get("target") == selected_target), None)
+    if not selected_target_data:
+        st.warning("No data for selected target")
+        return
 
-            if current_section == "Contributions":
-                try:
-                    render_actionable_explanation_panel_with_deltas(target_data, selected_target, rank_impact)
-                except:
-                    render_actionable_explanation_panel(target_data, selected_target)
+    current_section = sticky_local_nav(["Contributions", "Network", "Modality"], "explain")
 
-            elif current_section == "Network":
-                try:
-                    render_mini_ppi_card(selected_target)
-                except:
-                    st.info("PPI network analysis unavailable")
+    if current_section == "Contributions":
+        try:
+            render_actionable_explanation_panel_with_deltas(selected_target_data, selected_target, rank_impact)
+        except Exception:
+            render_actionable_explanation_panel(selected_target_data, selected_target)
 
-            else:  # Modality
-                render_modality_components(target_data)
+    elif current_section == "Network":
+        # ✅ yeni çağrı
+        render_ppi_network_card(selected_target_data)
+
+    else:
+        render_modality_components(selected_target_data)
 
 
 def render_modality_components(target_data):
@@ -4527,5 +4562,137 @@ def render_diagnostic_evidence_panel(diagnostic_evidence):
     for ref in diagnostic_evidence:
         ref_text = ref.get("label", str(ref)) if isinstance(ref, dict) else str(ref)
         st.code(ref_text, language=None)
+
+# --- Evidence helpers: use TOP-LEVEL fields from API ---
+
+EVIDENCE_CATS = ("literature", "databases", "vantai", "other")
+
+def _norm_category(ref: dict | str) -> str:
+    """Map EvidenceRef (dict) or legacy string to one of the 4 categories."""
+    if isinstance(ref, dict):
+        cat = (ref.get("category") or ref.get("type") or "").lower()
+        if cat in EVIDENCE_CATS:
+            return cat
+        # infer
+        if ref.get("pmid"):
+            return "literature"
+        src = (ref.get("source") or "").lower()
+        if src in {"opentargets","stringdb","reactome","uniprot","ensembl","ot","string"}:
+            return "databases"
+        if src == "vantai":
+            return "vantai"
+        return "other"
+    # legacy string fallback
+    s = str(ref)
+    if "PMID:" in s:
+        return "literature"
+    if any(x in s for x in ["STRING","OpenTargets","Reactome","Source:"]):
+        return "databases"
+    if "VantAI" in s:
+        return "vantai"
+    return "other"
+
+
+def _fmt_label_and_url(ref: dict | str) -> tuple[str, str | None]:
+    """Return (label, url) for display."""
+    if isinstance(ref, dict):
+        label = ref.get("title") or ref.get("label") or ref.get("source") or "Evidence"
+        if ref.get("pmid"):
+            pmid = ref["pmid"]
+            return (f"PMID:{pmid}", f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/")
+        return (label, ref.get("url"))
+    s = str(ref)
+    if "PMID:" in s:
+        pmid = s.split("PMID:")[1].split()[0]
+        return (f"PMID:{pmid}", f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/")
+    if "STRING" in s:
+        return ("STRING evidence", "https://string-db.org/")
+    if "OpenTargets" in s or "OT-" in s or "Source:opentargets" in s.lower():
+        return ("OpenTargets", "https://platform.opentargets.org/")
+    if "Reactome" in s:
+        return ("Reactome", "https://reactome.org/")
+    return (s[:60], None)
+
+
+# UI: Evidence dağılımı
+def render_evidence_distribution(target_scores):
+    """
+    target_scores: /score yanıtındaki results["targets"] (dict listesi)
+    """
+    if not target_scores:
+        st.info("No targets to summarize.")
+        return
+
+    CATS = ["literature", "databases", "vantai", "other"]
+    totals = {c: 0 for c in CATS}
+
+    def _cat_from_ref(ref) -> str:
+        # EvidenceRef dict / string ikisini de destekler
+        try:
+            if isinstance(ref, dict):
+                if ref.get("category"):
+                    return str(ref["category"]).lower()
+                src = str(ref.get("source", "")).lower()
+                if src in ("pubmed", "pmid", "literature"):
+                    return "literature"
+                if src in ("opentargets", "ot", "stringdb", "string", "reactome", "ensembl"):
+                    return "databases"
+                if "vantai" in src:
+                    return "vantai"
+                return "other"
+            else:
+                s = str(ref).lower()
+                if s.startswith("pmid:"):
+                    return "literature"
+                if s.startswith("source:"):
+                    src = s.split(":", 1)[1].strip()
+                    if src in ("opentargets", "ot", "stringdb", "string", "reactome"):
+                        return "databases"
+                    if src.startswith("vantai"):
+                        return "vantai"
+                if "string" in s or "reactome" in s or "opentargets" in s:
+                    return "databases"
+                return "other"
+        except Exception:
+            return "other"
+
+    # ---- Top sayımları (önce varsa summary'den) ----
+    for ts in target_scores:
+        item = ts if isinstance(ts, dict) else getattr(ts, "model_dump", lambda: {})()
+        # 1) En doğrusu: backend'in topladığı özet
+        summary = (item or {}).get("evidence_summary") or {}
+        if summary:
+            for c in CATS:
+                totals[c] += int(summary.get(c, 0) or 0)
+            continue
+
+        # 2) Özet yoksa tek tek referanslardan say
+        evs = (item or {}).get("evidence_refs") or []
+        # (gerekirse explanation içindekileri de ekle)
+        if not evs:
+            evs = ((item or {}).get("explanation") or {}).get("evidence_refs", []) or []
+
+        for ref in evs:
+            totals[_cat_from_ref(ref)] += 1
+
+    # ---- UI ----
+    st.markdown("### Evidence Distribution")
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("📚 Literature", totals["literature"])
+    c2.metric("🗄️ Databases", totals["databases"])
+    c3.metric("🧪 VantAI", totals["vantai"])
+    c4.metric("⚙️ Other", totals["other"])
+
+def _render_ev_list_html(evs: list[dict | str]) -> str:
+    if not evs:
+        return "<i>No evidence</i>"
+    items = []
+    for ref in evs:
+        label, url = _fmt_label_and_url(ref)
+        chip = f'<a href="{url}" target="_blank">{label}</a>' if url else label
+        cat = _norm_category(ref).title()
+        items.append(f"<li>{chip} <span style='opacity:0.7'>[{cat}]</span></li>")
+    return "<ul>" + "\n".join(items) + "</ul>"
+
 if __name__ == "__main__":
     main()

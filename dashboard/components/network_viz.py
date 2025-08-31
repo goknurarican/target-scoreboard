@@ -218,4 +218,29 @@ class InteractiveNetworkViz:
 
         return fig
 
+    def _preview_to_nodes_edges(self, preview: dict):
+        """Convert {nodes:[{id}], links:[{source,target,confidence/value}]} -> nodes/edges for render_network."""
+        nodes, edges, seen = [], [], set()
+
+        for n in (preview or {}).get("nodes", []):
+            nid = str(n.get("id") or n.get("name") or n)
+            if not nid or nid in seen:
+                continue
+            seen.add(nid)
+            nodes.append({"id": nid, "label": nid, "size": 20, "color": self.colors["accent_cyan"]})
+
+        for e in (preview or {}).get("links", []):
+            s = e.get("source")
+            t = e.get("target")
+            if not s or not t:
+                continue
+            w = e.get("value", e.get("confidence", 1.0)) or 1.0
+            edges.append({"from": str(s), "to": str(t), "weight": float(w)})
+        return nodes, edges
+
+    def render_from_preview(self, preview: dict, *, height: int = 380, title: str = "PPI Network") -> go.Figure:
+        """Build a Plotly figure directly from the API preview structure."""
+        nodes, edges = self._preview_to_nodes_edges(preview or {})
+        return self.render_network(nodes, edges, height=height, title=title)
+
 
