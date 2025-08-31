@@ -37,25 +37,46 @@ class GeneticsChannel:
             ot_client = await get_ot_client()
             associations = await ot_client.fetch_gene_disease_associations(gene, disease)
 
+            # FIXED: Check if client is in demo mode first
+            client_info = await ot_client.health_check()
+            is_demo_mode = client_info.get("mode") == "demo"
+
+            if is_demo_mode:
+                logger.warning(f"OpenTargets client in demo mode - limited data for {gene}-{disease}")
+                quality_flags.notes = "OpenTargets demo mode - limited data"
+
             # Hiç association yoksa doğrudan data_missing
             if not associations:
                 logger.warning(f"No genetic associations found for {gene}-{disease}")
+
+                # FIXED: Return proper data_missing status, not fallback with score=0
                 return ChannelScore(
                     name=self.channel_name,
-                    score=None,
-                    status="data_missing",
-                    components={},
+                    score=None,  # Important: None, not 0
+                    status="data_missing",  # Important: data_missing, not ok
+                    components={
+                        "associations_found": 0,
+                        "demo_mode": is_demo_mode,
+                        "disease_checked": disease,
+                        "gene_checked": gene
+                    },
                     evidence=[],
-                    quality=DataQualityFlags(partial=True, notes="No associations found (OT v4)")
+                    quality=DataQualityFlags(
+                        partial=True,
+                        notes=f"No associations found (OT v4){' - Demo mode' if is_demo_mode else ''}"
+                    )
                 )
 
-            # Validasyon
+            # Rest of existing logic for when associations ARE found...
+            # (existing validation, scoring, etc.)
+
             for association in associations:
                 vr = self.validator.validate("opentargets", association)
                 if not vr.ok:
                     quality_flags.partial = True
                     n = "; ".join(vr.issues[:3])
-                    quality_flags.notes = (quality_flags.notes + " | " if quality_flags.notes else "") + f"Validation: {n}"
+                    quality_flags.notes = (
+                                              quality_flags.notes + " | " if quality_flags.notes else "") + f"Validation: {n}"
 
             # Skorları topla
             overall_score = 0.0
@@ -69,24 +90,36 @@ class GeneticsChannel:
                 elif association.source == "opentargets_genetics":
                     genetics_score = max(genetics_score, float(association.score or 0.0))
 
-                # Kanıtlar
                 if association.evidence:
                     total_evidence_count += len(association.evidence)
                     evidence_refs.extend(association.evidence)
 
-            # Evidence dedupe (pmid -> url -> title sırası)
-            deduped = []
-            seen = set()
-            for ev in evidence_refs:
-                key = (ev.source or "", ev.pmid or ev.url or ev.title or "")
-                if key in seen:
-                    continue
-                seen.add(key)
-                deduped.append(ev)
-            evidence_refs = deduped
-
             # Nihai skor: varsa genetics, yoksa overall
             final_genetics_score = genetics_score if genetics_score > 0 else overall_score
+
+            # FIXED: Better signal detection - don't return 0 scores as "ok"
+            has_meaningful_signal = (final_genetics_score and final_genetics_score > 0.001) or (
+                        total_evidence_count > 0)
+
+            if not has_meaningful_signal:
+                logger.info(
+                    f"No meaningful genetic signal for {gene}-{disease} (score={final_genetics_score}, evidence={total_evidence_count})")
+                return ChannelScore(
+                    name=self.channel_name,
+                    score=None,  # None indicates no data
+                    status="data_missing",  # Proper status
+                    components={
+                        "ot_overall": overall_score,
+                        "ot_genetics": genetics_score,
+                        "evidence_count": total_evidence_count,
+                        "associations_processed": len(associations)
+                    },
+                    evidence=evidence_refs,
+                    quality=DataQualityFlags(
+                        partial=True,
+                        notes="Associations found but no meaningful genetic signal"
+                    )
+                )
 
             # Bileşenler
             components = {
@@ -96,7 +129,7 @@ class GeneticsChannel:
                 "evidence_count": total_evidence_count
             }
 
-            # Güven seviyesi (basit sezgisel)
+            # Güven seviyesi
             if total_evidence_count >= 50:
                 confidence_level = "high"
             elif total_evidence_count >= 10:
@@ -106,22 +139,11 @@ class GeneticsChannel:
                 quality_flags.partial = True
             components["confidence_level"] = confidence_level
 
-            # --- EN ÖNEMLİ KISIM ---
-            # Sinyal var mı? (skor>0 veya kanıt>0)
-            has_signal = (final_genetics_score and final_genetics_score > 0.0) or (total_evidence_count > 0)
-
-            status = "ok" if has_signal else "data_missing"
-            score_to_return = final_genetics_score if has_signal else None
-
-            if not has_signal:
-                # Nedenini de yaz
-                quality_flags.notes = (
-                    (quality_flags.notes + " | ") if quality_flags.notes else ""
-                ) + "No OT genetic/overall signal for this disease (OT v4)"
+            status = "ok"
+            score_to_return = final_genetics_score
 
             logger.info(
-                f"Genetics score for {gene}-{disease}: "
-                f"{'none' if score_to_return is None else f'{score_to_return:.3f}'} "
+                f"Genetics score for {gene}-{disease}: {score_to_return:.3f} "
                 f"(status={status}, evidences={total_evidence_count}, conf={confidence_level})",
                 extra={
                     "gene": gene, "disease": disease, "score": score_to_return,

@@ -842,6 +842,24 @@ class TargetBuilder:
         # Execute pipeline stages
         raw_data = await self.fetch_all()
         validated_data = await self.validate(raw_data)
+
+        from .channels.modality_fit import _derive_ppi_hotspot_from_components
+        try:
+            ppi_cs = validated_data.get("ppi")
+            mod_cs = validated_data.get("modality_fit")
+            if isinstance(ppi_cs, ChannelScore) and isinstance(mod_cs, ChannelScore):
+                hot = _derive_ppi_hotspot_from_components(self.gene, ppi_cs.components)
+                if hot is not None:
+                    # sadece modality_fit üzerinde çalış; ppi'yi asla yeniden atama!
+                    mod_cs.components = {**(mod_cs.components or {}), "ppi_hotspot": hot}
+                    base = float(mod_cs.components.get("overall_druggability", mod_cs.score or 0.30))
+                    new_overall = min(1.0, 0.9 * base + 0.1 * hot)
+                    mod_cs.score = new_overall
+                    mod_cs.components["overall_druggability"] = new_overall
+                    logger.info(f"[PPI->MODALITY] hotspot={hot:.3f} overall {base:.3f}->{new_overall:.3f}")
+        except Exception as e:
+            logger.warning(f"Cross-channel enrich failed: {e}")
+
         score_results = await self.compute_scores(validated_data, weights)
 
         # Build final bundle

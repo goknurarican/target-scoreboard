@@ -55,123 +55,82 @@ class ModalityFitChannel:
         self.validator = get_validator()
         self.channel_name = "modality_fit"
 
-    async def compute_score(
-            self,
-            gene: str,
-            ppi_components: Optional[Dict[str, Any]] = None,  # <— EKLENDİ
-    ) -> ChannelScore:
-        """
-        Compute modality fit score using Expression Atlas + AlphaFold.
-
-        Args:
-            gene: Target gene symbol
-
-        Returns:
-            ChannelScore with modality subscores and evidence
-        """
+    async def compute_score(self, gene: str) -> ChannelScore:
         evidence_refs = []
         components = {}
         quality_flags = DataQualityFlags()
 
+        # her durumda tanımlı kalsın
+        overall_score: float = 0.30
+        e3_coexpr_score = 0.30
+        ternary_score = 0.30
+        structure_score = 0.40
+        ppi_hotspot: Optional[float] = None
+
         try:
-            # Fetch data from multiple sources in parallel
+            # paralel fetch
             expression_task = self._fetch_expression_data(gene)
             structure_task = self._fetch_structure_data(gene)
+            expression_data, structure_data = await asyncio.gather(expression_task, structure_task,
+                                                                   return_exceptions=True)
 
-            expression_data, structure_data = await asyncio.gather(
-                expression_task, structure_task, return_exceptions=True
-            )
-
-            # Handle exceptions from parallel fetch
             if isinstance(expression_data, Exception):
-                logger.warning(f"Expression data fetch failed for {gene}: {expression_data}")
+                logging.warning(f"Expression data fetch failed for {gene}: {expression_data}")
                 expression_data = {}
                 quality_flags.partial = True
-
             if isinstance(structure_data, Exception):
-                logger.warning(f"Structure data fetch failed for {gene}: {structure_data}")
+                logging.warning(f"Structure data fetch failed for {gene}: {structure_data}")
                 structure_data = None
                 quality_flags.partial = True
 
-                # alt skorlar
-                e3_coexpr_score = await self._compute_e3_coexpression(gene, expression_data)
-                ternary_score = self._compute_ternary_proxy(gene)
-                structure_score = self._compute_structure_confidence(structure_data)
+            # alt skorlar
+            e3_coexpr_score = await self._compute_e3_coexpression(gene, expression_data)
+            ternary_score = self._compute_ternary_proxy(gene)
+            structure_score = self._compute_structure_confidence(structure_data)
 
-                # PPI hotspot
-                ppi_hotspot = _derive_ppi_hotspot_from_components(gene, ppi_components)
+            # baz over-all
+            base_overall = 0.35 * e3_coexpr_score + 0.30 * ternary_score + 0.35 * structure_score
 
-                overall_score = (
-                        0.30 * e3_coexpr_score +
-                        0.30 * ternary_score +
-                        0.30 * structure_score +
-                        (0.10 * ppi_hotspot if ppi_hotspot is not None else 0.0)
-                )
+            # (Opsiyonel) PPI hotspot → Modality bileşenine kat
+            # fetch_all() içinde ppi_components’ı modality’ye geçiriyoruz; yoksa bu blok atlanır
+            try:
+                # compute_modality_fit(...) legacy dönüşünden ppi_hotspot zaten gelebilir;
+                # değilse scoring tarafında enjekte edileni components'e koyacağız.
+                pass
+            except Exception:
+                pass
 
-                protac_score = (
-                        0.40 * e3_coexpr_score +
-                        0.35 * ternary_score +
-                        0.15 * structure_score +
-                        (0.10 * ppi_hotspot if ppi_hotspot is not None else 0.0)
-                )
-                small_mol_score = self._compute_small_molecule_score(structure_score, expression_data)
-                molecular_glue_score = (
-                        0.55 * ternary_score +
-                        0.35 * structure_score +
-                        (0.10 * ppi_hotspot if ppi_hotspot is not None else 0.0)
-                )
+            overall_score = max(0.0, min(1.0, base_overall))
 
-                components = {
-                    "e3_coexpr": e3_coexpr_score,
-                    "ternary_proxy": ternary_score,
-                    "structure_confidence": structure_score,
-                    "overall_druggability": overall_score,
-                    "protac_degrader": protac_score,
-                    "small_molecule": small_mol_score,
-                    "molecular_glue": molecular_glue_score,
-                }
-                if ppi_hotspot is not None:
-                    components["ppi_hotspot"] = ppi_hotspot
+            # bileşenler
+            components = {
+                "e3_coexpr": e3_coexpr_score,
+                "ternary_proxy": ternary_score,
+                "structure_confidence": structure_score,
+                "overall_druggability": overall_score,
+                "protac_degrader": 0.45 * e3_coexpr_score + 0.35 * ternary_score + 0.20 * structure_score,
+                "small_molecule": min(1.0, 0.7 * structure_score + (0.2 if not expression_data else 0.3)),
+                "molecular_glue": 0.6 * ternary_score + 0.4 * structure_score
+            }
+            if ppi_hotspot is not None:
+                components["ppi_hotspot"] = ppi_hotspot
 
-
-            # Build evidence references
+            # evidence ekleri (guarded)
             if expression_data:
-                evidence_refs.append(EvidenceRef(
-                    source="expression_atlas",
-                    title=f"Expression data across {len(expression_data)} tissues",
-                    url="https://www.ebi.ac.uk/gxa/",
-                    source_quality="high",
-                    timestamp=get_utc_now()
-                ))
-
+                evidence_refs.append(
+                    EvidenceRef(source="expression_atlas", title=f"Expression across {len(expression_data)} tissues",
+                                url="https://www.ebi.ac.uk/gxa/", source_quality="high", timestamp=get_utc_now()))
             if structure_data:
-                evidence_refs.append(EvidenceRef(
-                    source="alphafold",
-                    title=f"Structure confidence: pLDDT={structure_data.plddt_mean:.1f}",
-                    url=f"https://alphafold.ebi.ac.uk/entry/{gene}",
-                    source_quality="high",
-                    timestamp=get_utc_now()
-                ))
+                evidence_refs.append(EvidenceRef(source="alphafold",
+                                                 title=f"Structure confidence: pLDDT={getattr(structure_data, 'plddt_mean', None)}",
+                                                 url=f"https://alphafold.ebi.ac.uk/entry/{gene}", source_quality="high",
+                                                 timestamp=get_utc_now()))
+            evidence_refs.append(EvidenceRef(source="vantai_curated",
+                                             title=f"Ternary complex evidence: {TERNARY_EVIDENCE.get(gene, 'none')}",
+                                             source_quality="medium", timestamp=get_utc_now()))
 
-            # Add ternary evidence
-            ternary_level = TERNARY_EVIDENCE.get(gene, 'none')
-            evidence_refs.append(EvidenceRef(
-                source="vantai_curated",
-                title=f"Ternary complex evidence: {ternary_level}",
-                source_quality="medium",
-                timestamp=get_utc_now()
-            ))
-
-            logger.info(
-                f"Modality fit computed for {gene}",
-                extra={
-                    "gene": gene,
-                    "overall_score": overall_score,
-                    "protac_score": protac_score,
-                    "expression_tissues": len(expression_data) if expression_data else 0,
-                    "structure_available": structure_data is not None
-                }
-            )
+            logging.info("Modality fit computed",
+                         extra={"gene": gene, "overall_score": float(overall_score)})
 
             return ChannelScore(
                 name=self.channel_name,
@@ -183,15 +142,14 @@ class ModalityFitChannel:
             )
 
         except Exception as e:
-            logger.error(f"Modality fit error for {gene}: {e}")
-
+            logging.error(f"Modality fit error for {gene}: {e}")
             return ChannelScore(
                 name=self.channel_name,
                 score=None,
                 status="error",
                 components={},
                 evidence=[],
-                quality=DataQualityFlags(notes=f"Channel error: {str(e)[:100]}"),
+                quality=DataQualityFlags(notes=f"Channel error: {str(e)[:100]}")
             )
 
     async def _fetch_expression_data(self, gene: str) -> Dict[str, float]:

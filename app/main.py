@@ -7,19 +7,20 @@ VantAI Target Scoreboard FastAPI Application - Phase 1C Production.
 Features: DI wiring, structured logging, healthcheck, circuit breaker scaffold.
 """
 import asyncio
+import json
 import logging
 import os
 import time
 import uuid
 from contextlib import asynccontextmanager
 from datetime import datetime
-from typing import Dict, Any, Optional
-from fastapi import Body
-from .schemas import ScoreRequest
-from fastapi import FastAPI, HTTPException, Request, Depends
+from typing import Dict, Any, Optional, List
+
+import numpy as np
+import uvicorn
+from fastapi import FastAPI, HTTPException, Request, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-import uvicorn
 
 from .schemas import (
     ScoreRequest,
@@ -44,8 +45,8 @@ SERVICE_VERSION = os.getenv("SERVICE_VERSION", "1.0.0-phase1c")
 API_HOST = os.getenv("API_HOST", "0.0.0.0")
 API_PORT = int(os.getenv("API_PORT", "8001"))
 
-# CORS configuration
-CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:8501").split(",")
+# CORS configuration - Updated with common dev ports
+CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:8501,http://localhost:3000,http://localhost:5173,http://localhost:8000").split(",")
 
 # Rate limiting configuration
 RATE_LIMIT_REQUESTS = int(os.getenv("RATE_LIMIT_REQUESTS", "100"))
@@ -59,6 +60,15 @@ CIRCUIT_BREAKER_THRESHOLD = int(os.getenv("CIRCUIT_BREAKER_THRESHOLD", "5"))
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 LOG_FORMAT = os.getenv("LOG_FORMAT", "json")  # json or text
 
+# Default weights configuration
+DEFAULT_WEIGHTS = {
+    "genetics": float(os.getenv("WEIGHT_GENETICS", "0.35")),
+    "ppi": float(os.getenv("WEIGHT_PPI", "0.25")),
+    "pathway": float(os.getenv("WEIGHT_PATHWAY", "0.20")),
+    "safety": float(os.getenv("WEIGHT_SAFETY", "0.10")),
+    "modality_fit": float(os.getenv("WEIGHT_MODALITY", "0.10")),
+}
+
 
 # ========================
 # Structured Logging Setup
@@ -70,8 +80,6 @@ def setup_logging():
 
     if LOG_FORMAT == "json":
         # JSON formatter for production
-        import json
-
         class JSONFormatter(logging.Formatter):
             def format(self, record):
                 log_record = {
@@ -108,7 +116,7 @@ def setup_logging():
     root_logger.addHandler(handler)
 
     # Configure specific loggers
-    logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
+    logging.getLogger("uvicorn.access").setLevel(logging.INFO)  # DEBUG aşamasında INFO
     logging.getLogger("httpx").setLevel(logging.WARNING)
 
 
@@ -141,17 +149,12 @@ class DIContainer:
             self._services["cache"] = await get_cache_manager()
             logger.info("Cache manager initialized")
 
-            # TODO: Initialize other clients in Phase 1B
+            # Initialize StringDB client
             self._clients["stringdb"] = await get_stringdb_client()
             logger.info("STRING-DB client initialized")
-            # self._clients["expression_atlas"] = await get_expression_atlas_client()
-            # self._clients["alphafold"] = await get_alphafold_client()
-            # self._clients["pubmed"] = await get_pubmed_client()
 
             self._initialized = True
             init_time = (time.time() - start_time) * 1000
-            if "stringdb" in self._clients:
-                await cleanup_stringdb_client()
 
             logger.info(
                 f"DI container initialized in {init_time:.1f}ms",
@@ -173,6 +176,9 @@ class DIContainer:
         # Cleanup clients
         if "opentargets" in self._clients:
             await cleanup_ot_client()
+
+        if "stringdb" in self._clients:
+            await cleanup_stringdb_client()
 
         # Cleanup services
         if "cache" in self._services:
@@ -245,7 +251,7 @@ circuit_breaker = CircuitBreaker(CIRCUIT_BREAKER_THRESHOLD)
 
 
 # ========================
-# Request ID Middleware
+# Application Lifespan
 # ========================
 
 @asynccontextmanager
@@ -348,17 +354,12 @@ async def rate_limit_middleware(request: Request, call_next):
 
 
 # ========================
-# API Endpoints
+# Core API Endpoints
 # ========================
 
 @app.get("/healthcheck", response_model=HealthCheckResponse)
 async def healthcheck():
-    """
-    Comprehensive health check for all system components.
-
-    Returns:
-        HealthCheckResponse with detailed component status
-    """
+    """Comprehensive health check for all system components."""
     start_time = time.time()
     checks = {}
     overall_status = "healthy"
@@ -446,6 +447,7 @@ async def root():
         "endpoints": {
             "health": "/healthcheck",
             "score": "/score",
+            "sensitivity": "/sensitivity/*",
             "docs": "/docs",
             "openapi": "/openapi.json"
         },
@@ -462,15 +464,11 @@ async def root():
     }
 
 
-
-
 @app.post("/score", response_model=ScoreResponse)
 async def score_targets_endpoint(request: ScoreRequest, http_request: Request):
     """Score targets using production pipeline with data quality validation."""
     request_id = getattr(http_request.state, 'request_id', str(uuid.uuid4()))
     start_time = time.time()
-
-    logger = logging.getLogger(__name__)
 
     # Enhanced request logging
     logger.info(
@@ -503,12 +501,10 @@ async def score_targets_endpoint(request: ScoreRequest, http_request: Request):
         else:
             target_scores, scoring_metadata = await score_targets(request)
 
-        # ✅ DEFENSIVE HANDLING OF CacheMetadata OBJECT
+        # Defensive handling of scoring metadata
         if hasattr(scoring_metadata, 'model_dump'):
-            # If it's a Pydantic object, convert to dict
             scoring_metadata = scoring_metadata.model_dump()
         elif not isinstance(scoring_metadata, dict):
-            # If it's not a dict, create a fallback dict
             logger.warning(f"Unexpected scoring_metadata type: {type(scoring_metadata)}")
             scoring_metadata = {
                 "data_version": "Unknown",
@@ -524,7 +520,7 @@ async def score_targets_endpoint(request: ScoreRequest, http_request: Request):
         # Calculate processing time
         processing_time_ms = (time.time() - start_time) * 1000
 
-        # ✅ SAFE METADATA ACCESS
+        # Safe metadata access
         meta_data = scoring_metadata.get("meta", {
             "cached": False,
             "fetch_ms": 0.0,
@@ -544,7 +540,7 @@ async def score_targets_endpoint(request: ScoreRequest, http_request: Request):
             },
             processing_time_ms=processing_time_ms,
             data_version=scoring_metadata.get("data_version", "Unknown"),
-            meta=meta_data,  # ✅ Safe metadata
+            meta=meta_data,
             rank_impact=scoring_metadata.get("rank_impact", []),
             system_info={
                 "pipeline_version": "TargetBuilder-v1.0.0-phase1c",
@@ -571,10 +567,8 @@ async def score_targets_endpoint(request: ScoreRequest, http_request: Request):
         return response
 
     except HTTPException:
-        # Re-raise HTTP exceptions
         raise
     except Exception as e:
-        # Log and convert to HTTP exception
         logger.error(
             f"Scoring request failed: {e}",
             extra={
@@ -589,6 +583,7 @@ async def score_targets_endpoint(request: ScoreRequest, http_request: Request):
             status_code=500,
             detail=f"Internal server error during scoring: {str(e)}"
         )
+
 
 @app.get("/system/info")
 async def get_system_info():
@@ -614,17 +609,10 @@ async def get_system_info():
                     "initialized": "opentargets" in di_container._clients,
                     "base_url": os.getenv("OT_GRAPHQL_URL", "https://api.platform.opentargets.org/api/v4/graphql")
                 }
-                # TODO: Add other clients in Phase 1B
             },
             "cache": cache_stats_result,
             "scoring": {
-                "default_weights": {
-                    "genetics": float(os.getenv("WEIGHT_GENETICS", "0.35")),
-                    "ppi": float(os.getenv("WEIGHT_PPI", "0.25")),
-                    "pathway": float(os.getenv("WEIGHT_PATHWAY", "0.20")),
-                    "safety": float(os.getenv("WEIGHT_SAFETY", "0.10")),
-                    "modality_fit": float(os.getenv("WEIGHT_MODALITY", "0.10"))
-                },
+                "default_weights": DEFAULT_WEIGHTS,
                 "max_targets": 50,
                 "pipeline": "TargetBuilder async"
             },
@@ -635,6 +623,185 @@ async def get_system_info():
         logger.error(f"System info error: {e}")
         raise HTTPException(status_code=500, detail=f"System info error: {str(e)}")
 
+
+@app.get("/evidence/distribution")
+async def get_evidence_distribution():
+    """Evidence types distribution endpoint."""
+    return {
+        "literature": 0,
+        "databases": 0,
+        "vantai": 0,
+        "other": 0
+    }
+
+
+# ========================
+# Sensitivity Router
+# ========================
+
+srouter = APIRouter(prefix="/sensitivity", tags=["sensitivity"])
+
+
+def _normalize_weights(w: Dict[str, float], only: Optional[List[str]] = None) -> Dict[str, float]:
+    w = dict(w or DEFAULT_WEIGHTS)
+    if only:
+        w = {k: v for k, v in w.items() if k in only}
+    w = {k: float(v) for k, v in w.items() if float(v) > 0}
+    if not w:
+        keys = only or list(DEFAULT_WEIGHTS.keys())
+        return {k: 1.0 / len(keys) for k in keys}
+    s = sum(w.values())
+    return {k: v / s for k, v in w.items()}
+
+
+async def _score_many(req: ScoreRequest) -> Dict[str, float]:
+    target_scores, _ = await score_targets(req)
+    return {ts.target: float(ts.total_score or 0.0) for ts in target_scores}
+
+
+def _dirichlet_around(weights: Dict[str, float], alpha: float) -> Dict[str, float]:
+    keys = list(weights.keys())
+    base = np.array([max(1e-9, weights[k]) for k in keys], dtype=float)
+    base = base / base.sum()
+    sample = np.random.dirichlet(base * float(alpha))
+    return {k: float(v) for k, v in zip(keys, sample)}
+
+
+# ---- Ablation ----
+@srouter.post("/ablation")
+async def ablation_post(req: ScoreRequest, http_request: Request):
+    rid = getattr(http_request.state, 'request_id', str(uuid.uuid4()))
+    try:
+        base_w = _normalize_weights(req.weights or DEFAULT_WEIGHTS)
+        baseline = await _score_many(ScoreRequest(disease=req.disease, targets=req.targets, weights=base_w))
+        channels = list(base_w.keys())
+        results = []
+        for gene in req.targets:
+            entry = {"target": gene, "baseline": baseline.get(gene, 0.0), "ablations": []}
+            for ch in channels:
+                w_drop = _normalize_weights({k: (v if k != ch else 0.0) for k, v in base_w.items()}, only=channels)
+                ch_score = (await _score_many(ScoreRequest(disease=req.disease, targets=[gene], weights=w_drop)))[gene]
+                entry["ablations"].append({"channel": ch, "score": ch_score, "delta": ch_score - entry["baseline"]})
+            results.append(entry)
+        return {"disease": req.disease, "weights_used": base_w, "targets": results, "request_id": rid}
+    except Exception as e:
+        logger.error(f"Ablation analysis failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@srouter.get("/ablation")
+async def ablation_get(disease: str, targets: str, base_weights: Optional[str] = None):
+    weights = DEFAULT_WEIGHTS if not base_weights else {**DEFAULT_WEIGHTS, **json.loads(base_weights)}
+    req = ScoreRequest(disease=disease,
+                       targets=[t.strip().upper() for t in targets.split(",") if t.strip()],
+                       weights=weights)
+    return await ablation_post(req, Request)  # type: ignore
+
+
+# ---- Weight Impact ----
+@srouter.post("/weight-impact")
+async def weight_impact_post(req: ScoreRequest):
+    try:
+        base_w = _normalize_weights(req.weights or DEFAULT_WEIGHTS)
+        baseline = await _score_many(ScoreRequest(disease=req.disease, targets=req.targets, weights=base_w))
+        channels = list(base_w.keys())
+        PCT = 0.10
+
+        def bump(weights: Dict[str, float], key: str, pct: float) -> Dict[str, float]:
+            w = dict(weights)
+            w[key] = max(1e-9, w[key] * (1.0 + pct))
+            return _normalize_weights(w, only=list(weights.keys()))
+
+        results = []
+        for gene in req.targets:
+            impacts = []
+            for ch in channels:
+                up_w = bump(base_w, ch, +PCT)
+                dn_w = bump(base_w, ch, -PCT)
+                up_score = (await _score_many(ScoreRequest(disease=req.disease, targets=[gene], weights=up_w)))[gene]
+                down_score = (await _score_many(ScoreRequest(disease=req.disease, targets=[gene], weights=dn_w)))[gene]
+                impacts.append({
+                    "channel": ch, "baseline": baseline[gene],
+                    "up_score": up_score, "down_score": down_score,
+                    "up_delta": up_score - baseline[gene], "down_delta": down_score - baseline[gene]
+                })
+            results.append({"target": gene, "impacts": impacts})
+        return {"disease": req.disease, "weights_used": base_w, "targets": results}
+    except Exception as e:
+        logger.error(f"Weight impact analysis failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@srouter.get("/weight-impact")
+async def weight_impact_get(disease: str, targets: str, base_weights: Optional[str] = None):
+    weights = DEFAULT_WEIGHTS if not base_weights else {**DEFAULT_WEIGHTS, **json.loads(base_weights)}
+    req = ScoreRequest(disease=disease,
+                       targets=[t.strip().upper() for t in targets.split(",") if t.strip()],
+                       weights=weights)
+    return await weight_impact_post(req)
+
+
+# ---- Stability / Simulate ----
+@srouter.post("/stability")
+async def stability_post(req: ScoreRequest, samples: int = 200, alpha: float = 80.0):
+    baseline_scores, _ = await score_targets(req)
+    baseline_ranks = {ts.target: i+1 for i, ts in enumerate(sorted(baseline_scores, key=lambda x: -x.total_score))}
+    per_target_ranks: Dict[str, List[int]] = {ts.target: [] for ts in baseline_scores}
+    for _ in range(samples):
+        w = _dirichlet_around(req.weights or DEFAULT_WEIGHTS, alpha)
+        sim_scores, _ = await score_targets(ScoreRequest(disease=req.disease, targets=req.targets, weights=w))
+        sim_sorted = sorted(sim_scores, key=lambda x: -x.total_score)
+        for i, ts in enumerate(sim_sorted):
+            per_target_ranks[ts.target].append(i+1)
+    out = []
+    for t in req.targets:
+        ranks = per_target_ranks.get(t, []) or [baseline_ranks.get(t, len(req.targets))]
+        out.append({
+            "target": t, "baseline_rank": baseline_ranks.get(t, None),
+            "mean_rank": float(np.mean(ranks)), "std_rank": float(np.std(ranks)),
+            "best_rank": int(np.min(ranks)), "worst_rank": int(np.max(ranks)), "n": len(ranks)
+        })
+    return {"samples": samples, "alpha": alpha, "stability": sorted(out, key=lambda r: r["mean_rank"])}
+
+
+@srouter.get("/stability")
+async def stability_get(disease: str, targets: str, samples: int = 200, alpha: float = 80.0):
+    req = ScoreRequest(disease=disease,
+                       targets=[t.strip().upper() for t in targets.split(",") if t.strip()],
+                       weights=DEFAULT_WEIGHTS)
+    return await stability_post(req, samples=samples, alpha=alpha)
+
+
+# Include sensitivity router
+app.include_router(srouter)
+
+# FE /api öneki için aynısını alias olarak ekle
+app.include_router(srouter, prefix="/api")
+
+
+@app.get("/debug/opentargets")
+async def debug_opentargets():
+    """Debug OpenTargets client status."""
+    try:
+        ot_client = await get_ot_client()
+        health = await ot_client.health_check()
+
+        # Test a known association
+        test_associations = await ot_client.fetch_gene_disease_associations(
+            "BRCA1", "EFO_0000305"
+        )
+
+        return {
+            "client_health": health,
+            "demo_mode": health.get("mode") == "demo",
+            "test_association_count": len(test_associations) if test_associations else 0,
+            "test_associations": test_associations[:2] if test_associations else []
+        }
+    except Exception as e:
+        return {"error": str(e)}
+# ========================
+# Global Exception Handler
+# ========================
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
@@ -725,104 +892,90 @@ def get_env_config_docs() -> Dict[str, str]:
         "DEFAULT_STALENESS_HOURS": "Default staleness threshold"
     }
 
-#####
-# main.py'de @app.get("/system/info") endpoint'inden sonra ekle:
 
-@app.post("/sensitivity/ablation")
-async def run_ablation_analysis(request: ScoreRequest, http_request: Request):
-    """Channel ablation analysis endpoint"""
-    request_id = getattr(http_request.state, 'request_id', str(uuid.uuid4()))
-
+@app.get("/debug/ot-query")
+async def debug_ot_query():
+    """Debug actual OpenTargets queries."""
     try:
-        # Normal scoring yap
-        target_scores, metadata = await score_targets(request)
+        ot_client = await get_ot_client()
 
-        # Ablation analysis çalıştır
-        from .scoring import compute_channel_ablation
-        ablation_results = compute_channel_ablation(target_scores, request.weights or DEFAULT_WEIGHTS)
+        # Test with known gene-disease pair
+        gene = "EGFR"
+        disease = "EFO_0003071"
+
+        # Get the actual query being sent
+        associations = await ot_client.fetch_gene_disease_associations(gene, disease)
 
         return {
-            "ablation_analysis": ablation_results,
-            "baseline_scores": [{"target": ts.target, "score": ts.total_score} for ts in target_scores],
-            "metadata": metadata,
-            "request_id": request_id
+            "gene_tested": gene,
+            "disease_tested": disease,
+            "associations_count": len(associations) if associations else 0,
+            "first_association": associations[0].__dict__ if associations else None,
+            "client_config": {
+                "graphql_url": getattr(ot_client, 'graphql_url', 'unknown'),
+                "rest_url": getattr(ot_client, 'rest_url', 'unknown'),
+            },
+            "raw_response_preview": str(associations)[:500] if associations else "No data"
         }
     except Exception as e:
-        logger.error(f"Ablation analysis failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-DEFAULT_WEIGHTS = {
-    "genetics": float(os.getenv("WEIGHT_GENETICS", "0.35")),
-    "ppi": float(os.getenv("WEIGHT_PPI", "0.25")),
-    "pathway": float(os.getenv("WEIGHT_PATHWAY", "0.20")),
-    "safety": float(os.getenv("WEIGHT_SAFETY", "0.10")),
-    "modality_fit": float(os.getenv("WEIGHT_MODALITY", "0.10"))
-}
-
-@app.get("/sensitivity/weight-impact")
-async def analyze_weight_impact(
-        disease: str,
-        targets: str,  # comma-separated
-        base_weights: Optional[str] = None
-):
-    """Weight sensitivity analysis endpoint"""
+        return {"error": str(e), "traceback": str(e.__traceback__)}
+@app.get("/debug/ot-status")
+async def debug_ot_status():
+    """Debug OpenTargets client and test known associations."""
     try:
-        targets_list = [t.strip().upper() for t in targets.split(',')]
+        ot_client = await get_ot_client()
+        health = await ot_client.health_check()
 
-        # Parse weights if provided
-        weights = DEFAULT_WEIGHTS.copy()
-        if base_weights:
-            import json
-            weights.update(json.loads(base_weights))
+        # Test known strong association
+        brca_breast = await ot_client.fetch_gene_disease_associations("BRCA1", "EFO_0000305")
 
-        request = ScoreRequest(
-            disease=disease,
-            targets=targets_list,
-            weights=weights
+        return {
+            "opentargets_health": health,
+            "demo_mode": health.get("mode") == "demo",
+            "test_brca1_breast": {
+                "association_count": len(brca_breast) if brca_breast else 0,
+                "first_association": brca_breast[0].__dict__ if brca_breast else None
+            },
+            "base_url": os.getenv("OT_GRAPHQL_URL", "default"),
+            "client_type": type(ot_client).__name__
+        }
+    except Exception as e:
+        return {"error": str(e), "error_type": type(e).__name__}
+
+
+@app.get("/debug/genetics-location/{gene}")
+async def debug_genetics_location(gene: str):
+    """Debug where genetics scores are actually stored."""
+    try:
+        # Score with valid disease ID
+        req = ScoreRequest(
+            disease="EFO_0000692",  # Use valid lung carcinoma ID
+            targets=[gene],
+            weights=DEFAULT_WEIGHTS
         )
+        target_scores, metadata = await score_targets(req)
 
-        # Get baseline scores
-        target_scores, _ = await score_targets(request)
+        if target_scores:
+            ts = target_scores[0]
+            return {
+                "target": gene,
+                "total_score": ts.total_score,
+                "raw_data": ts.__dict__ if hasattr(ts, '__dict__') else str(ts),
+                "genetics_paths": {
+                    "breakdown.genetics": getattr(ts, 'breakdown', {}).get('genetics') if hasattr(ts,
+                                                                                                  'breakdown') else 'no_breakdown',
+                    "channels.genetics.score": getattr(ts, 'channels', {}).get('genetics', {}).get('score') if hasattr(
+                        ts, 'channels') else 'no_channels',
+                    "explanation.contributions": [c for c in getattr(ts, 'explanation', {}).get('contributions', []) if
+                                                  c.get('channel') == 'genetics'] if hasattr(ts,
+                                                                                             'explanation') else 'no_explanation'
+                }
+            }
+        else:
+            return {"error": "No target scores returned"}
 
-        # Run weight perturbation simulation
-        from .scoring import simulate_weight_perturbations
-        stability_analysis = simulate_weight_perturbations(target_scores, weights)
-
-        return {
-            "weight_impact": stability_analysis,
-            "baseline_weights": weights,
-            "target_count": len(targets_list)
-        }
     except Exception as e:
-        logger.error(f"Weight impact analysis failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/evidence/distribution")
-async def get_evidence_distribution():
-    """Evidence types distribution endpoint"""
-    return {
-        "literature": 0,
-        "databases": 0,
-        "vantai": 0,
-        "other": 0
-    }
-@app.post("/sensitivity/weight-impact")
-async def analyze_weight_impact_post(req: ScoreRequest):
-    """POST alias so the frontend can call this endpoint"""
-    try:
-        # baseline skorlar
-        target_scores, _ = await score_targets(req)
-        from .scoring import simulate_weight_perturbations
-        stability = simulate_weight_perturbations(target_scores, req.weights or DEFAULT_WEIGHTS)
-        return {
-            "weight_impact": stability,
-            "baseline_weights": req.weights or DEFAULT_WEIGHTS,
-            "target_count": len(req.targets)
-        }
-    except Exception as e:
-        logger.error(f"Weight impact analysis (POST) failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        return {"error": str(e)}
 if __name__ == "__main__":
     # Development server
     uvicorn.run(
